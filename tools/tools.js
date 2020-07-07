@@ -8,7 +8,7 @@ const {
 
 const {
     OUTPUTS,
-} = require('../config');
+} = require('../../../config');
 
 const {
     CustomError

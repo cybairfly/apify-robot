@@ -2,7 +2,7 @@
 const R = require('ramda');
 
 module.exports = target => {
-    const configGlobal = require('../../config');
+    const configGlobal = global.rootRequire('./config');
     const configTarget = target && global.tryRequire.global(configGlobal.getPath.configs.robot(target)) || {};
 
     return R.mergeDeepRight(configGlobal, configTarget);

@@ -6,7 +6,7 @@ const log = require('./tools/log');
 
 const {
     getInputId
-} = require('../config');
+} = rootRequire('./config');
 
 const {
     PUPPETEER

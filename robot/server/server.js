@@ -20,7 +20,7 @@ const {
 
 const {
     SERVER
-} = require('../../config');
+} = rootRequire('./config');
 
 const {
     APIFY_CONTAINER_PORT,
