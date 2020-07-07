@@ -1,7 +1,7 @@
 .idea
-creds.js
 node_modules
 apify_storage
 INPUT_LOCAL.js
 test_input.json
+pnpm-lock.yaml
 package-lock.json
