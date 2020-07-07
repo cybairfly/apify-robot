@@ -27,7 +27,7 @@
 	"scripts": {
 		"start": "node robot/index.js",
 		"keygen": "node robot/crypto/keygen.js",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "echo \"No test specified\""
 	},
 	"repository": {
 		"type": "git",
