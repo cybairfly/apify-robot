@@ -3,6 +3,16 @@
 	"version": "0.0.0",
 	"description": "Automation framework built on Apify SDK",
 	"main": "robot/index.js",
+	"files": [
+		"/robot",
+		"/tasks",
+		"/tools",
+		"/apify.json",
+		"/Dockerfile",
+		"/INPUT_SCHEMA.json",
+		"/OUTPUT_SCHEMA.js",
+		"/README.md"
+	],
 	"exports": {
 		"./consts": "./robot/consts.js",
 		"./tools": "./robot/tools.js"
