@@ -1,0 +1,31 @@
+{
+	"name": "apify-robot",
+	"version": "0.0.0",
+	"description": "Automation framework built on Apify SDK",
+	"main": "robot/index.js",
+	"exports": {
+		"./consts": "./robot/consts.js",
+		"./tools": "./robot/tools.js"
+	},
+	"dependencies": {
+		"apify": "^0.20.4",
+		"ramda": "^0.27.0",
+		"slack-node": "^0.1.8",
+		"socket.io": "^2.3.0",
+		"user-agents": "^1.0.537"
+	},
+	"scripts": {
+		"start": "node robot/index.js",
+		"keygen": "node robot/crypto/keygen.js",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://gitlab.com/cybaerfly/apify-robot"
+	},
+	"author": {
+		"name": "Vasek Tobey Vlcek",
+		"email": "cyberfly@email.cz",
+		"url": "http://www.apify.com"
+	}
+}

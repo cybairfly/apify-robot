@@ -1,0 +1,80 @@
+{
+    "title": "Input schema for actor-robot",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "input": {
+            "title": "Input",
+            "type": "object",
+            "description": "Object with input data for the robot",
+            "prefill": { "data": "actionable automation data item" },
+            "editor": "json"
+        },
+        "target": {
+            "title": "Target",
+            "type": "string",
+            "editor": "select",
+            "default": "hostname",
+            "description": "Choose target to perform selected tasks",
+            "enum": [
+                "hostname"
+            ]
+        },
+        "tasks": {
+            "title": "Tasks",
+            "type": "string",
+            "editor": "select",
+            "default": "login",
+            "description": "Choose tasks for the robot to perform",
+            "enum": [
+                "task2",
+                "task2",
+                "task3"
+            ]
+        },
+        "abort": {
+            "title": "Abort?",
+            "type": "boolean",
+            "description": "Aborts task before final step - useful for testing and debugging.",
+            "editor": "checkbox",
+            "default": true
+        },
+        "block": {
+            "title": "Block?",
+            "type": "boolean",
+            "description": "Block needless requests to save computing and network resources",
+            "editor": "checkbox",
+            "default": false
+        },
+        "debug": {
+            "title": "Debug?",
+            "type": "boolean",
+            "description": "Run actor in verbose debug mode and silence external notifications",
+            "editor": "checkbox",
+            "default": false
+        },
+        "stream": {
+            "title": "Stream?",
+            "type": "boolean",
+            "description": "Live view from the actor to watch tasks performed in near real time",
+            "editor": "checkbox",
+            "default": true
+        },
+        "proxyConfig": {
+            "title": "Proxy",
+            "type": "object",
+            "description": "Optionaly use Apify Proxy",
+            "prefill": {
+                "useApifyProxy": true
+            },
+            "default": {
+                "useApifyProxy": true
+            },
+            "editor": "proxy"
+        }
+    },
+    "required": [
+        "input",
+        "tasks"
+    ]
+}
