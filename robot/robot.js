@@ -64,7 +64,7 @@ class Robot {
     static build = (INPUT, config) => {
         global.tryRequire = {
             local: require('./tools').tryRequire.local(log),
-            global: require('./tools').tryRequire.global(log, path.join(process.env.APIFY_LOCAL_STORAGE_DIR, '../'))
+            global: require('./tools').tryRequire.global(log, config.rootPath)
         };
 
         this.check(INPUT);
@@ -86,6 +86,7 @@ class Robot {
     };
 
     start = async (INPUT, config) => {
+        log.join.info('ROOT:', config.rootPath);
         const {input, tasks: taskNames, target} = INPUT;
 
         const configTasks = config.tasks ? config.tasks : config.getTasks(target);

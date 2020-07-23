@@ -83,6 +83,8 @@ places like config predicates for execution flow control.
 
 ```
 {
+    //path to root of the project, default = __dirname
+    rootPath: string,
     tasks: [
         {
             name: string

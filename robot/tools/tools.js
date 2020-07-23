@@ -36,10 +36,12 @@ const tryRequire = {
             return false;
         }
     },
-    global: (log, root) => globalPath => {
+    global: (log, rootPath) => globalPath => {
         try {
-            log.debug(path.join(root + globalPath));
-            return require(path.join(root + globalPath));
+            const requirePath = path.join(rootPath, globalPath);
+            log.join.debug('ROOT:', rootPath);
+            log.join.debug('PATH:', requirePath);
+            return require(requirePath);
         } catch (error) {
             const [message, ...stack] = error.message.split('\n');
             log.debug(message);
