@@ -158,19 +158,19 @@ places like config predicates for execution flow control.
     //paths for robot to look up automation implementations
     getPath: {
     
-        //path to generic steps/flows
+        //path from root to generic steps/flows
         generic: {
             flows: (task) -> string
             steps: (task) => string
         },
         
-        //path to target specific steps/flows
+        //path from root to target specific steps/flows
         targets: {
             flows: (target) => string
             steps: (target) => string
         },
         
-        //path to config
+        //path from root to configs
         configs: {
             robot: (target) => string
             target: (target) => string
