@@ -13,10 +13,6 @@
 		"/OUTPUT_SCHEMA.js",
 		"/README.md"
 	],
-	"exports": {
-		"./consts": "./robot/consts.js",
-		"./tools": "./robot/tools.js"
-	},
 	"dependencies": {
 		"apify": "^0.20.4",
 		"ramda": "^0.27.0",
