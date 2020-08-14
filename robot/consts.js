@@ -22,6 +22,7 @@ const TIMEOUTS = {
     triple: 3 * 30 * 1000
 };
 
+// TODO
 const PATTERN_SORTING = [
     'isAlreadyCancelled',
     'isThirdPartyBilling',

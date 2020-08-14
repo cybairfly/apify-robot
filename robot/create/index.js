@@ -3,12 +3,12 @@ const R = require('ramda');
 
 const {
     DEFAULT_OPTIONS
-} = require('./consts');
+} = require('../consts');
 
 const {
     getUserAgent,
     deepTransform,
-} = require('./tools/tools');
+} = require('../tools/tools');
 
 // #####################################################################################################################
 
@@ -20,17 +20,19 @@ const CustomError = ({name = 'CustomError', data = {}, message = 'Custom Error'}
     return error;
 };
 
-const Options = ({input, config, INPUT: {target, block, stream, proxyConfig}}) => {
-    const CUSTOM_OPTIONS = {
-        global: config.OPTIONS || {},
-        target: tryRequire.global(config.getPath.configs.robot(target)) || {},
-    };
+const Options = ({input, setup, INPUT: {block, stream, proxyConfig}}) => {
+    //already merged in setup
+    // const CUSTOM_OPTIONS = {
+    //     global: setup.OPTIONS || {},
+    //     target: tryRequire.global(setup.getPath.targets.setup(target)) || {},
+    // };
 
-    const OPTIONS = R.mergeDeepRight(R.mergeDeepRight(DEFAULT_OPTIONS, CUSTOM_OPTIONS.global), CUSTOM_OPTIONS.target);
+    // const OPTIONS = R.mergeDeepRight(R.mergeDeepRight(DEFAULT_OPTIONS, CUSTOM_OPTIONS.global), CUSTOM_OPTIONS.target);
+    const {OPTIONS} = setup;
 
     const apifyProxySession = Apify.isAtHome() ?
-        config.getApifyProxySession.apify({input}) :
-        config.getApifyProxySession.local({input});
+        setup.getApifyProxySession.apify({input}) :
+        setup.getApifyProxySession.local({input});
 
     const [proxyUrlWithoutSession] = proxyConfig && proxyConfig.proxyUrls || [];
 

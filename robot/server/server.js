@@ -19,10 +19,6 @@ const {
 } = require('../errors');
 
 const {
-    SERVER
-} = rootRequire('./config');
-
-const {
     APIFY_CONTAINER_PORT,
     APIFY_CONTAINER_URL,
     APIFY_DEFAULT_KEY_VALUE_STORE_ID,
@@ -31,13 +27,14 @@ const {
 // #####################################################################################################################
 
 class Server extends LiveViewServer {
-    constructor(page, options = {}) {
+    constructor(page, setup, options = {}) {
         super(options);
         this.options = options;
         this.useScreenshots = options.useScreenshots || false;
         this.log = log.child({prefix: 'LiveViewServer'});
         this._resolveMessagePromise = null;
 
+        const {SERVER} = setup;
         this.handlePrompt = {
             [SERVER.actions.abort]: () => {
                 throw CustomError({

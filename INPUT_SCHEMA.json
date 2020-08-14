@@ -14,10 +14,10 @@
             "title": "Target",
             "type": "string",
             "editor": "select",
-            "default": "hostname",
+            "default": "domain",
             "description": "Choose target to perform selected tasks",
             "enum": [
-                "hostname"
+                "domain"
             ]
         },
         "tasks": {

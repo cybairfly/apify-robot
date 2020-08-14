@@ -12,7 +12,7 @@ const {
 
 const {
     OUTPUTS
-} = require('../../../../config');
+} = require('../../../../setup');
 
 const {
     PUPPETEER,

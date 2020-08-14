@@ -11,8 +11,8 @@ provide implementation for various tasks and optionally different hosts (target 
 
 - [Robot]()
     - [Context]() 
-    - [Config]() - global (generic) or target specific settings for the robot's behavior during startup and runtime
-    - [Tasks]() - abstract definition of a body of work to be performed using `steps` as defined in `config`
+    - [Setup]() - global (generic) or target specific settings for the robot's behavior during startup and runtime
+    - [Tasks]() - abstract definition of a body of work to be performed using `steps` as defined in `setup`
         - [Steps]() - actual implementation of the code to be executed as a part of accomplishing a `task`
         - [Flows]() - loose group of `steps` merged into a class to serve as a whole or part of a `task`
     - [Tools]()
@@ -39,10 +39,10 @@ for a particular target. The implementation of the specific step for a particula
 target will be automatically loaded by the Robot during the execution of the whole
 process.
 
-## Robot ([Context]() > [Config]() > [Tasks]() > [Steps]()/[Flows]() > [Tools]())
+## Robot ([Context]() > [Setup]() > [Tasks]() > [Steps]()/[Flows]() > [Tools]())
 
 > Robot takes individual `steps` optionally grouped in `flows` and using common `tools` 
-to accomplish preset `tasks` defined in global `config` within its runtime `context`
+to accomplish preset `tasks` defined in global `setup` within its runtime `context`
 
 Robot handles the execution of all tasks and their steps in the correct order and
 handles possible failures of the individual units. Firstly the order of the execution
@@ -75,11 +75,11 @@ server|instance|Live view and interaction server (WIP)
 
 Robot passes the global context down to the lowest unit of execution to enable maximum 
 flexibility in the scope of automation execution. Wide context is also passed to other 
-places like config predicates for execution flow control.
+places like setup predicates for execution flow control.
 
-### Config
-- global `config` - defines global behavior of the robot
-- target `config` - defines behavior of the robot based on specific target host (website)
+### Setup
+- global `setup` - defines global behavior of the robot
+- target `setup` - defines behavior of the robot based on specific target host (website)
 
 ```
 {
@@ -124,8 +124,8 @@ places like config predicates for execution flow control.
         // TODO
     },
     
-    //config robot options (global)
-    //target options > config options > default options
+    //setup robot options (global)
+    //target options > setup options > default options
     OPTIONS: {
         blockRequests: {
             https://sdk.apify.com/docs/api/puppeteer#puppeteerblockrequestspage-options
@@ -164,16 +164,13 @@ places like config predicates for execution flow control.
             steps: (task) => string
         },
         
-        //path from root to target specific steps/flows
+        //path from root to target specific paths
         targets: {
-            flows: (target) => string
-            steps: (target) => string
-        },
-        
-        //path from root to configs
-        configs: {
-            robot: (target) => string
-            target: (target) => string
+            target: (target) => string,
+            config: (target) => string,
+            flows: (target) => string,
+            steps: (target) => srting,
+            setup: (target) => string,
         }
     },
     
@@ -186,7 +183,7 @@ places like config predicates for execution flow control.
 ```
 
 Robot has full control over execution of the automation based on the logic pre-defined 
-in its global config and also recognizes and uses a target specific config over-ride 
+in its global setup and also recognizes and uses a target specific config over-ride 
 where applicable and needed - meaning behavior of the robot can also change based on 
 the host (automation target).
 
@@ -350,7 +347,7 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 ## Authors
 
 - Vasek Tobey Vlcek - initial project - [Apify Robot]()
-- Matej Vavrinec - readme, improvements - [Apify Robot]()
+- Matej Vavrinec - design consultant - [Apify Robot]()
 
 See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 

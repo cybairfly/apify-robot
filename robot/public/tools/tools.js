@@ -4,15 +4,20 @@ const {log} = Apify.utils;
 const {
     PATTERN_SORTING,
     TIMEOUTS
-} = require('../robot/consts');
+} = require('../../consts');
 
 const {
     OUTPUTS,
-} = require('../../../setup');
+} = require('../../setup');
 
 const {
     CustomError
-} = require('../robot/errors');
+} = require('../../errors');
+
+const {
+    saveScreenshot
+} = require('../../tools');
+
 
 const getPageUrl = async page => await page.evaluate(() => window.location.href);
 const sortByList = (list, array) => array.sort((a, b) => list.indexOf(a) - list.indexOf(b));
@@ -140,4 +145,5 @@ module.exports = {
     matchPattern,
     iteratePatterns,
     verifyResult,
+    saveScreenshot
 };

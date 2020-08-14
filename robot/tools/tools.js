@@ -75,12 +75,18 @@ const decryptCredentials = async account => {
     }
 };
 
-const resolveTaskTree = (configTasks, taskNames) => {
+const transformTasks = tasks =>
+    Object
+        .entries(tasks)
+        .reduce((pool, [taskName, task]) =>
+            pool = [...pool, {name: taskName, ...task}], []);
+
+const resolveTaskTree = (bootTasks, taskNames) => {
     log.info('Resolving task dependency tree');
 
     taskNames = Array.isArray(taskNames) ? taskNames : [taskNames];
 
-    const filterTasksByName = taskNames => taskNames.map(taskName => configTasks.find(task => task.name === taskName));
+    const filterTasksByName = taskNames => taskNames.map(taskName => bootTasks.find(task => task.name === taskName));
 
     const getTreeByTaskName = (baseTasks, level = 0) =>
         baseTasks.reduce((pool, baseTask) => {
@@ -90,7 +96,7 @@ const resolveTaskTree = (configTasks, taskNames) => {
             const mergeTasks = baseTask.merge && baseTask
                 .merge
                 .map(mergeTaskName =>
-                    configTasks.find(task =>
+                    bootTasks.find(task =>
                         task.name === mergeTaskName));
 
             return pool = mergeTasks
@@ -231,42 +237,20 @@ const responseErrorLogger = async (domain, response) => {
     }
 };
 
-const initEventLoggers = (page, target, hostname) => {
+const initEventLoggers = (page, target, string) => {
     try {
-        const parsedUrl = new URL(hostname);
-        hostname = parsedUrl.hostname;
+        const parsedUrl = new URL(string);
+        string = parsedUrl.hostname;
     } catch (error) {
-        hostname = target
+        string = target
     }
 
     // TODO
-    const [fallback, domain] = hostname.split('.').reverse();
+    const [fallback, domain] = string.split('.').reverse();
     const urlLoggerBound = urlLogger.bind(null, page);
     const responseErrorLoggerBound = responseErrorLogger.bind(null, domain || fallback);
     page.on(PUPPETEER.events.domcontentloaded, urlLoggerBound);
     page.on(PUPPETEER.events.response, responseErrorLoggerBound);
-};
-
-const decorate = (instance, methods, decorator) => {
-    methods.map(methodName => {
-        const originalMethod = instance[methodName];
-
-        if (originalMethod.constructor.name === "Function") {
-            instance[methodName] = (...originalArgs) => {
-                const contextArgs = {methodName};
-                originalArgs = decorator(contextArgs)(originalArgs) || originalArgs;
-                return originalMethod.apply(instance, originalArgs);
-            }
-        } else if (originalMethod.constructor.name === "AsyncFunction") {
-            instance[methodName] = async (...originalArgs) => {
-                const contextArgs = {methodName};
-                originalArgs = await decorator(contextArgs)(originalArgs) || originalArgs;
-                return await originalMethod.apply(instance, originalArgs);
-            }
-        }
-    });
-
-    return instance;
 };
 
 const extendLog = (log, id) => {
@@ -304,6 +288,28 @@ const extendLog = (log, id) => {
     };
 
     return log;
+};
+
+const decorate = (instance, methods, decorator) => {
+    methods.map(methodName => {
+        const originalMethod = instance[methodName];
+
+        if (originalMethod.constructor.name === "Function") {
+            instance[methodName] = (...originalArgs) => {
+                const contextArgs = {methodName};
+                originalArgs = decorator(contextArgs)(originalArgs) || originalArgs;
+                return originalMethod.apply(instance, originalArgs);
+            }
+        } else if (originalMethod.constructor.name === "AsyncFunction") {
+            instance[methodName] = async (...originalArgs) => {
+                const contextArgs = {methodName};
+                originalArgs = await decorator(contextArgs)(originalArgs) || originalArgs;
+                return await originalMethod.apply(instance, originalArgs);
+            }
+        }
+    });
+
+    return instance;
 };
 
 const decoratePage = (page, server) => {
@@ -385,8 +391,8 @@ const decoratePage = (page, server) => {
     return page;
 };
 
-startServer = (page, options) => {
-    const server = new Server(page, options);
+startServer = (page, setup, options) => {
+    const server = new Server(page, setup, options);
     // page.on(PUPPETEER.events.domcontentloaded, async () => await server.serve(page));
     page.on(PUPPETEER.events.load, async () => await server.serve(page));
 
@@ -468,9 +474,11 @@ const sendNotification = async ({INPUT, channel, error}) => {
 };
 
 module.exports = {
+    log,
     tryRequire,
     getOptions,
     getUserAgent,
+    transformTasks,
     resolveTaskTree,
     getPage,
     decorate,
