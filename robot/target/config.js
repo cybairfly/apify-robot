@@ -1,7 +1,7 @@
 class TargetConfig {
     TARGET = {
         name: '',
-        // hostname: ''
+        url: ''
     };
 
     URLS = {};
