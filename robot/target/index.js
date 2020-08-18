@@ -10,10 +10,6 @@ class Target {
 
         this._steps = {};
         this._step = null;
-
-        this.flows = {
-            path: setup.getPath.targets.flows(target)
-        }
     }
 
     get step() {
@@ -25,7 +21,9 @@ class Target {
         this._steps[step.name] = step;
     }
 
-    getFlow = task => tryRequire.global(this.flows.path) || tryRequire.global(`${this.flows.path}/${task}`);
+    getFlow = task =>
+        tryRequire.global(this.setup.getPath.targets.flows(this.name)) ||
+        tryRequire.global(`${this.setup.getPath.targets.flows(this.name)}/${task}`);
 
     static get tasks() {
         if (!this._tasks)

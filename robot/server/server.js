@@ -34,23 +34,23 @@ class Server extends LiveViewServer {
         this.log = log.child({prefix: 'LiveViewServer'});
         this._resolveMessagePromise = null;
 
-        const {SERVER} = setup;
-        this.handlePrompt = {
-            [SERVER.actions.abort]: () => {
+        const {events} = setup.SERVER.liveView;
+        this.promptHandlers = {
+            [events.abort]: () => {
                 throw CustomError({
                     data: {
                         abortActor: true
                     }
                 });
             },
-            [SERVER.actions.cancel]: () => {
+            [events.cancel]: () => {
                 throw CustomError({
                     data: {
                         abortPayment: true
                     }
                 });
             },
-            [SERVER.actions.confirm]: () => {
+            [events.confirm]: () => {
                 log.info('Payment confirmed');
             },
         };
@@ -77,7 +77,7 @@ class Server extends LiveViewServer {
                 this.log.info('Waiting for frontend prompt response');
             });
 
-            this.handlePrompt[response.action]();
+            this.promptHandlers[response.action]();
         }
     };
 

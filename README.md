@@ -10,11 +10,13 @@ to define a high-level structure of the process using a simple configuration and
 provide implementation for various tasks and optionally different hosts (target websites).
 
 - [Robot]()
-    - [Context]() 
-    - [Setup]() - global (generic) or target specific settings for the robot's behavior during startup and runtime
+    - [Setup]() - global or target specific startup and runtime settings for the robot's behavior
+    - [Target]() - abstract definition of the target host (website) to perform the automation against
+      - [Config]() - utility abstraction to extract target specific data away from the logic of the flow
     - [Tasks]() - abstract definition of a body of work to be performed using `steps` as defined in `setup`
         - [Steps]() - actual implementation of the code to be executed as a part of accomplishing a `task`
-        - [Flows]() - loose group of `steps` merged into a class to serve as a whole or part of a `task`
+        - [Flows]() - loose group of `steps` merged into a single class to serve as a whole or part of a `task`
+    - [Context]() 
     - [Tools]()
 
 ### Objectives
@@ -39,7 +41,8 @@ for a particular target. The implementation of the specific step for a particula
 target will be automatically loaded by the Robot during the execution of the whole
 process.
 
-## Robot ([Context]() > [Setup]() > [Tasks]() > [Steps]()/[Flows]() > [Tools]())
+## Robot 
+### [Setup]() ([Target]()) > [Tasks]() > [Steps]()/[Flows]() ([Context]()) > [Tools]()
 
 > Robot takes individual `steps` optionally grouped in `flows` and using common `tools` 
 to accomplish preset `tasks` defined in global `setup` within its runtime `context`
@@ -77,110 +80,18 @@ Robot passes the global context down to the lowest unit of execution to enable m
 flexibility in the scope of automation execution. Wide context is also passed to other 
 places like setup predicates for execution flow control.
 
+### Target
+[Target](robot/target/index.js)
+Defines target of automation and target specific behavior, e.g. order of steps (execution sequence) etc. Provides helper methods for adapting tasks to target websites. Definition of automation steps directly in this class body is supported in addition to outsourcing the flow to a separate class with path defined in setup.
+
+[Target.Config](robot/target/config.js)
+Utility class to extract target specific data away from the logic of the flow.
+
 ### Setup
+[Robot.Setup](robot/setup.js)
+
 - global `setup` - defines global behavior of the robot
 - target `setup` - defines behavior of the robot based on specific target host (website)
-
-```
-{
-    //path to root of the project, default = __dirname
-    rootPath: string,
-    tasks: [
-        {
-            name: string
-            
-            //control flow - execution sequence predicate
-            init: ({INPUT, OUTPUT, input, output, relay}) => boolean,
-            skip: ({INPUT, OUTPUT, input, output, relay}) => boolean,
-            stop: ({INPUT, OUTPUT, input, output, relay}) => boolean,
-            done: ({INPUT, OUTPUT, input, output, relay}) => boolean
-            
-            //task dependencies used to build dependency tree before launch
-            merge: [
-                string
-            ],
-            
-            steps: [
-                {
-                    name: string,
-                    
-                    //control flow - execution sequence predicate
-                    init: ({INPUT, OUTPUT, input, output, relay}) => boolean,
-                    skip: ({INPUT, OUTPUT, input, output, relay}) => boolean,
-                    stop: ({INPUT, OUTPUT, input, output, relay}) => boolean,
-                    done: ({INPUT, OUTPUT, input, output, relay}) => boolean
-                },
-            ],
-        },
-    ],
-    
-    //error alert options
-    SLACK: {
-        channel: string
-    },
-    
-    //server options
-    SERVER: {
-        // TODO
-    },
-    
-    //setup robot options (global)
-    //target options > setup options > default options
-    OPTIONS: {
-        blockRequests: {
-            https://sdk.apify.com/docs/api/puppeteer#puppeteerblockrequestspage-options
-        },
-        launchPuppeteer: {
-            https://sdk.apify.com/docs/api/apify#launchpuppeteer
-        },
-        liveViewServer: {
-            https://sdk.apify.com/docs/api/live-view-server
-        },
-    },
-    
-    //convenience list of all possible outputs
-    OUTPUTS: {
-        outputName: {
-            outputProperty: outputValue
-        },
-    },
-    
-    //default robot output
-    OutputTemplate: ({INPUT, input}) => object,
-    
-    //TODO
-    getTasks: function,
-    
-    //generate unique robot input ID
-    getInputId: input => string,
-    
-    //base path = project root
-    //paths for robot to look up automation implementations
-    getPath: {
-    
-        //path from root to generic steps/flows
-        generic: {
-            flows: (task) -> string
-            steps: (task) => string
-        },
-        
-        //path from root to target specific paths
-        targets: {
-            target: (target) => string,
-            config: (target) => string,
-            flows: (target) => string,
-            steps: (target) => srting,
-            setup: (target) => string,
-        }
-    },
-    
-    //generate unique proxy session string for local and remote runs (@Apify)
-    getApifyProxySession: {
-        apify: ({input}) -> string
-        local: ({input}) -> string
-    },
-}
-```
 
 Robot has full control over execution of the automation based on the logic pre-defined 
 in its global setup and also recognizes and uses a target specific config over-ride 
@@ -235,6 +146,8 @@ and grouped together by a class. Steps of the flow can be organized to match the
 for clarity and convenience but they do not control the order of execution in any way and they can be 
 interleaved by other intermittent steps outside of the flow defined by the global execution sequence 
 configuration. 
+
+Flows can be defined directly in target body or in a separate class located via `flows` path defined in `setup`
 
 > **Flows can also be generic or target specific.**
 

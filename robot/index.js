@@ -80,15 +80,16 @@ class Robot {
         return this;
     };
 
-    static build = (setup) => {
+    static build = (setup) => {        
         if (!this.INPUT)
             throw Error('INPUT not found. Check input before building robot: Robot.check(INPUT).build(setup).start()');
 
+        this.setup = setup;
         const {debug, target} = this.INPUT;
 
         global.tryRequire = {
-            local: require('./tools').tryRequire.local(log),
-            global: require('./tools').tryRequire.global(log, setup.rootPath)
+            local: tools.tryRequire.local(log),
+            global: tools.tryRequire.global(log, setup.rootPath)
         };
 
         if (debug)
@@ -96,10 +97,10 @@ class Robot {
 
         if (target) {
             const targetSetup = global.tryRequire.global(setup.getPath.targets.setup(target)) || {};
-            setup = R.mergeDeepRight(setup, targetSetup);
+            this.setup = R.mergeDeepRight(setup, targetSetup);
         }
 
-        return new Robot(this.INPUT, setup);
+        return new Robot(this.INPUT, this.setup);
     };
 
     catch = start => async () => {
@@ -155,9 +156,8 @@ class Robot {
     };
 
     initPage = async ({INPUT: {block, stream, target}, page, setup, options}) => {
-        const url = (tryRequire.global(setup.getPath.targets.setup(target)) ||
-            tryRequire.global(setup.getPath.targets.config(target)) ||
-            {TARGET: {}}).TARGET.url;
+        const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
+        const url = source.TARGET && source.TARGET.url;
 
         log.default({target});
 
