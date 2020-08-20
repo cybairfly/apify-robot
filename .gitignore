@@ -1,4 +1,6 @@
 .idea
+.bckp
+.vscode
 node_modules
 apify_storage
 INPUT_LOCAL.js
