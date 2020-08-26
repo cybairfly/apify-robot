@@ -62,6 +62,12 @@ class Robot {
     static tools = require('./public/tools');
     static transformTasks = transformTasks;
 
+    static route = rootPath => {
+        this.route = rootPath;
+
+        return this;
+    }
+
     static check = (INPUT) => {
         if (!INPUT)
             throw Error('INPUT not found. Check input before building robot: Robot.check(INPUT).build(setup).start()');
@@ -80,16 +86,20 @@ class Robot {
         return this;
     };
 
-    static build = (setup) => {        
+    static build = (setup) => {
+        if (!this.route)
+            throw Error('Route not found. Provide project root path before building robot: Robot.route(route).check(INPUT).build(setup).start()');
+
         if (!this.INPUT)
-            throw Error('INPUT not found. Check input before building robot: Robot.check(INPUT).build(setup).start()');
+            throw Error('INPUT not found. Check input before building robot: Robot.route(route).check(INPUT).build(setup).start()');
 
         this.setup = setup;
+        this.setup.rootPath = this.route;
         const {debug, target} = this.INPUT;
 
         global.tryRequire = {
             local: tools.tryRequire.local(log),
-            global: tools.tryRequire.global(log, setup.rootPath)
+            global: tools.tryRequire.global(log, this.route)
         };
 
         if (debug)
