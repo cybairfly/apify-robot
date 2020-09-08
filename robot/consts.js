@@ -79,8 +79,9 @@ const DEFAULT_OPTIONS = {
         ]
     },
     launchPuppeteer: {
+        randomUserAgent: false,
         headless: true,
-        stealth: {
+        stealthOptions: {
             // addPlugins: false,
             // emulateWindowFrame: false,
             // emulateWebGL: false,
@@ -94,7 +95,7 @@ const DEFAULT_OPTIONS = {
         },
     },
     liveViewServer: {
-        useScreenshots: true,
+        useScreenshots: false,
         maxScreenshotFiles: 20,
         snapshotTimeoutSecs: 2,
         maxSnapshotFrequencySecs: 1,
