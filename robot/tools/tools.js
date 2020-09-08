@@ -441,8 +441,8 @@ const savePageContent = async ({page, store, id, name}) => {
 
 const saveOutput = async ({page, name, input, store, OUTPUT}) => {
     const {id} = input;
-    const pageContentUrl = await savePageContent({page, store, id, name});
-    const screenshotUrl = await saveScreenshot({page, store, id, name});
+    const pageContentUrl = await savePageContent({page, store, id, name}) || null;
+    const screenshotUrl = await saveScreenshot({page, store, id, name}) || null;
     const actorRunUrl = `https://my.apify.com/view/runs/${process.env.APIFY_ACTOR_RUN_ID}`;
 
     OUTPUT = {...OUTPUT, actorRunUrl, screenshotUrl, pageContentUrl};
