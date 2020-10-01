@@ -43,9 +43,8 @@ const tryRequire = {
             log.join.debug('PATH:', requirePath);
             return require(requirePath);
         } catch (error) {
-            const [message, ...stack] = error.message.split('\n');
-            log.debug(message);
-            log.debug(stack);
+            log.debug(error.message);
+            log.debug(error.stack);
             return false;
         }
     }
