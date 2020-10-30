@@ -1,0 +1,7 @@
+{
+	"name": "browser-pool-fingerprint-gen",
+	"version": "0.0",
+	"buildTag": "latest",
+	"env": null,
+	"template": "project_empty"
+}
