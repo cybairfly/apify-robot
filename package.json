@@ -14,8 +14,10 @@
 		"/README.md"
 	],
 	"dependencies": {
-		"apify": "^0.20.4",
+		"apify": "^0.21.8",
+		"playwright": "^1.5.2",
 		"ramda": "^0.27.0",
+		"shortid": "^2.2.16",
 		"slack-node": "^0.1.8",
 		"socket.io": "^2.3.0",
 		"user-agents": "^1.0.537"

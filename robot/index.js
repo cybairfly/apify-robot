@@ -20,6 +20,11 @@ const {
 } = require('./create');
 
 const {
+    getBrowserPool
+} = require('./tools/evasion/fpgen/src/main');
+
+const {
+    getProxyConfiguration,
     initEventLoggers,
     decoratePage,
     startServer,
@@ -40,7 +45,11 @@ class Robot {
 
         this.page = null;
         this.browser = null;
+        this.browserPool = null;
         this.options = null;
+        this.session = null;
+        this.sessionId = null;
+        this.sessionPool = null;
         this.server = null;
         this.strategy = null;
 
@@ -119,13 +128,22 @@ class Robot {
         try {
             return await start(INPUT, setup);
         } catch (error) {
+            await this.stop();
+
+            if (INPUT.retry) {
+                INPUT.retry--;
+                log.error(error.message);
+                log.error(error.stack);
+                return await this.start(INPUT, setup);
+            }
+
             await this.handleError({INPUT, setup, error});
         }
     };
 
     start = async (INPUT = this.INPUT, setup = this.setup) => {
         log.join.info('ROOT:', setup.rootPath);
-        const {input, tasks: taskNames, target} = INPUT;
+        const { input, tasks: taskNames, target, session, stealth } = INPUT;
         const setupTasks = setup.tasks ? setup.tasks : setup.getTasks(target);
 
         if (target) {
@@ -142,11 +160,23 @@ class Robot {
         log.info('Task list from task tree:');
         tasks.flatMap(task => log.default(task));
 
-        input.id = setup.getInputId(input);
+        input.id = await setup.getInputId(input);
         log.redact.object(INPUT);
         const options = Options({INPUT, input, setup});
         log.redact.object(options);
         this.options = options;
+        this.proxyConfig = await getProxyConfiguration(INPUT);
+
+        if (session) {
+            this.sessionId = Apify.isAtHome() ?
+                setup.getProxySessionId.apify({ INPUT, input }) :
+                setup.getProxySessionId.local({ INPUT, input });
+        }
+
+        if (stealth) {
+            this.sessionPool = await Apify.openSessionPool();
+            this.session = await this.sessionPool.getSession(session && this.sessionId);
+        }
 
         const page = await this.initPage({INPUT, setup, options: this.options});
         // decorate(log, APIFY.utils.log.methodsNames, decorators.log(input.id));
@@ -165,7 +195,7 @@ class Robot {
         return OUTPUT;
     };
 
-    initPage = async ({INPUT: {block, stream, target}, page, setup, options}) => {
+    initPage = async ({ INPUT: { block, target, stream, stealth }, page, setup }) => {
         const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
         const url = source.TARGET && source.TARGET.url;
 
@@ -175,9 +205,16 @@ class Robot {
             log.default({url});
 
         if (!page) {
-            this.browser = await Apify.launchPuppeteer(options.launchPuppeteer);
-            [page] = await this.browser.pages();
-            this.page = page;
+            if (stealth) {
+                this.browserPool = await getBrowserPool(this.proxyConfig, this.session);
+                this.page = page = await this.browserPool.newPage();
+            } else {
+                const proxyUrl = this.proxyConfig.newUrl(this.sessionId);
+                const options = { ...this.options.launchPuppeteer, proxyUrl };
+                this.browser = await Apify.launchPuppeteer(options);
+                [page] = await this.browser.pages();
+                this.page = page;
+            }
         }
 
         if (block)
@@ -379,10 +416,16 @@ class Robot {
     };
 
     stop = async () => {
-        if (this.browser)
+        if (this.browserPool) {
+            await this.browserPool.retire();
+            await this.browserPool.destroy();
+        }
+
+        if (this.browser) {
             await this.browser.close().catch(error => {
                 log.debug('Failed to close browser');
             });
+        }
 
         if (this.server) {
             await sleep(this.options.liveViewServer.snapshotTimeoutSecs || 3 * 1000);

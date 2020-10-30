@@ -20,25 +20,12 @@ const CustomError = ({name = 'CustomError', data = {}, message = 'Custom Error'}
     return error;
 };
 
-const Options = ({input, setup, INPUT: {block, stream, proxyConfig}}) => {
-    const apifyProxySession = Apify.isAtHome() ?
-        setup.getApifyProxySession.apify({input}) :
-        setup.getApifyProxySession.local({input});
-
-    const [proxyUrlWithoutSession] = proxyConfig && proxyConfig.proxyUrls || [];
-
-    const proxyUrl = proxyUrlWithoutSession && proxyUrlWithoutSession.includes('proxy.apify.com')
-        ? proxyUrlWithoutSession
-            .split('//')
-            .map((chunk, index) => index ? `session-${apifyProxySession},${chunk}` : chunk)
-            .join('//')
-        : proxyUrlWithoutSession;
-
+    const Options = ({ INPUT, input, setup, INPUT: { block, stream, proxyConfig } }) => {
     const defaultOptions = {
         launchPuppeteer: {
-            useApifyProxy: proxyConfig ? proxyConfig.useApifyProxy : true,
-            apifyProxyGroups: proxyConfig ? proxyConfig.apifyProxyGroups : undefined,
-            apifyProxySession,
+            // useApifyProxy: proxyConfig ? proxyConfig.useApifyProxy : true,
+            // apifyProxyGroups: proxyConfig ? proxyConfig.apifyProxyGroups : undefined,
+            // apifyProxySession,
             defaultViewport: {
                 width: 1024 + Math.floor(Math.random() * 900),
                 height: 768 + Math.floor(Math.random() * 300)
@@ -59,9 +46,6 @@ const Options = ({input, setup, INPUT: {block, stream, proxyConfig}}) => {
             ? proxyConfig.userAgent
             : getUserAgent();
     }
-
-    if (proxyUrl)
-        options.launchPuppeteer.proxyUrl = proxyUrl;
 
     return options;
 };

@@ -50,27 +50,19 @@ const tryRequire = {
     }
 };
 
-const credentialsEncrypted = account =>
-    !account.username.startsWith('tok_live') &&
-    !account.password.startsWith('tok_live') &&
-    account.username.length > 99 &&
-    account.password.length > 99;
-
-const decryptCredentials = async account => {
-    try {
-        const keyStore = await Apify.openKeyValueStore('keyStore');
-        const decrypt = await prepareDecrypt(keyStore);
-
-        if (credentialsEncrypted(account)) {
-            console.log('Encrypted username:', account.username);
-            console.log('Encrypted password:', account.password);
-            account.username = decrypt(account.username);
-            account.password = decrypt(account.password);
-            console.log('Credentials decrypted successfully...');
+const decryptObject = async object => {
+    const keyStore = await Apify.openKeyValueStore('keyStore');
+    const decrypt = await prepareDecrypt(keyStore);
+    log.info(`Encrypted input:`);
+    console.log(object);
+        
+    for (let key in object) {
+        try {
+            object[key] = decrypt(object[key]);
+            log.info(`Input decrypted: [${key}]`);
+        } catch (error) {
+            log.warning(`Failed to decrypt [${key}]`)
         }
-    } catch (error) {
-        console.error('Failed to decrypt credentials from input');
-        throw error;
     }
 };
 
@@ -145,6 +137,25 @@ const resolveTaskTree = (bootTasks, taskNames) => {
     log.info('Dependency tree resolved');
 
     return taskList;
+};
+
+const getProxyConfiguration = async ({ proxyConfig = {} }) => {
+    const [inputProxyUrl] = proxyConfig && proxyConfig.proxyUrls || [];
+
+    const proxyUrl = inputProxyUrl && inputProxyUrl.includes('proxy.apify.com')
+        ? inputProxyUrl
+            .split('//')
+            .map((chunk, index) => index ? `session-${apifyProxySession},${chunk}` : chunk)
+            .join('//')
+        : inputProxyUrl;
+
+    const proxyConfiguration = await Apify.createProxyConfiguration({
+        proxyUrls: proxyUrl && [proxyUrl] || proxyConfig.proxyUrls,
+        groups: proxyConfig.groups || proxyConfig.apifyProxyGroups,
+        countryCode: proxyConfig.countryCode || proxyConfig.country
+    });
+
+    return proxyConfiguration;
 };
 
 const getPage = async options => {
@@ -390,7 +401,7 @@ const decoratePage = (page, server) => {
     return page;
 };
 
-startServer = (page, setup, options) => {
+const startServer = (page, setup, options) => {
     const server = new Server(page, setup, options);
     // page.on(PUPPETEER.events.domcontentloaded, async () => await server.serve(page));
     page.on(PUPPETEER.events.load, async () => await server.serve(page));
@@ -477,6 +488,7 @@ module.exports = {
     tryRequire,
     getOptions,
     getUserAgent,
+    getProxyConfiguration,
     transformTasks,
     resolveTaskTree,
     getPage,
@@ -485,8 +497,7 @@ module.exports = {
     urlLogger,
     responseErrorLogger,
     initEventLoggers,
-    credentialsEncrypted,
-    decryptCredentials,
+    decryptObject,
     deepTransform,
     redactOptions,
     redactObject,
