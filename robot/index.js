@@ -162,9 +162,8 @@ class Robot {
 
         input.id = await setup.getInputId(input);
         log.redact.object(INPUT);
-        const options = Options({INPUT, input, setup});
+        const options = this.options = Options({INPUT, input, setup});
         log.redact.object(options);
-        this.options = options;
         this.proxyConfig = await getProxyConfiguration(INPUT);
 
         if (session) {
@@ -178,7 +177,7 @@ class Robot {
             this.session = await this.sessionPool.getSession(session && this.sessionId);
         }
 
-        const page = await this.initPage({INPUT, setup, options: this.options});
+        const page = await this.initPage({INPUT, setup});
         // decorate(log, APIFY.utils.log.methodsNames, decorators.log(input.id));
 
         let OUTPUT = setup.OutputTemplate && setup.OutputTemplate({INPUT, input}) || {};
@@ -218,11 +217,11 @@ class Robot {
         }
 
         if (block)
-            await Apify.utils.puppeteer.blockRequests(page, options.blockRequests);
+            await Apify.utils.puppeteer.blockRequests(page, this.options.blockRequests);
 
         // const singleThread = setup.maxConcurrency === 1;
         const shouldStartServer = !this.server && stream;
-        const server = this.server = this.server || (shouldStartServer && startServer(page, setup, options.liveViewServer));
+        const server = this.server = this.server || (shouldStartServer && startServer(page, setup, this.options.liveViewServer));
 
         initEventLoggers(page, target, url);
         decoratePage(page, server);
@@ -273,6 +272,7 @@ class Robot {
                     continue;
                 }
 
+                // TODO consider nested under actor/robot
                 const context = {
                     INPUT,
                     OUTPUT,
