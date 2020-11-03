@@ -42,6 +42,7 @@ class Robot {
         this.INPUT = INPUT;
         this.setup = setup;
         this.OUTPUTS = this.setup.OUTPUTS;
+        this.isRetry = false;
 
         this.page = null;
         this.browser = null;
@@ -60,7 +61,7 @@ class Robot {
         this.flows = {};
         this.relay = {};
 
-        this.start = this.catch(this.start);
+        this.retry = this.catch(this.retry);
     }
 
     static Setup = Setup;
@@ -132,16 +133,24 @@ class Robot {
 
             if (INPUT.retry) {
                 INPUT.retry--;
+                this.isRetry = true;
                 log.error(error.message);
                 log.error(error.stack);
-                return await this.start(INPUT, setup);
+
+                log.default('◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄');
+                log.info(`RETRY [R-${INPUT.retry}]`);
+                log.default('◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄');
+
+                return await this.retry();
             }
 
             await this.handleError({INPUT, setup, error});
         }
     };
 
-    start = async (INPUT = this.INPUT, setup = this.setup) => {
+    start = async () => {
+        const { INPUT, setup } = this;
+
         log.join.info('ROOT:', setup.rootPath);
         const { input, tasks: taskNames, target, session, stealth } = INPUT;
         const setupTasks = setup.tasks ? setup.tasks : setup.getTasks(target);
@@ -157,13 +166,16 @@ class Robot {
 
         const bootTasks = transformTasks(this.Target.tasks || setupTasks);
         const tasks = this.tasks = resolveTaskTree(bootTasks, taskNames);
-        log.info('Task list from task tree:');
-        tasks.flatMap(task => log.default(task));
+
+        if (!this.isRetry) {
+            log.info('Task list from task tree:');
+            tasks.flatMap(task => log.default(task));
+        }
 
         input.id = await setup.getInputId(input);
-        log.redact.object(INPUT);
+        if (!this.isRetry) log.redact.object(INPUT);
         const options = this.options = Options({INPUT, input, setup});
-        log.redact.object(options);
+        if (!this.isRetry) log.redact.object(options);
         this.proxyConfig = await getProxyConfiguration(INPUT);
 
         if (session) {
@@ -177,12 +189,18 @@ class Robot {
             this.session = await this.sessionPool.getSession(session && this.sessionId);
         }
 
-        const page = await this.initPage({INPUT, setup});
-        // decorate(log, APIFY.utils.log.methodsNames, decorators.log(input.id));
+        return await this.retry();
+    }
+
+    retry = async () => {
+        const { INPUT, setup } = this;
+        const { input } = INPUT;
+
+        const page = await this.initPage({ INPUT, setup });
 
         let OUTPUT = setup.OutputTemplate && setup.OutputTemplate({INPUT, input}) || {};
         try {
-            OUTPUT = await this.handleTasks({INPUT, OUTPUT, input, page, tasks, setup});
+            OUTPUT = await this.handleTasks({ INPUT, OUTPUT, input, page, setup });
         } catch (error) {
             await this.handleError({INPUT, OUTPUT, input, error, page, setup});
         }
@@ -198,10 +216,7 @@ class Robot {
         const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
         const url = source.TARGET && source.TARGET.url;
 
-        log.default({target});
-
-        if (url)
-            log.default({url});
+        if (!this.isRetry && url) log.default({ url });
 
         if (!page) {
             if (stealth) {
@@ -216,7 +231,7 @@ class Robot {
             }
         }
 
-        if (block)
+        if (block && !stealth)
             await Apify.utils.puppeteer.blockRequests(page, this.options.blockRequests);
 
         // const singleThread = setup.maxConcurrency === 1;
@@ -229,8 +244,9 @@ class Robot {
         return page;
     };
 
-    handleTasks = async ({INPUT, OUTPUT, input, page, tasks, setup}) => {
+    handleTasks = async ({ INPUT, OUTPUT, input, page, setup }) => {
         let output = {};
+        const { tasks } = this;
         const {target} = INPUT;
         const relay = this.relay = {};
 
@@ -285,14 +301,12 @@ class Robot {
                     server: this.server
                 };
 
-                // this.step.code = tryRequire(`../tasks/generic/${step.name}`);
                 this.step.code = tryRequire.global(path.join(setup.getPath.generic.steps(), step.name));
                 if (this.step.code) {
                     log.join.info(`STEP: Generic handler found for step [${step.name}] of task [${task.name}]`);
                 } else {
                     log.join.debug(`STEP: Generic handler not found for step [${step.name}] of task [${task.name}]`);
 
-                    // this.step.code = tryRequire(`../tasks/targets/${target}/${step.name}`);
                     this.step.code = tryRequire.global(path.join(setup.getPath.targets.steps(target), step.name));
                     if (this.step.code) {
                         log.join.info(`STEP: Target handler found for step [${step.name}] of task [${task.name}] for target [${target}]`);
