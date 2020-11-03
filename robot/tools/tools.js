@@ -50,6 +50,21 @@ const tryRequire = {
     }
 };
 
+const decrypt = async input => {
+    const keyStore = await Apify.openKeyValueStore('keyStore');
+    const decrypt = await prepareDecrypt(keyStore);
+    log.info(`Encrypted input: [${input}]`);
+
+    try {
+        const decrypted = decrypt(input);
+        log.info(`Input decrypted: [${input}]`);
+
+        return decrypted;
+    } catch (error) {
+        log.warning(`Failed to decrypt [${input}]`)
+    }
+};
+
 const decryptObject = async object => {
     const keyStore = await Apify.openKeyValueStore('keyStore');
     const decrypt = await prepareDecrypt(keyStore);
@@ -497,6 +512,7 @@ module.exports = {
     urlLogger,
     responseErrorLogger,
     initEventLoggers,
+    decrypt,
     decryptObject,
     deepTransform,
     redactOptions,

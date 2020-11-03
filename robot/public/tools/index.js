@@ -1,6 +1,7 @@
 const {
     log,
     tryRequire,
+    decrypt,
     decryptObject,
     deepTransform,
     redactObject,
@@ -13,6 +14,7 @@ const {
 module.exports = {
     log,
     tryRequire,
+    decrypt,
     decryptObject,
     redactObject,
     saveOutput,
