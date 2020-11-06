@@ -428,7 +428,7 @@ const startServer = (page, setup, options) => {
 const saveScreenshot = async ({page, store, id, name}) => {
     // Cannot take screenshot with 0 width.
     try {
-        await page.waitFor(() => document.readyState !== 'loading').catch(() => null);
+        await page.waitForFunction(() => document.readyState !== 'loading').catch(() => null);
         const screenshotBuffer = await page.screenshot({type: 'jpeg', quality: 70, fullPage: true});
         const fileName = `PAGE-SNAP-${name || 'FINAL'}-${id || Date.now()}`;
 
