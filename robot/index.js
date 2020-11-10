@@ -359,6 +359,7 @@ class Robot {
                         log.join.debug(line);
                     }
 
+                    log.join.info(`FLOW: Target handler found for step [${step.name}] of task [${task.name}] for target [${target}]`);
                     output = await this.flow[step.name](context, this.target);
                 }
 
