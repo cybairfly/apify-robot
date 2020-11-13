@@ -41,8 +41,10 @@ class Robot {
         this.log = log;
         this.INPUT = INPUT;
         this.setup = setup;
+        this.target = INPUT.target;
         this.OUTPUTS = this.setup.OUTPUTS;
         this.isRetry = false;
+        this.context = {};
 
         this.page = null;
         this.browser = null;
@@ -157,7 +159,7 @@ class Robot {
 
         if (target) {
             this.Target = tryRequire.global(`./${setup.getPath.targets.target(target)}`);
-            this.target = Target ? new this.Target(setup, target) : new Robot.Target(setup, target);
+            this.target = this.Target ? new this.Target(setup, target, this) : new Robot.Target(setup, target, this);
 
             if (this.target.adaptTasks) {
                 this.target.tasks = setupTasks;
@@ -246,7 +248,7 @@ class Robot {
 
     handleTasks = async ({ INPUT, OUTPUT, input, page, setup }) => {
         let output = {};
-        const { tasks } = this;
+        const {tasks, context} = this;
         const {target} = INPUT;
         const relay = this.relay = {};
 
