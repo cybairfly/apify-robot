@@ -90,15 +90,22 @@ const matchPattern = async (page, patterns) => {
     return patternMatch;
 };
 
-const iteratePatterns = async (page, patternGroups) => {
-    const patternTypes = sortByList(PATTERN_SORTING, Object.keys(patternGroups));
+/**
+ * 
+ * @param {object} page 
+ * @param {object} patternGroups 
+ * @param {array} patternOrder 
+ * @returns {string}
+ */
+const iteratePatterns = async (page, patternGroups = {}, patternOrder = []) => {
+    const patternTypes = sortByList(patternOrder, Object.keys(patternGroups));
 
     for (const patternType of patternTypes) {
         console.log({patternType});
         const patternMatch = await matchPattern(page, patternGroups[patternType]);
 
         if (patternMatch)
-            return OUTPUTS[patternType];
+            return patternType;
     }
 
     return null;
