@@ -412,7 +412,6 @@ class Robot {
     handleError = async ({INPUT, OUTPUT, input, error, page, setup}) => {
         if (OUTPUT) {
             await saveOutput({INPUT, OUTPUT, input, page});
-        } else {
             const {channel} = setup.SLACK;
 
             if (!INPUT.debug) {
