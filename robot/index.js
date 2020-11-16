@@ -1,6 +1,7 @@
 const Apify = require('apify');
 const R = require('ramda');
 const path = require('path');
+
 const {sleep} = Apify.utils;
 
 const consts = require('./public/consts');
@@ -12,7 +13,7 @@ const Target = require('./target');
 const TargetConfig = require('./target/config');
 
 const {
-    PUPPETEER
+    PUPPETEER,
 } = require('./consts');
 
 const {
@@ -20,7 +21,7 @@ const {
 } = require('./create');
 
 const {
-    getBrowserPool
+    getBrowserPool,
 } = require('./tools/evasion/fpgen/src/main');
 
 const {
@@ -31,7 +32,7 @@ const {
     transformTasks,
     resolveTaskTree,
     saveOutput,
-    sendNotification
+    sendNotification,
 } = require('./tools');
 
 // #####################################################################################################################
@@ -67,11 +68,15 @@ class Robot {
     }
 
     static Setup = Setup;
+
     static Target = Target;
+
     static TargetConfig = TargetConfig;
 
     static consts = require('./public/consts');
+
     static tools = require('./public/tools');
+
     static transformTasks = transformTasks;
 
     static route = rootPath => {
@@ -80,7 +85,7 @@ class Robot {
         return this;
     }
 
-    static check = (INPUT) => {
+    static check = INPUT => {
         if (!INPUT)
             throw Error('INPUT not found. Check input before building robot: Robot.check(INPUT).build(setup).start()');
 
@@ -98,7 +103,7 @@ class Robot {
         return this;
     };
 
-    static build = (setup) => {
+    static build = setup => {
         if (!this.route)
             throw Error('Route not found. Provide project root path before building robot: Robot.route(route).check(INPUT).build(setup).start()');
 
@@ -111,7 +116,7 @@ class Robot {
 
         global.tryRequire = {
             local: tools.tryRequire.local(log),
-            global: tools.tryRequire.global(log, this.route)
+            global: tools.tryRequire.global(log, this.route),
         };
 
         if (debug)
@@ -151,19 +156,18 @@ class Robot {
     };
 
     start = async () => {
-        const { INPUT, setup } = this;
+        const {INPUT, setup} = this;
 
         log.join.info('ROOT:', setup.rootPath);
-        const { input, tasks: taskNames, target, session, stealth } = INPUT;
+        const {input, tasks: taskNames, target, session, stealth} = INPUT;
         const setupTasks = setup.tasks ? setup.tasks : setup.getTasks(target);
 
         if (target) {
             this.Target = tryRequire.global(`./${setup.getPath.targets.target(target)}`);
             this.target = this.Target ? new this.Target(setup, target, this) : new Robot.Target(setup, target, this);
 
-            if (this.target.adaptTasks) {
+            if (this.target.adaptTasks)
                 this.target.tasks = setupTasks;
-            }
         }
 
         const bootTasks = transformTasks(this.Target.tasks || setupTasks);
@@ -182,8 +186,8 @@ class Robot {
 
         if (session) {
             this.sessionId = Apify.isAtHome() ?
-                setup.getProxySessionId.apify({ INPUT, input }) :
-                setup.getProxySessionId.local({ INPUT, input });
+                setup.getProxySessionId.apify({INPUT, input}) :
+                setup.getProxySessionId.local({INPUT, input});
         }
 
         if (stealth) {
@@ -195,14 +199,14 @@ class Robot {
     }
 
     retry = async () => {
-        const { INPUT, setup } = this;
-        const { input } = INPUT;
+        const {INPUT, setup} = this;
+        const {input} = INPUT;
 
-        const page = await this.initPage({ INPUT, setup });
+        const page = await this.initPage({INPUT, setup});
 
         let OUTPUT = setup.OutputTemplate && setup.OutputTemplate({INPUT, input}) || {};
         try {
-            OUTPUT = await this.handleTasks({ INPUT, OUTPUT, input, page, setup });
+            OUTPUT = await this.handleTasks({INPUT, OUTPUT, input, page, setup});
         } catch (error) {
             await this.handleError({INPUT, OUTPUT, input, error, page, setup});
         }
@@ -214,11 +218,11 @@ class Robot {
         return OUTPUT;
     };
 
-    initPage = async ({ INPUT: { block, target, stream, stealth }, page, setup }) => {
+    initPage = async ({INPUT: {block, target, stream, stealth}, page, setup}) => {
         const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
         const url = source.TARGET && source.TARGET.url;
 
-        if (!this.isRetry && url) log.default({ url });
+        if (!this.isRetry && url) log.default({url});
 
         if (!page) {
             if (stealth) {
@@ -226,7 +230,7 @@ class Robot {
                 this.page = page = await this.browserPool.newPage();
             } else {
                 const proxyUrl = this.proxyConfig.newUrl(this.sessionId);
-                const options = { ...this.options.launchPuppeteer, proxyUrl };
+                const options = {...this.options.launchPuppeteer, proxyUrl};
                 this.browser = await Apify.launchPuppeteer(options);
                 [page] = await this.browser.pages();
                 this.page = page;
@@ -246,7 +250,7 @@ class Robot {
         return page;
     };
 
-    handleTasks = async ({ INPUT, OUTPUT, input, page, setup }) => {
+    handleTasks = async ({INPUT, OUTPUT, input, page, setup}) => {
         let output = {};
         const {tasks, context} = this;
         const {target} = INPUT;
@@ -300,27 +304,26 @@ class Robot {
                     task,
                     step,
                     relay: this.relay,
-                    server: this.server
+                    server: this.server,
                 };
 
                 this.step.code = tryRequire.global(path.join(setup.getPath.generic.steps(), step.name));
-                if (this.step.code) {
+                if (this.step.code)
                     log.join.info(`STEP: Generic handler found for step [${step.name}] of task [${task.name}]`);
-                } else {
+                else {
                     log.join.debug(`STEP: Generic handler not found for step [${step.name}] of task [${task.name}]`);
 
                     this.step.code = tryRequire.global(path.join(setup.getPath.targets.steps(target), step.name));
-                    if (this.step.code) {
+                    if (this.step.code)
                         log.join.info(`STEP: Target handler found for step [${step.name}] of task [${task.name}] for target [${target}]`);
-                    } else {
+                    else
                         log.join.debug(`STEP: Target handler not found for step [${step.name}] of task [${task.name}] for target [${target}]`);
-                    }
                 }
 
-                if (this.step.code) {
+                if (this.step.code)
                     output = await this.step.code(context, this.target);
 
-                } else {
+                else {
                     this.flow = this.flow || this.target;
 
                     if (!this.flow[step.name]) {
@@ -328,18 +331,17 @@ class Robot {
                         // Flow = tryRequire(`../tasks/generic/${task.name}`);
                         Flow = tryRequire.global(path.join(setup.getPath.generic.flows(), task.name));
 
-                        if (Flow) {
+                        if (Flow)
                             log.join.info(`FLOW: Generic handler found for step [${step.name}] of task [${task.name}]`);
-                        } else {
+                        else {
                             log.join.debug(`FLOW: Generic handler not found for step [${step.name}] of task [${task.name}]`);
                             // Flow = target.flow[task.name] ? new target.flow[task.name] : new target.flow;
                             Flow = this.target.getFlow(task.name);
 
-                            if (Flow) {
+                            if (Flow)
                                 log.join.info(`FLOW: Target handler found for step [${step.name}] of task [${task.name}] for target [${target}]`);
-                            } else {
+                            else
                                 log.join.debug(`FLOW: Target handler not found for step [${step.name}] of task [${task.name}] for target [${target}]`);
-                            }
                         }
 
                         if (!Flow && !this.target[step.name])
@@ -372,7 +374,7 @@ class Robot {
 
                 OUTPUT = {
                     ...OUTPUT,
-                    ...output
+                    ...output,
                 };
 
                 this.step.done = !step.done || step.done({INPUT, OUTPUT, input, output, relay});
@@ -409,22 +411,22 @@ class Robot {
         return OUTPUT;
     };
 
-    handleError = async ({INPUT, OUTPUT, input, error, page, setup}) => {
-        if (OUTPUT) {
+    handleError = async ({INPUT, OUTPUT = {}, input, error, page, setup}) => {
+        if (Object.keys(OUTPUT).length)
             await saveOutput({INPUT, OUTPUT, input, page});
-            const {channel} = setup.SLACK;
 
-            if (!INPUT.debug) {
-                if (channel) {
-                    await sendNotification({INPUT, OUTPUT, channel, error});
-                    console.error('---------------------------------------------------------');
-                    console.error('Error in robot - support notified to update configuration');
-                    console.error('---------------------------------------------------------');
-                } else {
-                    console.error('---------------------------------------------------------------');
-                    console.error('Error in robot - please contact support to update configuration');
-                    console.error('---------------------------------------------------------------');
-                }
+        const {channel} = setup.SLACK;
+
+        if (!INPUT.debug) {
+            if (channel) {
+                await sendNotification({INPUT, OUTPUT, channel, error});
+                console.error('---------------------------------------------------------');
+                console.error('Error in robot - support notified to update configuration');
+                console.error('---------------------------------------------------------');
+            } else {
+                console.error('---------------------------------------------------------------');
+                console.error('Error in robot - please contact support to update configuration');
+                console.error('---------------------------------------------------------------');
             }
         }
 
