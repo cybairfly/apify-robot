@@ -41,6 +41,8 @@ class Robot {
     constructor(INPUT, setup) {
         this.log = log;
         this.INPUT = INPUT;
+        this.OUTPUT = null;
+        this.input = INPUT.input;
         this.setup = setup;
         this.target = INPUT.target;
         this.OUTPUTS = this.setup.OUTPUTS;
@@ -65,6 +67,7 @@ class Robot {
         this.relay = {};
 
         this.retry = this.catch(this.retry);
+        this.saveOutput = saveOutput;
     }
 
     static Setup = Setup;
@@ -130,11 +133,11 @@ class Robot {
         return new Robot(this.INPUT, this.setup);
     };
 
-    catch = start => async () => {
+    catch = retry => async () => {
         const {INPUT, setup} = this;
 
         try {
-            return await start(INPUT, setup);
+            return await retry(this);
         } catch (error) {
             await this.stop();
 
@@ -148,10 +151,10 @@ class Robot {
                 log.info(`RETRY [R-${INPUT.retry}]`);
                 log.default('◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄');
 
-                return await this.retry();
+                return await this.retry(this);
             }
 
-            await this.handleError({INPUT, setup, error});
+            await this.handleError(this, error);
         }
     };
 
@@ -195,30 +198,22 @@ class Robot {
             this.session = await this.sessionPool.getSession(session && this.sessionId);
         }
 
-        return await this.retry();
+        this.OUTPUT = setup.OutputTemplate && setup.OutputTemplate({INPUT, input}) || {};
+        this.OUTPUT = await this.retry(this);
+
+        await saveOutput({...this, ...{}});
+        log.default({OUTPUT: this.OUTPUT});
+        await this.stop();
     }
 
     retry = async () => {
-        const {INPUT, setup} = this;
-        const {input} = INPUT;
+        this.page = await this.initPage(this);
+        this.OUTPUT = await this.handleTasks(this);
 
-        const page = await this.initPage({INPUT, setup});
-
-        let OUTPUT = setup.OutputTemplate && setup.OutputTemplate({INPUT, input}) || {};
-        try {
-            OUTPUT = await this.handleTasks({INPUT, OUTPUT, input, page, setup});
-        } catch (error) {
-            await this.handleError({INPUT, OUTPUT, input, error, page, setup});
-        }
-
-        await saveOutput({INPUT, OUTPUT, input, page});
-        log.default({OUTPUT});
-        await this.stop();
-
-        return OUTPUT;
+        return this.OUTPUT;
     };
 
-    initPage = async ({INPUT: {block, target, stream, stealth}, page, setup}) => {
+    initPage = async ({INPUT: {block, target, stream, stealth}, setup}, page) => {
         const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
         const url = source.TARGET && source.TARGET.url;
 
@@ -411,7 +406,7 @@ class Robot {
         return OUTPUT;
     };
 
-    handleError = async ({INPUT, OUTPUT = {}, input, error, page, setup}) => {
+    handleError = async ({INPUT, OUTPUT, input, page, setup}, error) => {
         if (Object.keys(OUTPUT).length)
             await saveOutput({INPUT, OUTPUT, input, page});
 
