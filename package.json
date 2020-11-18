@@ -1,6 +1,6 @@
 {
 	"name": "apify-robot",
-	"version": "0.0.13",
+	"version": "0.0.14",
 	"description": "Automation framework built on Apify SDK",
 	"main": "robot/index.js",
 	"files": [
