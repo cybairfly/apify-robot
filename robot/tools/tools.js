@@ -50,18 +50,29 @@ const tryRequire = {
     }
 };
 
-const decrypt = async input => {
+const decrypt = async (input, logSecret = false) => {
     const keyStore = await Apify.openKeyValueStore('keyStore');
     const decrypt = await prepareDecrypt(keyStore);
     log.info(`Encrypted input: [${input}]`);
 
     try {
         const decrypted = decrypt(input);
-        log.info(`Input decrypted: [${input}]`);
+
+        const logOutput = logSecret ?
+            `Input decrypted: [${decrypted}]` :
+            `Input decrypted: [${input}]`;
+
+        log.info(logOutput);
 
         return decrypted;
     } catch (error) {
-        log.warning(`Failed to decrypt [${input}]`)
+        const logOutput = logSecret ?
+            `Failed to decrypt: [${decrypted}]` :
+            `Failed to decrypt: [${input}]`;
+
+        log.warning(logOutput);
+
+        return input;
     }
 };
 
