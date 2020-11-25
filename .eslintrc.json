@@ -16,20 +16,21 @@
         "no-console": "off",
         "no-unused-vars": "off",
         "no-return-assign": "off",
+        "no-confusing-arrow": "off",
         "object-curly-spacing": "off",
         "implicit-arrow-linebreak": "off",
         "nonblock-statement-body-position": "off",
         "arrow-parens": [
-            "error",
+            "warn",
             "as-needed"
         ],
         "curly": [
-            "error",
+            "warn",
             "multi-or-nest"
         ],
         "operator-linebreak": [
-            "error",
-            "after",
+            "warn",
+            "before",
             {
                 "overrides": {
                     "?": "ignore",
