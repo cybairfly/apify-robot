@@ -276,6 +276,19 @@ class Robot {
                 log.info(`STEP [${step.name}]`);
                 log.default('-----------------------------------------------------------------------------------');
 
+                // TODO consider nested under actor/robot
+                this.context = {
+                    INPUT,
+                    OUTPUT,
+                    input,
+                    output,
+                    page,
+                    task,
+                    step,
+                    relay: this.relay,
+                    server: this.server,
+                };
+
                 this.step.init = !step.init || step.init({INPUT, OUTPUT, input, output, relay});
                 this.step.skip = step.skip && step.skip({INPUT, OUTPUT, input, output, relay});
 
@@ -288,19 +301,6 @@ class Robot {
                     log.join.info(`Skipping step [${step.name}] of task [${task.name}] on test ${step.skip}`);
                     continue;
                 }
-
-                // TODO consider nested under actor/robot
-                const context = {
-                    INPUT,
-                    OUTPUT,
-                    input,
-                    output,
-                    page,
-                    task,
-                    step,
-                    relay: this.relay,
-                    server: this.server,
-                };
 
                 this.step.code = tryRequire.global(path.join(setup.getPath.generic.steps(), step.name));
                 if (this.step.code)
@@ -316,7 +316,7 @@ class Robot {
                 }
 
                 if (this.step.code)
-                    output = await this.step.code(context, this.target);
+                    output = await this.step.code(this.context, this.target);
 
                 else {
                     this.flow = this.flow || this.target;
@@ -342,7 +342,7 @@ class Robot {
                         if (!Flow && !this.target[step.name])
                             throw Error(`Handler not found for step [${step.name}] of task [${task.name}]`);
 
-                        const flow = this.flow = new Flow(context);
+                        const flow = this.flow = new Flow(this.context);
                         flow.target = target;
                         flow.name = task.name;
                         // flow.code = flow;
@@ -359,7 +359,7 @@ class Robot {
                     }
 
                     log.join.info(`FLOW: Target handler found for step [${step.name}] of task [${task.name}] for target [${target}]`);
-                    output = await this.flow[step.name](context, this.target);
+                    output = await this.flow[step.name](this.context, this.target);
                 }
 
                 if (!output || typeof output !== 'object') {
