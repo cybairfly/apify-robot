@@ -76,9 +76,9 @@ class Robot {
 
     static TargetConfig = TargetConfig;
 
-    static consts = require('./public/consts');
+    static consts = consts;
 
-    static tools = require('./public/tools');
+    static tools = tools;
 
     static transformTasks = transformTasks;
 
@@ -158,6 +158,13 @@ class Robot {
         }
     };
 
+    retry = async () => {
+        this.page = await this.initPage(this);
+        this.OUTPUT = await this.handleTasks(this);
+
+        return this.OUTPUT;
+    };
+
     start = async () => {
         const {INPUT, setup} = this;
 
@@ -205,13 +212,6 @@ class Robot {
         log.default({OUTPUT: this.OUTPUT});
         await this.stop();
     }
-
-    retry = async () => {
-        this.page = await this.initPage(this);
-        this.OUTPUT = await this.handleTasks(this);
-
-        return this.OUTPUT;
-    };
 
     initPage = async ({INPUT: {block, target, stream, stealth}, setup}, page) => {
         const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
