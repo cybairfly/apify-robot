@@ -22,14 +22,6 @@ const TIMEOUTS = {
     triple: 3 * 30 * 1000,
 };
 
-// TODO
-const PATTERN_SORTING = [
-    'isAlreadyCancelled',
-    'isThirdPartyBilling',
-    'isNonCancellable',
-    'verifyCancelSuccess',
-];
-
 const DEFAULT_OPTIONS = {
     crypto: {
         publicKey: {
@@ -206,7 +198,6 @@ const PUPPETEER = {
 module.exports = {
     APIFY,
     DEFAULT_OPTIONS,
-    PATTERN_SORTING,
     TIMEOUTS,
     PUPPETEER,
 };

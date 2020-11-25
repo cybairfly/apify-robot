@@ -3,8 +3,6 @@ const Apify = require('apify');
 const {log} = Apify.utils;
 
 const {
-    // TODO
-    PATTERN_SORTING,
     TIMEOUTS,
 } = require('../../consts');
 
