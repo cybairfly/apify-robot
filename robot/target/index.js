@@ -4,9 +4,9 @@ const log = require('../tools/log');
 // #####################################################################################################################
 
 class Target {
-    constructor(setup, target) {
-        this.name = target;
-        this.setup = setup;
+    constructor(...[, robot]) {
+        this.name = robot.target;
+        this.setup = robot.setup;
 
         this._steps = {};
         this._step = null;
