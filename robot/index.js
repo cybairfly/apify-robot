@@ -181,12 +181,6 @@ class Robot {
             tasks.flatMap(task => log.default(task));
         }
 
-        input.id = await setup.getInputId(input);
-        if (!this.isRetry) log.redact.object(INPUT);
-        const options = this.options = Options({INPUT, input, setup});
-        if (!this.isRetry) log.redact.object(options);
-        this.proxyConfig = await getProxyConfiguration(INPUT);
-
         if (session) {
             this.sessionId = Apify.isAtHome() ?
                 setup.getProxySessionId.apify({INPUT, input}) :
@@ -197,6 +191,12 @@ class Robot {
             this.sessionPool = await Apify.openSessionPool();
             this.session = await this.sessionPool.getSession(session && this.sessionId);
         }
+
+        input.id = await setup.getInputId(input);
+        if (!this.isRetry) log.redact.object(INPUT);
+        const options = this.options = Options({INPUT, input, setup});
+        if (!this.isRetry) log.redact.object(options);
+        this.proxyConfig = await getProxyConfiguration(this);
 
         this.OUTPUT = setup.OutputTemplate && setup.OutputTemplate({INPUT, input}) || {};
         this.OUTPUT = await this.retry(this);

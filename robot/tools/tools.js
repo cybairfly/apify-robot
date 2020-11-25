@@ -165,13 +165,13 @@ const resolveTaskTree = (bootTasks, taskNames) => {
     return taskList;
 };
 
-const getProxyConfiguration = async ({ proxyConfig = {} }) => {
+const getProxyConfiguration = async ({INPUT: { proxyConfig = {} }, sessionId}) => {
     const [inputProxyUrl] = proxyConfig && proxyConfig.proxyUrls || [];
     // FIXME
     const proxyUrl = inputProxyUrl && inputProxyUrl.includes('proxy.apify.com')
         ? inputProxyUrl
             .split('//')
-            .map((chunk, index) => index ? `session-${apifyProxySession},${chunk}` : chunk)
+            .map((chunk, index) => index ? `session-${sessionId},${chunk}` : chunk)
             .join('//')
         : inputProxyUrl;
 
