@@ -5,5 +5,5 @@ const {
 
 module.exports = {
     TIMEOUTS,
-    PUPPETEER
+    PUPPETEER,
 };

@@ -1,13 +1,17 @@
 class TargetConfig {
     TARGET = {
         name: '',
-        url: ''
+        url: '',
     };
 
     URLS = {};
+
     STRINGS = {};
+
     SELECTORS = {};
+
     PATTERNS = {};
+
     PREDICATES = {};
 }
 

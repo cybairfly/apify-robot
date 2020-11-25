@@ -8,9 +8,9 @@ const APIFY = {
                 'debug',
                 'error',
                 'warning',
-            ]
-        }
-    }
+            ],
+        },
+    },
 };
 
 const TIMEOUTS = {
@@ -19,7 +19,7 @@ const TIMEOUTS = {
     half: 15 * 1000,
     default: 30 * 1000,
     double: 2 * 30 * 1000,
-    triple: 3 * 30 * 1000
+    triple: 3 * 30 * 1000,
 };
 
 // TODO
@@ -27,28 +27,28 @@ const PATTERN_SORTING = [
     'isAlreadyCancelled',
     'isThirdPartyBilling',
     'isNonCancellable',
-    'verifyCancelSuccess'
+    'verifyCancelSuccess',
 ];
 
 const DEFAULT_OPTIONS = {
     crypto: {
         publicKey: {
             format: 'der',
-            type: 'spki'
+            type: 'spki',
         },
         privateKey: {
             format: 'der',
-            type: 'pkcs8'
+            type: 'pkcs8',
         },
         encrypt: {
-            padding: crypto.constants.RSA_PKCS1_PADDING
+            padding: crypto.constants.RSA_PKCS1_PADDING,
         },
         decrypt: {
-            padding: crypto.constants.RSA_PKCS1_PADDING
-        }
+            padding: crypto.constants.RSA_PKCS1_PADDING,
+        },
     },
     blockRequests: {
-        patterns: [".jpg", ".jpeg", ".png", ".svg", ".gif", ".ico", ".pdf", ".zip", ".webm", ".webp", ".woff", "data:image/"],
+        patterns: ['.jpg', '.jpeg', '.png', '.svg', '.gif', '.ico', '.pdf', '.zip', '.webm', '.webp', '.woff', 'data:image/'],
         analytics: [
             'adobedtm',
             'adnxs.com',
@@ -75,8 +75,8 @@ const DEFAULT_OPTIONS = {
             'tapad',
             'tribalfusion',
             'tr.snapchat.com',
-            'zendesk'
-        ]
+            'zendesk',
+        ],
     },
     launchPuppeteer: {
         randomUserAgent: false,
@@ -198,9 +198,9 @@ const PUPPETEER = {
                 // 'goto',
                 'waitFor',
                 // 'waitForSelector',
-            ]
+            ],
         },
-    }
+    },
 };
 
 module.exports = {

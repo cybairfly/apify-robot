@@ -22,14 +22,14 @@ class Target {
     }
 
     getFlow = task =>
-        tryRequire.global(this.setup.getPath.targets.flows(this.name)) ||
-        tryRequire.global(`${this.setup.getPath.targets.flows(this.name)}/${task}`);
+        tryRequire.global(this.setup.getPath.targets.flows(this.name))
+        || tryRequire.global(`${this.setup.getPath.targets.flows(this.name)}/${task}`);
 
     static get tasks() {
         if (!this._tasks)
             return null;
 
-        return this._tasks
+        return this._tasks;
     }
 
     static set tasks(tasks) {
@@ -45,7 +45,7 @@ class Target {
         const originalStepOrder = tasks.reduce((pool, next) => {
             pool[next.name] = next.steps.map(step => step.name);
 
-            return pool
+            return pool;
         }, {});
 
         log.info('Original step order:');
@@ -57,14 +57,14 @@ class Target {
 
             return {
                 ...task,
-                steps: sortedSteps
-            }
+                steps: sortedSteps,
+            };
         });
 
         const adaptedStepOrder = adaptedTasks.reduce((pool, next) => {
             pool[next.name] = next.steps.map(step => step.name);
 
-            return pool
+            return pool;
         }, {});
 
         log.info('Adapted step order:');

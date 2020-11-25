@@ -15,7 +15,7 @@ const getBrowserPool = async (proxyConfiguration, session) => {
     // const session = await sessionPool.getSession();
 
     const pluginOptions = {
-        launchOptions: { headless: Apify.isAtHome() ? true : false },
+        launchOptions: { headless: !!Apify.isAtHome() },
 
         // The sessions are not needed now you can also use any other random id
         createProxyUrlFunction: async () => await proxyConfiguration.newUrl(session.id),
@@ -40,5 +40,5 @@ const getBrowserPool = async (proxyConfiguration, session) => {
 };
 
 module.exports = {
-    getBrowserPool
-}
+    getBrowserPool,
+};

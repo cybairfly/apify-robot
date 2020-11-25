@@ -3,7 +3,7 @@ const CustomError = ({ retry = false, getData = false, name = 'CustomError', dat
     error.name = extras.name || `${name}Error`;
     error.data = {
         ...data,
-        ...extras.data
+        ...extras.data,
     };
 
     return error;
@@ -13,26 +13,26 @@ const ERROR = {
     target: {
         login: {
             name: 'Login',
-            message: `Match not found`
+            message: 'Match not found',
         },
         search: {
             name: 'Search',
-            message: `Match not found`
+            message: 'Match not found',
         },
         status: {
             retry: false,
             name: 'ResponseStatus',
-            message: `Received bad response status`
+            message: 'Received bad response status',
         },
         loginStatus: {
             retry: true,
             name: 'LoginStatus',
-            message: `Login failed - check credentials`
-        }
+            message: 'Login failed - check credentials',
+        },
     },
 };
 
 module.exports = {
     CustomError,
-    ERROR
+    ERROR,
 };

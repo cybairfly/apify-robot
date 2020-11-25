@@ -6,11 +6,10 @@ async function postMessage(slack, channel, text) {
             text,
             channel,
         }, (err, response) => {
-            if (err) {
+            if (err)
                 reject(err);
-            } else {
+            else
                 resolve(response);
-            }
         });
     });
 }
@@ -23,5 +22,5 @@ async function postError({slackToken, channel, target, error}) {
 }
 
 module.exports = {
-    postError
+    postError,
 };

@@ -1,8 +1,7 @@
 class Singleton {
     constructor(Class, name = '') {
-        if (!!Class.instance) {
+        if (Class.instance)
             return Class.instance;
-        }
 
         this.name = name;
 

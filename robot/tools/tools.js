@@ -5,19 +5,19 @@ const path = require('path');
 const log = require('./log');
 
 const {
-    PUPPETEER
+    PUPPETEER,
 } = require('../consts');
 
 const {
-    prepareDecrypt
+    prepareDecrypt,
 } = require('../crypto/crypto');
 
 const {
-    postError
+    postError,
 } = require('../slack/slack');
 
 const {
-    CustomError
+    CustomError,
 } = require('../errors');
 
 const {Server} = require('../server/server');
@@ -25,7 +25,7 @@ const {Server} = require('../server/server');
 // #####################################################################################################################
 
 const tryRequire = {
-    local: (log) => localPath => {
+    local: log => localPath => {
         try {
             log.debug(localPath);
             return require(localPath);
@@ -47,7 +47,7 @@ const tryRequire = {
             log.debug(error.stack);
             return false;
         }
-    }
+    },
 };
 
 const decrypt = async (input, logSecret = false) => {
@@ -79,15 +79,15 @@ const decrypt = async (input, logSecret = false) => {
 const decryptObject = async object => {
     const keyStore = await Apify.openKeyValueStore('keyStore');
     const decrypt = await prepareDecrypt(keyStore);
-    log.info(`Encrypted input:`);
+    log.info('Encrypted input:');
     console.log(object);
-        
-    for (let key in object) {
+
+    for (const key in object) {
         try {
             object[key] = decrypt(object[key]);
             log.info(`Input decrypted: [${key}]`);
         } catch (error) {
-            log.warning(`Failed to decrypt [${key}]`)
+            log.warning(`Failed to decrypt [${key}]`);
         }
     }
 };
@@ -122,16 +122,16 @@ const resolveTaskTree = (bootTasks, taskNames) => {
                     {
                         [baseTask.name]: [
                             baseTask,
-                            ...getTreeByTaskName(mergeTasks, ++level)
-                        ]
+                            ...getTreeByTaskName(mergeTasks, ++level),
+                        ],
                     }]
                 : [
                     ...pool,
                     {
                         [baseTask.name]: [
-                            baseTask
-                        ]
-                    }
+                            baseTask,
+                        ],
+                    },
                 ];
         }, []);
 
@@ -167,7 +167,7 @@ const resolveTaskTree = (bootTasks, taskNames) => {
 
 const getProxyConfiguration = async ({ proxyConfig = {} }) => {
     const [inputProxyUrl] = proxyConfig && proxyConfig.proxyUrls || [];
-
+    // FIXME
     const proxyUrl = inputProxyUrl && inputProxyUrl.includes('proxy.apify.com')
         ? inputProxyUrl
             .split('//')
@@ -178,7 +178,7 @@ const getProxyConfiguration = async ({ proxyConfig = {} }) => {
     const proxyConfiguration = await Apify.createProxyConfiguration({
         proxyUrls: proxyUrl && [proxyUrl] || proxyConfig.proxyUrls,
         groups: proxyConfig.groups || proxyConfig.apifyProxyGroups,
-        countryCode: proxyConfig.countryCode || proxyConfig.country
+        countryCode: proxyConfig.countryCode || proxyConfig.country,
     });
 
     return proxyConfiguration;
@@ -191,12 +191,12 @@ const getPage = async options => {
 };
 
 const getUserAgent = () => {
-    let userAgent = Apify.utils.getRandomUserAgent();
-    const match = userAgent.includes('AppleWebKit') &&
-        userAgent.includes('(Windows') &&
-        userAgent.match('Chrome/[.0-9]* Safari') &&
-        !userAgent.includes('Edge/') &&
-        !userAgent.includes('OPR/');
+    const userAgent = Apify.utils.getRandomUserAgent();
+    const match = userAgent.includes('AppleWebKit')
+        && userAgent.includes('(Windows')
+        && userAgent.match('Chrome/[.0-9]* Safari')
+        && !userAgent.includes('Edge/')
+        && !userAgent.includes('OPR/');
 
     return match ? userAgent : getUserAgent();
 };
@@ -210,9 +210,9 @@ const getOptions = {
                     ...pool,
                     ...(CUSTOM_OPTIONS && CUSTOM_OPTIONS.blockRequests ?
                         CUSTOM_OPTIONS.blockRequests[next] || DEFAULT_OPTIONS.blockRequests[next] :
-                        DEFAULT_OPTIONS.blockRequests[next])
-                ]
-            }, [])
+                        DEFAULT_OPTIONS.blockRequests[next]),
+                ];
+            }, []),
     }),
 };
 
@@ -220,17 +220,16 @@ const redactOptions = options => ({
     ...options,
     launchPuppeteer: {
         ...options.launchPuppeteer,
-        ...(options.launchPuppeteer.proxyUrl ? {proxyUrl: '<redacted>'} : {})
-    }
+        ...(options.launchPuppeteer.proxyUrl ? {proxyUrl: '<redacted>'} : {}),
+    },
 });
 
 const deepTransform = (object, transformer, ...args) => {
     Object.keys(object).forEach(key => {
         transformer(object, key, ...args);
 
-        if (typeof object[key] === 'object') {
+        if (typeof object[key] === 'object')
             return deepTransform(object[key], transformer, ...args);
-        }
     });
 
     return object;
@@ -238,15 +237,14 @@ const deepTransform = (object, transformer, ...args) => {
 
 const redactObject = (object, redactKeys = ['proxyUrl', 'proxyUrls']) => {
     const transformer = (object, key, redactKeys) => {
-        if (redactKeys.some(redactKey => key === redactKey)) {
-            object[key] = '<redacted>'
-        }
+        if (redactKeys.some(redactKey => key === redactKey))
+            object[key] = '<redacted>';
     };
 
     return deepTransform(object, transformer, redactKeys);
 };
 
-const urlLogger = async (page) => {
+const urlLogger = async page => {
     const lastUrl = await page.evaluate(() => window.location.href).catch(() => null);
     lastUrl && console.log({lastUrl});
 };
@@ -266,7 +264,7 @@ const responseErrorLogger = async (domain, response) => {
                 headers,
                 text,
                 requestUrl,
-                requestHeaders
+                requestHeaders,
                 // requestPostData
             });
         }
@@ -278,7 +276,7 @@ const initEventLoggers = (page, target, string) => {
         const parsedUrl = new URL(string);
         string = parsedUrl.hostname;
     } catch (error) {
-        string = target
+        string = target;
     }
 
     // TODO
@@ -299,7 +297,7 @@ const extendLog = (log, id) => {
                     arg);
 
             log.default(args);
-        }
+        },
     };
 
     log.id = {
@@ -317,10 +315,10 @@ const extendLog = (log, id) => {
     };
 
     log.object = {
-        info: (object) => log.info(`${JSON.stringify(object, null, 2)}`),
-        debug: (object) => log.debug(`${JSON.stringify(object, null, 2)}`),
-        error: (object) => log.error(`${JSON.stringify(object, null, 2)}`),
-        warn: (object) => log.warning(`${JSON.stringify(object, null, 2)}`),
+        info: object => log.info(`${JSON.stringify(object, null, 2)}`),
+        debug: object => log.debug(`${JSON.stringify(object, null, 2)}`),
+        error: object => log.error(`${JSON.stringify(object, null, 2)}`),
+        warn: object => log.warning(`${JSON.stringify(object, null, 2)}`),
     };
 
     return log;
@@ -330,18 +328,18 @@ const decorate = (instance, methods, decorator) => {
     methods.map(methodName => {
         const originalMethod = instance[methodName];
 
-        if (originalMethod.constructor.name === "Function") {
+        if (originalMethod.constructor.name === 'Function') {
             instance[methodName] = (...originalArgs) => {
                 const contextArgs = {methodName};
                 originalArgs = decorator(contextArgs)(originalArgs) || originalArgs;
                 return originalMethod.apply(instance, originalArgs);
-            }
-        } else if (originalMethod.constructor.name === "AsyncFunction") {
+            };
+        } else if (originalMethod.constructor.name === 'AsyncFunction') {
             instance[methodName] = async (...originalArgs) => {
                 const contextArgs = {methodName};
                 originalArgs = await decorator(contextArgs)(originalArgs) || originalArgs;
                 return await originalMethod.apply(instance, originalArgs);
-            }
+            };
         }
     });
 
@@ -357,9 +355,9 @@ const decoratePage = (page, server) => {
             throw CustomError({
                 name: 'Status',
                 data: {
-                    status
+                    status,
                 },
-                message: `Page failed to load with status ${status}`
+                message: `Page failed to load with status ${status}`,
             });
         }
 
@@ -381,14 +379,13 @@ const decoratePage = (page, server) => {
                         await server.serve(page);
 
                     return result;
-
                 } catch (error) {
                     if (server)
                         await server.serve(page);
 
                     throw error;
                 }
-            }
+            };
         } else {
             page[methodName] = async (...args) => {
                 // log.info(`${methodName}${Array.isArray(args) ? '(' + args.map(arg => JSON.stringify(arg)).join(', ') + ')' : ''}`);
@@ -415,12 +412,11 @@ const decoratePage = (page, server) => {
 
                 console.log({[methodName]: argsForLog(args)});
 
-                if (methodName === 'goto') {
+                if (methodName === 'goto')
                     return await decorateGoto(page, args, originalMethod);
-                } else {
-                    return await originalMethod.apply(page, args);
-                }
-            }
+
+                return await originalMethod.apply(page, args);
+            };
         }
     });
 
@@ -504,7 +500,7 @@ const sendNotification = async ({INPUT, channel, error}) => {
         && Apify.isAtHome();
 
     if (shouldSendNotification) {
-        const slackToken = process.env.slackToken;
+        const {slackToken} = process.env;
         await postError({slackToken, target, channel});
     }
 };

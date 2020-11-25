@@ -2,7 +2,7 @@ const Apify = require('apify');
 const R = require('ramda');
 
 const {
-    DEFAULT_OPTIONS
+    DEFAULT_OPTIONS,
 } = require('../consts');
 
 const {
@@ -20,7 +20,7 @@ const CustomError = ({name = 'CustomError', data = {}, message = 'Custom Error'}
     return error;
 };
 
-    const Options = ({ INPUT, input, setup, INPUT: { block, stream, proxyConfig } }) => {
+const Options = ({ INPUT, input, setup, INPUT: { block, stream, proxyConfig } }) => {
     const defaultOptions = {
         launchPuppeteer: {
             // useApifyProxy: proxyConfig ? proxyConfig.useApifyProxy : true,
@@ -28,7 +28,7 @@ const CustomError = ({name = 'CustomError', data = {}, message = 'Custom Error'}
             // apifyProxySession,
             defaultViewport: {
                 width: 1024 + Math.floor(Math.random() * 900),
-                height: 768 + Math.floor(Math.random() * 300)
+                height: 768 + Math.floor(Math.random() * 300),
             },
             headless: Apify.isAtHome() ? setup.OPTIONS.launchPuppeteer.headless : false,
             devtools: !Apify.isAtHome(),
@@ -36,7 +36,7 @@ const CustomError = ({name = 'CustomError', data = {}, message = 'Custom Error'}
             // args: [
             //     '--remote-debugging-port=9222'
             // ]
-        }
+        },
     };
 
     const options = R.mergeDeepRight(R.mergeDeepRight(DEFAULT_OPTIONS, defaultOptions), setup.OPTIONS);
@@ -52,5 +52,5 @@ const CustomError = ({name = 'CustomError', data = {}, message = 'Custom Error'}
 
 module.exports = {
     CustomError,
-    Options
+    Options,
 };

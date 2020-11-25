@@ -6,6 +6,7 @@ const socketio = require('socket.io');
 const bodyParser = require('body-parser');
 
 const {promisify} = require('util');
+
 const {LiveViewServer} = Apify;
 // const {log} = Apify.utils;
 
@@ -15,7 +16,7 @@ const Snapshot = require('./snapshot');
 const log = require('../tools/log');
 
 const {
-    CustomError
+    CustomError,
 } = require('../errors');
 
 const {
@@ -39,15 +40,15 @@ class Server extends LiveViewServer {
             [events.abort]: () => {
                 throw CustomError({
                     data: {
-                        abortActor: true
-                    }
+                        abortActor: true,
+                    },
                 });
             },
             [events.cancel]: () => {
                 throw CustomError({
                     data: {
-                        abortPayment: true
-                    }
+                        abortPayment: true,
+                    },
                 });
             },
             [events.confirm]: () => {
@@ -106,19 +107,17 @@ class Server extends LiveViewServer {
             const screenshotIndex = this.lastScreenshotIndex++;
 
             await writeFile(this._getScreenshotPath(screenshotIndex), screenshot);
-            if (screenshotIndex > this.maxScreenshotFiles - 1) {
+            if (screenshotIndex > this.maxScreenshotFiles - 1)
                 this._deleteScreenshot(screenshotIndex - this.maxScreenshotFiles);
-            }
 
             const snapshot = new Snapshot({pageUrl, htmlContent, screenshotIndex});
             this.lastSnapshot = snapshot;
             return snapshot;
-        } else {
-            const htmlContent = await page.content();
-            const snapshot = new Snapshot({pageUrl, htmlContent});
-            this.lastSnapshot = snapshot;
-            return snapshot;
         }
+        const htmlContent = await page.content();
+        const snapshot = new Snapshot({pageUrl, htmlContent});
+        this.lastSnapshot = snapshot;
+        return snapshot;
     }
 
     _setupHttpServer() {
@@ -130,7 +129,7 @@ class Server extends LiveViewServer {
             throw new Error('Cannot start LiveViewServer - invalid port specified by the '
                 + `${ENV_VARS.CONTAINER_PORT} environment variable (was "${containerPort}").`);
         }
-        this.liveViewUrl = process.env['APIFY_CONTAINER_URL'] || `http://localhost:${containerPort}`;
+        this.liveViewUrl = process.env.APIFY_CONTAINER_URL || `http://localhost:${containerPort}`;
         // this.liveViewUrl = process.env[ENV_VARS.CONTAINER_URL] || LOCAL_ENV_VARS[ENV_VARS.CONTAINER_URL];
 
         this.httpServer = http.createServer();
@@ -159,11 +158,11 @@ class Server extends LiveViewServer {
     _socketConnectionHandler(socket) {
         this.clientCount++;
         this.log.info('Live view client connected', {clientId: socket.id});
-        socket.on('disconnect', (reason) => {
+        socket.on('disconnect', reason => {
             this.clientCount--;
             this.log.info('Live view client disconnected', {clientId: socket.id, reason});
         });
-        socket.on('answerPrompt', (data) => {
+        socket.on('answerPrompt', data => {
             this.log.debug('answerPrompt', data);
 
             try {
@@ -178,7 +177,7 @@ class Server extends LiveViewServer {
             if (this.lastSnapshot) {
                 this.log.debug('Sending live view snapshot', {
                     createdAt: this.lastSnapshot.createdAt,
-                    pageUrl: this.lastSnapshot.pageUrl
+                    pageUrl: this.lastSnapshot.pageUrl,
                 });
 
                 this.socketio.emit('prompt', {showPrompt: !!this._resolveMessagePromise});
@@ -189,5 +188,5 @@ class Server extends LiveViewServer {
 }
 
 module.exports = {
-    Server
+    Server,
 };

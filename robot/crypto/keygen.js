@@ -2,7 +2,7 @@ const Apify = require('apify');
 
 const {
     generateKeys,
-    testEncryption
+    testEncryption,
 } = require('./crypto');
 
 Apify.main(async () => {

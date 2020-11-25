@@ -1,9 +1,11 @@
 const Apify = require('apify');
+
 const {log} = Apify.utils;
 
 const {
+    // TODO
     PATTERN_SORTING,
-    TIMEOUTS
+    TIMEOUTS,
 } = require('../../consts');
 
 const {
@@ -11,13 +13,12 @@ const {
 } = require('../../setup');
 
 const {
-    CustomError
+    CustomError,
 } = require('../../errors');
 
 const {
-    saveScreenshot
+    saveScreenshot,
 } = require('../../tools');
-
 
 const getPageUrl = async page => await page.evaluate(() => window.location.href);
 const sortByList = (list, array) => array.sort((a, b) => list.indexOf(a) - list.indexOf(b));
@@ -28,15 +29,17 @@ const login = async ({page, timeout, predicate, selectors, credentials: {usernam
     await page.type(selectors.password, password);
     const promises = [];
 
-    if (predicate)
+    if (predicate) {
         promises.push(page.waitForResponse(predicate, {
-            timeout: timeout || TIMEOUTS.ten
+            timeout: timeout || TIMEOUTS.ten,
         }));
+    }
 
-    if (selectors.loggedIn)
+    if (selectors.loggedIn) {
         promises.push(page.waitForSelector(selectors.loggedIn, {
-            timeout: timeout || TIMEOUTS.ten
+            timeout: timeout || TIMEOUTS.ten,
         }));
+    }
 
     if (selectors.submit)
         promises.push(page.click(selectors.submit));
@@ -47,9 +50,8 @@ const login = async ({page, timeout, predicate, selectors, credentials: {usernam
 };
 
 const handleDialog = async ({type, message}, dialog) => {
-    if (dialog.type() === type && dialog.message().includes(message)) {
+    if (dialog.type() === type && dialog.message().includes(message))
         await dialog.dismiss();
-    }
 };
 
 const searchPolicyNumber = async ({page, selectors, policyNumber}) => {
@@ -62,7 +64,7 @@ const searchPolicyNumber = async ({page, selectors, policyNumber}) => {
         await page.keyboard.press('Enter');
 
     return await page.waitForSelector(selectors.found, {
-        timeout: TIMEOUTS.half
+        timeout: TIMEOUTS.half,
     }).catch(error => null);
 };
 
@@ -71,7 +73,7 @@ const matchPattern = async (page, patterns) => {
 
     const evaluatedPatterns = await Promise.all(patterns.map(async pattern => ({
         ...pattern,
-        sourceContent: await page.$eval(pattern.selector, pattern.function || getInnerText).catch(() => '')
+        sourceContent: await page.$eval(pattern.selector, pattern.function || getInnerText).catch(() => ''),
     })));
 
     const patternMatch = evaluatedPatterns.find(pattern => {
@@ -91,10 +93,10 @@ const matchPattern = async (page, patterns) => {
 };
 
 /**
- * 
- * @param {object} page 
- * @param {object} patternGroups 
- * @param {array} patternOrder 
+ *
+ * @param {object} page
+ * @param {object} patternGroups
+ * @param {array} patternOrder
  * @returns {string}
  */
 const iteratePatterns = async (page, patternGroups = {}, patternOrder = []) => {
@@ -152,5 +154,5 @@ module.exports = {
     matchPattern,
     iteratePatterns,
     verifyResult,
-    saveScreenshot
+    saveScreenshot,
 };

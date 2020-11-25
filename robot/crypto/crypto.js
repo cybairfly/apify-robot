@@ -2,10 +2,10 @@ const Apify = require('apify');
 const crypto = require('crypto');
 
 const {
-    DEFAULT_OPTIONS
+    DEFAULT_OPTIONS,
 } = require('../consts');
 
-const generateKeys = async (keyStore) => {
+const generateKeys = async keyStore => {
     const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
         modulusLength: 1024,
         // publicKeyEncoding: {
@@ -33,7 +33,7 @@ const getPublicKey = (publicKeyEncoded, options) => {
     const publicKeyBuffer = Buffer.from(publicKeyEncoded, 'base64');
     return crypto.createPublicKey({
         key: publicKeyBuffer,
-        ...options
+        ...options,
     });
 };
 
@@ -41,26 +41,26 @@ const getPrivateKey = (privateKeyEncoded, options) => {
     const privateKeyBuffer = Buffer.from(privateKeyEncoded, 'base64');
     return crypto.createPrivateKey({
         key: privateKeyBuffer,
-        ...options
+        ...options,
     });
 };
 
-const publicEncrypt = function(publicKey, input, options = {}) {
+const publicEncrypt = function (publicKey, input, options = {}) {
     const bufferFromString = Buffer.from(input);
     const encryptedBuffer = crypto.publicEncrypt({
         key: publicKey,
-        ...options
+        ...options,
     }, bufferFromString);
 
     return encryptedBuffer.toString('base64');
 };
 
-const privateDecrypt = function(privateKey, input, options = {}) {
+const privateDecrypt = function (privateKey, input, options = {}) {
     const toDecryptBuffer = Buffer.from(input, 'base64');
 
     const decryptedBuffer = crypto.privateDecrypt({
         key: privateKey,
-        ...options
+        ...options,
     }, toDecryptBuffer);
 
     return decryptedBuffer.toString();
@@ -74,7 +74,7 @@ const prepareEncrypt = async keyStore => {
 };
 
 const prepareDecrypt = async keyStore => {
-    const privateKeyEncoded = process.env.PRIVATE_KEY ||  await keyStore.getValue('PRIVATE_KEY');
+    const privateKeyEncoded = process.env.PRIVATE_KEY || await keyStore.getValue('PRIVATE_KEY');
     const privateKey = getPrivateKey(privateKeyEncoded, DEFAULT_OPTIONS.crypto.privateKey);
 
     return input => privateDecrypt(privateKey, input, DEFAULT_OPTIONS.crypto.decrypt);
@@ -100,5 +100,5 @@ module.exports = {
     publicEncrypt,
     privateDecrypt,
     prepareDecrypt,
-    testEncryption
+    testEncryption,
 };
