@@ -147,9 +147,9 @@ class Robot {
                 log.error(error.message);
                 log.error(error.stack);
 
-                log.default('◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄');
+                log.default('◄'.repeat(100));
                 log.info(`RETRY [R-${INPUT.retry}]`);
-                log.default('◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄');
+                log.default('◄'.repeat(100));
 
                 return await this.retry(this);
             }
@@ -253,9 +253,9 @@ class Robot {
 
         for (const task of tasks) {
             this.task = {...task};
-            log.default('###################################################################################');
+            log.default('#'.repeat(100));
             log.info(`TASK [${task.name}]`);
-            log.default('###################################################################################');
+            log.default('#'.repeat(100));
 
             this.task.init = !task.init || task.init({INPUT, OUTPUT, input, output, relay});
             this.task.skip = task.skip && task.skip({INPUT, OUTPUT, input, output, relay});
@@ -272,9 +272,9 @@ class Robot {
 
             for (const step of task.steps) {
                 this.step = {...step};
-                log.default('-----------------------------------------------------------------------------------');
+                log.default('-'.repeat(100));
                 log.info(`STEP [${step.name}]`);
-                log.default('-----------------------------------------------------------------------------------');
+                log.default('-'.repeat(100));
 
                 // TODO consider nested under actor/robot
                 this.context = {
