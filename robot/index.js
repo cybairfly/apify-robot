@@ -61,8 +61,9 @@ class Robot {
 
         this.step = null;
         this.task = null;
-        this.tasks = {};
         this.flow = null;
+        this.tasks = {};
+        this.steps = {};
         this.flows = {};
         this.relay = {};
 
@@ -249,7 +250,6 @@ class Robot {
     };
 
     handleTasks = async ({INPUT, OUTPUT, input, page, setup}) => {
-        let output = {};
         const {tasks, context} = this;
         const {target} = INPUT;
         const relay = this.relay = {};
@@ -274,10 +274,13 @@ class Robot {
             }
 
             for (const step of task.steps) {
+                let output = {};
                 this.step = {...step};
                 log.default('-'.repeat(100));
                 log.info(`STEP [${step.name}]`);
                 log.default('-'.repeat(100));
+
+                // const output = this.output = this.steps[step.name].output = {};
 
                 // TODO consider nested under actor/robot
                 this.context = {
@@ -346,8 +349,8 @@ class Robot {
                             throw Error(`Handler not found for step [${step.name}] of task [${task.name}]`);
 
                         const flow = this.flow = new Flow(this.context);
-                        flow.target = target;
-                        flow.name = task.name;
+                        // flow.target = target;
+                        // flow.name = task.name;
                         // flow.code = flow;
                         flow.step = flow[step.name];
                         this.flows[task.name] = flow;
@@ -365,10 +368,12 @@ class Robot {
                     output = await this.flow[step.name](this.context, this.target);
                 }
 
-                if (!output || typeof output !== 'object') {
+                if (output && typeof output !== 'object') {
                     log.join.warning('STEP: ignoring step output (not an object)', output);
                     output = {};
                 }
+
+                output = output || {};
 
                 OUTPUT = {
                     ...OUTPUT,
