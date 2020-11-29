@@ -182,6 +182,10 @@ class Robot {
 
         const bootTasks = transformTasks(this.Target.tasks || setupTasks);
         const tasks = this.tasks = resolveTaskTree(bootTasks, taskNames);
+        input.id = await setup.getInputId(input);
+
+        if (!this.isRetry)
+            log.redact.object(INPUT);
 
         if (!this.isRetry) {
             log.info('Task list from task tree:');
@@ -199,11 +203,11 @@ class Robot {
             this.session = await this.sessionPool.getSession(session && this.sessionId);
         }
 
-        input.id = await setup.getInputId(input);
-        if (!this.isRetry) log.redact.object(INPUT);
         const options = this.options = Options({INPUT, input, setup});
-        if (!this.isRetry) log.redact.object(options);
         this.proxyConfig = await getProxyConfiguration(this);
+
+        if (!this.isRetry)
+            log.redact.object(options);
 
         this.OUTPUT = setup.OutputTemplate && setup.OutputTemplate({INPUT, input}) || {};
         this.OUTPUT = await this.retry(this);
