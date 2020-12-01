@@ -121,16 +121,14 @@ class Server extends LiveViewServer {
     }
 
     _setupHttpServer() {
-        const containerPort = 4321;
-        // const containerPort = process.env[ENV_VARS.CONTAINER_PORT] || LOCAL_ENV_VARS[ENV_VARS.CONTAINER_PORT];
+        const containerPort = process.env.CONTAINER_PORT || 4321;
 
         this.port = parseInt(containerPort, 10);
         if (!(this.port >= 0 && this.port <= 65535)) {
             throw new Error('Cannot start LiveViewServer - invalid port specified by the '
-                + `${ENV_VARS.CONTAINER_PORT} environment variable (was "${containerPort}").`);
+                + `${'CONTAINER_PORT'} environment variable (was "${containerPort}").`);
         }
         this.liveViewUrl = process.env.APIFY_CONTAINER_URL || `http://localhost:${containerPort}`;
-        // this.liveViewUrl = process.env[ENV_VARS.CONTAINER_URL] || LOCAL_ENV_VARS[ENV_VARS.CONTAINER_URL];
 
         this.httpServer = http.createServer();
         const app = express();
