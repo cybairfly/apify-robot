@@ -250,6 +250,7 @@ class Robot {
     };
 
     handleTasks = async ({INPUT, OUTPUT, input, page, setup}) => {
+        let output = {};
         const {tasks, context} = this;
         const {target} = INPUT;
         const relay = this.relay = {};
@@ -274,7 +275,6 @@ class Robot {
             }
 
             for (const step of task.steps) {
-                let output = {};
                 this.step = {...step};
                 log.default('-'.repeat(100));
                 log.info(`STEP [${step.name}]`);
