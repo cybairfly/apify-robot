@@ -140,9 +140,9 @@ class Robot {
         try {
             return await retry(this);
         } catch (error) {
-            await this.stop();
-
             if (INPUT.retry) {
+                await this.stop();
+
                 INPUT.retry--;
                 this.isRetry = true;
                 log.error(error.message);
@@ -433,6 +433,7 @@ class Robot {
             }
         }
 
+        await this.stop();
         throw error;
     };
 
