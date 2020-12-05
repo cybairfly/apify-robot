@@ -40,7 +40,7 @@ const DEFAULT_OPTIONS = {
         },
     },
     blockRequests: {
-        patterns: ['.jpg', '.jpeg', '.png', '.svg', '.gif', '.ico', '.pdf', '.zip', '.webm', '.webp', '.woff', 'data:image/'],
+        patterns: ['.jpg', '.jpeg', '.png', '.svg', '.gif', '.ico', '.pdf', '.zip', '.webm', '.webp', '.woff', 'blob:', 'data:image/'],
         analytics: [
             'adobedtm',
             'adnxs.com',
