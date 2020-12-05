@@ -92,6 +92,21 @@ const decryptObject = async object => {
     }
 };
 
+const transformOptions = {
+    blockRequests: patterns =>
+        Array.isArray(patterns) ?
+            patterns : {
+                urlPatterns: Object
+                    .keys(patterns)
+                    .reduce((pool, next) => {
+                        return pool = [
+                            ...pool,
+                            ...patterns[next],
+                        ];
+                    }, []),
+            },
+};
+
 const transformTasks = tasks =>
     Object
         .entries(tasks)
@@ -511,6 +526,7 @@ module.exports = {
     getOptions,
     getUserAgent,
     getProxyConfiguration,
+    transformOptions,
     transformTasks,
     resolveTaskTree,
     getPage,
