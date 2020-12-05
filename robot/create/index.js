@@ -7,7 +7,7 @@ const {
 
 const {
     getUserAgent,
-    deepTransform,
+    transformOptions,
 } = require('../tools/tools');
 
 // #####################################################################################################################
@@ -46,6 +46,9 @@ const Options = ({ INPUT, input, setup, INPUT: { block, stream, proxyConfig } })
             ? proxyConfig.userAgent
             : getUserAgent();
     }
+
+    if (block)
+        options.blockRequests = transformOptions.blockRequests(options.blockRequests);
 
     return options;
 };

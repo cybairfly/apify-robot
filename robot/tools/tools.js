@@ -67,8 +67,8 @@ const decrypt = async (input, logSecret = false) => {
         return decrypted;
     } catch (error) {
         const logOutput = logSecret ?
-            `Failed to decrypt: [${decrypted}]` :
-            `Failed to decrypt: [${input}]`;
+            `Failed to decrypt: [${input}]` :
+            'Failed to decrypt input';
 
         log.warning(logOutput);
 
@@ -90,6 +90,21 @@ const decryptObject = async object => {
             log.warning(`Failed to decrypt [${key}]`);
         }
     }
+};
+
+const transformOptions = {
+    blockRequests: patterns =>
+        Array.isArray(patterns) ?
+            patterns : {
+                urlPatterns: Object
+                    .keys(patterns)
+                    .reduce((pool, next) => {
+                        return pool = [
+                            ...pool,
+                            ...patterns[next],
+                        ];
+                    }, []),
+            },
 };
 
 const transformTasks = tasks =>
@@ -511,6 +526,7 @@ module.exports = {
     getOptions,
     getUserAgent,
     getProxyConfiguration,
+    transformOptions,
     transformTasks,
     resolveTaskTree,
     getPage,

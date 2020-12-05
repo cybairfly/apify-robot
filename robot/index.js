@@ -61,8 +61,9 @@ class Robot {
 
         this.step = null;
         this.task = null;
-        this.tasks = {};
         this.flow = null;
+        this.tasks = {};
+        this.steps = {};
         this.flows = {};
         this.relay = {};
 
@@ -139,17 +140,17 @@ class Robot {
         try {
             return await retry(this);
         } catch (error) {
-            await this.stop();
-
             if (INPUT.retry) {
+                await this.stop();
+
                 INPUT.retry--;
                 this.isRetry = true;
                 log.error(error.message);
                 log.error(error.stack);
 
-                log.default('◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄');
+                log.default('◄'.repeat(100));
                 log.info(`RETRY [R-${INPUT.retry}]`);
-                log.default('◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄');
+                log.default('◄'.repeat(100));
 
                 return await this.retry(this);
             }
@@ -182,6 +183,7 @@ class Robot {
 
         const bootTasks = transformTasks(this.Target.tasks || setupTasks);
         const tasks = this.tasks = resolveTaskTree(bootTasks, taskNames);
+        input.id = await setup.getInputId(input);
 
         if (!this.isRetry) {
             log.info('Task list from task tree:');
@@ -199,11 +201,13 @@ class Robot {
             this.session = await this.sessionPool.getSession(session && this.sessionId);
         }
 
-        input.id = await setup.getInputId(input);
-        if (!this.isRetry) log.redact.object(INPUT);
         const options = this.options = Options({INPUT, input, setup});
-        if (!this.isRetry) log.redact.object(options);
         this.proxyConfig = await getProxyConfiguration(this);
+
+        if (!this.isRetry) {
+            log.redact.object(INPUT);
+            log.redact.object(options);
+        }
 
         this.OUTPUT = setup.OutputTemplate && setup.OutputTemplate({INPUT, input}) || {};
         this.OUTPUT = await this.retry(this);
@@ -253,9 +257,9 @@ class Robot {
 
         for (const task of tasks) {
             this.task = {...task};
-            log.default('###################################################################################');
+            log.default('#'.repeat(100));
             log.info(`TASK [${task.name}]`);
-            log.default('###################################################################################');
+            log.default('#'.repeat(100));
 
             this.task.init = !task.init || task.init({INPUT, OUTPUT, input, output, relay});
             this.task.skip = task.skip && task.skip({INPUT, OUTPUT, input, output, relay});
@@ -272,9 +276,11 @@ class Robot {
 
             for (const step of task.steps) {
                 this.step = {...step};
-                log.default('-----------------------------------------------------------------------------------');
+                log.default('-'.repeat(100));
                 log.info(`STEP [${step.name}]`);
-                log.default('-----------------------------------------------------------------------------------');
+                log.default('-'.repeat(100));
+
+                // const output = this.output = this.steps[step.name].output = {};
 
                 // TODO consider nested under actor/robot
                 this.context = {
@@ -343,8 +349,8 @@ class Robot {
                             throw Error(`Handler not found for step [${step.name}] of task [${task.name}]`);
 
                         const flow = this.flow = new Flow(this.context);
-                        flow.target = target;
-                        flow.name = task.name;
+                        // flow.target = target;
+                        // flow.name = task.name;
                         // flow.code = flow;
                         flow.step = flow[step.name];
                         this.flows[task.name] = flow;
@@ -362,10 +368,12 @@ class Robot {
                     output = await this.flow[step.name](this.context, this.target);
                 }
 
-                if (!output || typeof output !== 'object') {
+                if (output && typeof output !== 'object') {
                     log.join.warning('STEP: ignoring step output (not an object)', output);
                     output = {};
                 }
+
+                output = output || {};
 
                 OUTPUT = {
                     ...OUTPUT,
@@ -425,6 +433,7 @@ class Robot {
             }
         }
 
+        await this.stop();
         throw error;
     };
 
