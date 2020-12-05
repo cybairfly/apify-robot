@@ -67,8 +67,8 @@ const decrypt = async (input, logSecret = false) => {
         return decrypted;
     } catch (error) {
         const logOutput = logSecret ?
-            `Failed to decrypt: [${decrypted}]` :
-            `Failed to decrypt: [${input}]`;
+            `Failed to decrypt: [${input}]` :
+            'Failed to decrypt input';
 
         log.warning(logOutput);
 
