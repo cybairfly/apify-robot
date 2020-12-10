@@ -59,8 +59,8 @@ class Robot {
         this.server = null;
         this.strategy = null;
 
-        this.step = null;
-        this.task = null;
+        this._step = null;
+        this._task = null;
         this.flow = null;
         this.tasks = {};
         this.steps = {};
@@ -69,6 +69,28 @@ class Robot {
 
         this.retry = this.catch(this.retry);
         this.saveOutput = saveOutput;
+    }
+
+    get task() {
+        return this._task;
+    }
+
+    get step() {
+        return this._step;
+    }
+
+    set task(task) {
+        this._task = task;
+
+        if (this.target)
+            this.target.task = {...task};
+    }
+
+    set step(step) {
+        this._step = step;
+
+        if (this.target)
+            this.target.step = {...step};
     }
 
     static Setup = Setup;
@@ -255,9 +277,22 @@ class Robot {
         const {target} = INPUT;
         const relay = this.relay = {};
 
+        // TODO consider nested under actor/robot
+        this.context = {
+            INPUT,
+            OUTPUT,
+            input,
+            output,
+            page,
+            relay: this.relay,
+            server: this.server,
+        };
+
         for (const task of tasks) {
-            this.task = {...task};
-            log.default('#'.repeat(100));
+            this.task = task;
+            // this.context.task = task;
+
+            log.default('###################################################################################');
             log.info(`TASK [${task.name}]`);
             log.default('#'.repeat(100));
 
@@ -275,25 +310,12 @@ class Robot {
             }
 
             for (const step of task.steps) {
-                this.step = {...step};
-                log.default('-'.repeat(100));
+                this.step = step;
+                // this.context.step = step;
+
+                log.default('-----------------------------------------------------------------------------------');
                 log.info(`STEP [${step.name}]`);
                 log.default('-'.repeat(100));
-
-                // const output = this.output = this.steps[step.name].output = {};
-
-                // TODO consider nested under actor/robot
-                this.context = {
-                    INPUT,
-                    OUTPUT,
-                    input,
-                    output,
-                    page,
-                    task,
-                    step,
-                    relay: this.relay,
-                    server: this.server,
-                };
 
                 this.step.init = !step.init || step.init({INPUT, OUTPUT, input, output, relay});
                 this.step.skip = step.skip && step.skip({INPUT, OUTPUT, input, output, relay});
