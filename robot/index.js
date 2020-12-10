@@ -175,7 +175,7 @@ class Robot {
 
         if (target) {
             this.Target = tryRequire.global(`./${setup.getPath.targets.target(target)}`);
-            this.target = this.Target ? new this.Target(setup, target, this) : new Robot.Target(setup, target, this);
+            this.target = this.Target ? new this.Target(this.context, this) : new Robot.Target(this.context, this);
 
             if (this.target.adaptTasks)
                 this.target.tasks = setupTasks;
