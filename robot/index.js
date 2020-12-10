@@ -280,6 +280,7 @@ class Robot {
 
         if (target) {
             this.target = this.Target ? new this.Target(this.context, this) : new Robot.Target(this.context, this);
+            this.target.robot = this;
 
             if (this.target.adaptTasks)
                 this.target.tasks = setupTasks;
@@ -306,6 +307,17 @@ class Robot {
         const {tasks, context} = this;
         const {target} = INPUT;
         // const relay = this.relay = {};
+
+        // TODO consider nested under actor/robot
+        this.context = {
+            INPUT,
+            OUTPUT,
+            input,
+            output,
+            page,
+            relay: this.relay,
+            server: this.server,
+        };
 
         for (const task of tasks) {
             this.task = task;

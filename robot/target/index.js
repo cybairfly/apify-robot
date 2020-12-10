@@ -7,6 +7,7 @@ class Target {
     constructor(...[, robot]) {
         this.name = robot.target;
         this.setup = robot.setup;
+        this._robot = robot;
 
         this._steps = {};
         this._step = null;
@@ -17,8 +18,23 @@ class Target {
     }
 
     set step(step) {
-        this._step = step;
-        this._steps[step.name] = step;
+        if (step.name) {
+            this._step = step;
+            this._steps[step.name] = step;
+        } else {
+            log.default('~'.repeat(100));
+            log.info(`STEP [${step}]`);
+            log.default('~'.repeat(100));
+        }
+    }
+
+    get robot() {
+        log.warning('Accessing robot internals at runtime. Prefer using target context if possible!');
+        return this._robot;
+    }
+
+    set robot(robot) {
+        this._robot = robot;
     }
 
     getFlow = task =>
