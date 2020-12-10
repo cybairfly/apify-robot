@@ -47,6 +47,9 @@ class Robot {
         this.target = INPUT.target;
         this.OUTPUTS = this.setup.OUTPUTS;
         this.isRetry = false;
+
+        this.relay = {};
+        this.output = {};
         this.context = {};
 
         this.page = null;
@@ -65,7 +68,6 @@ class Robot {
         this.tasks = {};
         this.steps = {};
         this.flows = {};
-        this.relay = {};
 
         this.retry = this.catch(this.retry);
         this.saveOutput = saveOutput;
@@ -161,6 +163,9 @@ class Robot {
 
     retry = async () => {
         this.page = await this.initPage(this);
+        this.context = await this.createContext(this);
+        this.target = await this.initTarget(this);
+        this.tasks = await this.initTasks(this);
         this.OUTPUT = await this.handleTasks(this);
 
         return this.OUTPUT;
@@ -168,27 +173,11 @@ class Robot {
 
     start = async () => {
         const {INPUT, setup} = this;
-
-        log.join.info('ROOT:', setup.rootPath);
         const {input, tasks: taskNames, target, session, stealth} = INPUT;
-        const setupTasks = setup.tasks ? setup.tasks : setup.getTasks(target);
-
-        if (target) {
-            this.Target = tryRequire.global(`./${setup.getPath.targets.target(target)}`);
-            this.target = this.Target ? new this.Target(setup, target, this) : new Robot.Target(setup, target, this);
-
-            if (this.target.adaptTasks)
-                this.target.tasks = setupTasks;
-        }
-
-        const bootTasks = transformTasks(this.Target.tasks || setupTasks);
-        const tasks = this.tasks = resolveTaskTree(bootTasks, taskNames);
         input.id = await setup.getInputId(input);
 
-        if (!this.isRetry) {
-            log.info('Task list from task tree:');
-            tasks.flatMap(task => log.default(task));
-        }
+        if (target)
+            this.Target = tryRequire.global(`./${setup.getPath.targets.target(target)}`);
 
         if (session) {
             this.sessionId = Apify.isAtHome() ?
@@ -249,11 +238,52 @@ class Robot {
         return page;
     };
 
-    handleTasks = async ({INPUT, OUTPUT, input, page, setup}) => {
-        let output = {};
+    createContext = async ({INPUT, OUTPUT, input, output, page, relay, server}) => {
+        // TODO consider nested under actor/robot
+        this.context = {
+            INPUT,
+            OUTPUT,
+            input,
+            output,
+            page,
+            relay,
+            server,
+        };
+
+        return this.context;
+    }
+
+    initTarget = async ({INPUT: {target}, setup}) => {
+        const setupTasks = setup.tasks ? setup.tasks : setup.getTasks(target);
+
+        if (target) {
+            this.target = this.Target ? new this.Target(this.context, this) : new Robot.Target(this.context, this);
+
+            if (this.target.adaptTasks)
+                this.target.tasks = setupTasks;
+
+            return this.target;
+        }
+    }
+
+    initTasks = async ({INPUT: {target, tasks: taskNames}, setup}) => {
+        const setupTasks = setup.tasks ? setup.tasks : setup.getTasks(target);
+        const bootTasks = transformTasks(this.Target.tasks || setupTasks);
+        const tasks = this.tasks = resolveTaskTree(bootTasks, taskNames);
+
+        if (!this.isRetry) {
+            log.info('Task list from task tree:');
+            tasks.flatMap(task => log.default(task));
+        }
+
+        return this.tasks;
+    };
+
+    handleTasks = async ({INPUT, OUTPUT, input, page, relay, setup}) => {
+        let {output} = this;
         const {tasks, context} = this;
         const {target} = INPUT;
-        const relay = this.relay = {};
+        // const relay = this.relay = {};
 
         for (const task of tasks) {
             this.task = {...task};
@@ -282,18 +312,18 @@ class Robot {
 
                 // const output = this.output = this.steps[step.name].output = {};
 
-                // TODO consider nested under actor/robot
-                this.context = {
-                    INPUT,
-                    OUTPUT,
-                    input,
-                    output,
-                    page,
-                    task,
-                    step,
-                    relay: this.relay,
-                    server: this.server,
-                };
+                // // TODO consider nested under actor/robot
+                // this.context = {
+                //     INPUT,
+                //     OUTPUT,
+                //     input,
+                //     output,
+                //     page,
+                //     task,
+                //     step,
+                //     relay: this.relay,
+                //     server: this.server,
+                // };
 
                 this.step.init = !step.init || step.init({INPUT, OUTPUT, input, output, relay});
                 this.step.skip = step.skip && step.skip({INPUT, OUTPUT, input, output, relay});
