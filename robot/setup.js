@@ -75,6 +75,11 @@ class RobotSetup {
     /* robot options (global setup) */
     /* runtime priority: target setup > global setup > default options */
     // OPTIONS = {
+    //     browserPool: {
+    //         pluginOptions: {
+    //             launchOptions: {}
+    //         }
+    //     },
     //     blockRequests: {
     //         https://sdk.apify.com/docs/api/puppeteer#puppeteerblockrequestspage-options
     //     },
