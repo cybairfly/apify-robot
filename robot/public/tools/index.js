@@ -1,6 +1,3 @@
-const {ReCaptchaUnblocker} = require('@apify-packages/unblocker-recaptcha');
-const {getRandomInt} = require('@apify-packages/unblocker-recaptcha/src/utils');
-
 const {
     log,
     tryRequire,
@@ -23,8 +20,6 @@ module.exports = {
     saveOutput,
     savePageContent,
     saveScreenshot,
-    getRandomInt,
-    ReCaptchaUnblocker,
     ...require('./pptr'),
     ...require('./tools'),
 };
