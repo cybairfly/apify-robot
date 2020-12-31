@@ -382,7 +382,7 @@ class Robot {
         for (const task of tasks) {
             this.task = task;
 
-            log.default('###################################################################################');
+            log.default('#'.repeat(100));
             log.info(`TASK [${task.name}]`);
             log.default('#'.repeat(100));
 
@@ -402,7 +402,7 @@ class Robot {
             for (const step of task.steps) {
                 this.step = step;
 
-                log.default('-----------------------------------------------------------------------------------');
+                log.default('-'.repeat(100));
                 log.info(`STEP [${step.name}]`);
                 log.default('-'.repeat(100));
 
