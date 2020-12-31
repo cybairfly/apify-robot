@@ -9,32 +9,88 @@ class Target {
         this.setup = robot.setup;
         this._robot = robot;
 
+        this._task = {};
+        this._step = {};
         this._steps = {};
-        this._step = null;
+        this._output = {};
     }
 
+    /**
+     * @returns {{output: Object}}
+     */
+    get task() {
+        // log.warning('Accessing robot internals at runtime (task)');
+        return this._task;
+    }
+
+    set task(task) {
+        if (!task || typeof task !== 'object') {
+            log.error('Ignoring attempt to override task object at runtime');
+            return;
+        }
+
+        this._task = task;
+    }
+
+    /**
+     * @returns {{
+        * attachOutput: (output: Object) => Object;
+        * output: {
+            * attach: (output: Object) => Object
+        * }
+     * }}
+     */
     get step() {
         return this._step;
     }
 
     set step(step) {
-        if (step.name) {
-            this._step = step;
-            this._steps[step.name] = step;
-        } else {
-            log.default('~'.repeat(100));
-            log.info(`STEP [${step}]`);
-            log.default('~'.repeat(100));
+        if (!step || typeof step !== 'object') {
+            log.error('Ignoring attempt to override step object at runtime');
+            return;
         }
+
+        this._step = step;
+        this._steps[step.name] = step;
+    }
+
+    get output() {
+        return this._output;
+    }
+
+    set output(output) {
+        if (!output || typeof output !== 'object') {
+            log.warning('Return from or attach an object to task step to modify output.');
+            return;
+        }
+
+        this._output = output;
     }
 
     get robot() {
-        log.warning('Accessing robot internals at runtime. Prefer using target context if possible!');
+        log.warning('Accessing robot internals at runtime. Prefer using scope context if possible!');
         return this._robot;
     }
 
     set robot(robot) {
+        if (!robot || typeof robot !== 'object') {
+            log.error('Ignoring attempt to override robot instance at runtime');
+            return;
+        }
+
         this._robot = robot;
+    }
+
+    setStep(step) {
+        if (typeof step !== 'string') {
+            log.error('Custom steps only accept step name as an argument');
+            return;
+        }
+
+        // TODO fire custom event?
+        log.default('~'.repeat(100));
+        log.info(`STEP [${step}]`);
+        log.default('~'.repeat(100));
     }
 
     getFlow = task =>

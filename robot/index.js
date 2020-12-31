@@ -41,16 +41,17 @@ class Robot {
     constructor(INPUT, setup) {
         this.log = log;
         this.INPUT = INPUT;
-        this.OUTPUT = null;
         this.input = INPUT.input;
-        this.setup = setup;
         this.target = INPUT.target;
-        this.OUTPUTS = this.setup.OUTPUTS;
+        this.setup = setup;
         this.isRetry = false;
+        this.OUTPUT = null;
+        // expose in target class somehow
+        this.OUTPUTS = this.setup.OUTPUTS;
 
         this.relay = {};
-        this.output = {};
         this.context = {};
+        this._output = {};
 
         this.page = null;
         this.browser = null;
@@ -83,16 +84,87 @@ class Robot {
 
     set task(task) {
         this._task = task;
+        const taskCopy = {...task};
+        this.context.task = taskCopy;
 
         if (this.target)
-            this.target.task = {...task};
+            this.target.task = taskCopy;
     }
 
     set step(step) {
         this._step = step;
+        const outputPrototype = {};
+
+        Object.defineProperty(outputPrototype, 'attach', {
+            value(output) {
+                if (!output || typeof output !== 'object') {
+                    console.error('Ignoring output - not an object');
+                    return;
+                }
+
+                Object.entries(output).map(entry => {
+                    const [key, value] = entry;
+                    this[key] = value;
+                });
+
+                return this;
+            },
+            enumerable: false,
+        });
+
+        const output = Object.create(outputPrototype);
+
+        const stepCopy = {
+            ...step,
+            _output: output,
+            get output() {
+                return this._output;
+            },
+            set output(output) {
+                try {
+                    Object.entries(output).map(entry => {
+                        const [key, value] = entry;
+                        this._output[key] = value;
+                    });
+                } catch (error) {
+                    log.error(`Failed to set step output: ${output}`);
+                }
+            },
+        };
+
+        stepCopy.attachOutput = function (output) {
+            this.output = output;
+            return this.output;
+        };
+
+        this.context.step = stepCopy;
 
         if (this.target)
-            this.target.step = {...step};
+            this.target.step = stepCopy;
+    }
+
+    get output() {
+        return this._output;
+    }
+
+    set output(output) {
+        try {
+            Object.entries(output).map(entry => {
+                const [key, value] = entry;
+                this._output[key] = value;
+            });
+
+            this.context.output = this.output;
+
+            if (this.target) {
+                this.target.output = this.output;
+
+                if (this.target.task)
+                    this.target.task.output = this.output;
+            }
+        } catch (error) {
+            log.error(`Failed to set robot output: ${output}`);
+        }
     }
 
     static Setup = Setup;
@@ -228,7 +300,7 @@ class Robot {
         await this.stop();
     }
 
-    initPage = async ({INPUT: {block, target, stream, stealth}, setup}, page) => {
+    initPage = async ({INPUT: {block, target, stream, stealth}, page, setup}) => {
         const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
         const url = source.TARGET && source.TARGET.url;
 
@@ -264,12 +336,14 @@ class Robot {
         // TODO consider nested under actor/robot
         this.context = {
             INPUT,
-            OUTPUT,
-            input,
-            output,
-            page,
+            // OUTPUT,
+            input: Object.freeze(input),
+            output: null,
+            page: Object.freeze(page),
             relay,
-            server,
+            server: Object.freeze(server),
+            step: null,
+            task: null,
         };
 
         return this.context;
@@ -302,26 +376,11 @@ class Robot {
         return this.tasks;
     };
 
-    handleTasks = async ({INPUT, OUTPUT, input, page, relay, setup}) => {
-        let {output} = this;
-        const {tasks, context} = this;
+    handleTasks = async ({INPUT, OUTPUT, input, output, page, relay, setup, tasks}) => {
         const {target} = INPUT;
-        // const relay = this.relay = {};
-
-        // TODO consider nested under actor/robot
-        this.context = {
-            INPUT,
-            OUTPUT,
-            input,
-            output,
-            page,
-            relay: this.relay,
-            server: this.server,
-        };
 
         for (const task of tasks) {
             this.task = task;
-            // this.context.task = task;
 
             log.default('###################################################################################');
             log.info(`TASK [${task.name}]`);
@@ -342,7 +401,6 @@ class Robot {
 
             for (const step of task.steps) {
                 this.step = step;
-                // this.context.step = step;
 
                 log.default('-----------------------------------------------------------------------------------');
                 log.info(`STEP [${step.name}]`);
@@ -377,7 +435,7 @@ class Robot {
                 }
 
                 if (this.step.code)
-                    output = await this.step.code(this.context, this.target);
+                    this.step.output = await this.step.code(this.context);
 
                 else {
                     this.flow = this.flow || this.target;
@@ -420,19 +478,36 @@ class Robot {
                     }
 
                     log.join.info(`FLOW: Target handler found for step [${step.name}] of task [${task.name}] for target [${target}]`);
-                    output = await this.flow[step.name](this.context, this.target);
+                    this.step.output = await this.flow[step.name](this.context);
                 }
 
-                if (output && typeof output !== 'object') {
+                if (this.step.output && typeof this.step.output !== 'object') {
                     log.join.warning('STEP: ignoring step output (not an object)', output);
-                    output = {};
+                    this.step.output = {};
                 }
 
-                output = output || {};
+                if (this.target.step.output && typeof this.target.step.output !== 'object') {
+                    log.join.warning('STEP: ignoring step output (not an object)', output);
+                    this.target.step.output = {};
+                }
 
-                OUTPUT = {
-                    ...OUTPUT,
-                    ...output,
+                this.step.output = this.step.output || {};
+                this.target.step.output = this.target.step.output || {};
+
+                this.step.output = {
+                    ...this.step.output,
+                    ...this.target.step.output,
+                };
+
+                this.task.output = {
+                    ...this.task.output,
+                    ...this.step.output,
+                };
+
+                this.output = {
+                    ...this.output,
+                    ...this.task.output,
+                    ...this.step.output,
                 };
 
                 this.step.done = !step.done || step.done({INPUT, OUTPUT, input, output, relay});
@@ -466,7 +541,10 @@ class Robot {
             // }
         }
 
-        return OUTPUT;
+        return {
+            ...OUTPUT,
+            ...this.output,
+        };
     };
 
     handleError = async ({INPUT, OUTPUT, input, page, setup}, error) => {
