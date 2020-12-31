@@ -39,6 +39,7 @@ class RobotSetup {
     /* base path = this.rootPath */
     // getPath = {
     //     generic: {
+    //         scope: (task) => `tasks/generic/index`,
     //         flows: (task) => `tasks/generic/flows`,
     //         steps: (task) => `tasks/generic/steps`,
     //     },

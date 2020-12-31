@@ -9,8 +9,11 @@ const tools = require('./public/tools');
 const log = require('./tools/log');
 
 const Setup = require('./setup');
+const Scope = require('./scope');
 const Target = require('./target');
-const TargetConfig = require('./target/config');
+
+const ScopeConfig = Scope.Config;
+const TargetConfig = Target.Config;
 
 const {
     PUPPETEER,
@@ -87,8 +90,8 @@ class Robot {
         const taskCopy = {...task};
         this.context.task = taskCopy;
 
-        if (this.target)
-            this.target.task = taskCopy;
+        if (this.scope)
+            this.scope.task = taskCopy;
     }
 
     set step(step) {
@@ -139,8 +142,8 @@ class Robot {
 
         this.context.step = stepCopy;
 
-        if (this.target)
-            this.target.step = stepCopy;
+        if (this.scope)
+            this.scope.step = stepCopy;
     }
 
     get output() {
@@ -156,11 +159,11 @@ class Robot {
 
             this.context.output = this.output;
 
-            if (this.target) {
-                this.target.output = this.output;
+            if (this.scope) {
+                this.scope.output = this.output;
 
-                if (this.target.task)
-                    this.target.task.output = this.output;
+                if (this.scope.task)
+                    this.scope.task.output = this.output;
             }
         } catch (error) {
             log.error(`Failed to set robot output: ${output}`);
@@ -169,7 +172,11 @@ class Robot {
 
     static Setup = Setup;
 
+    static Scope = Scope;
+
     static Target = Target;
+
+    static ScopeConfig = ScopeConfig;
 
     static TargetConfig = TargetConfig;
 
@@ -256,10 +263,10 @@ class Robot {
     };
 
     retry = async () => {
+        this.tasks = await this.initTasks(this);
         this.page = await this.initPage(this);
         this.context = await this.createContext(this);
-        this.target = await this.initTarget(this);
-        this.tasks = await this.initTasks(this);
+        this.scope = await this.initScope(this);
         this.OUTPUT = await this.handleTasks(this);
 
         return this.OUTPUT;
@@ -271,7 +278,9 @@ class Robot {
         input.id = await setup.getInputId(input);
 
         if (target)
-            this.Target = tryRequire.global(`./${setup.getPath.targets.target(target)}`);
+            this.Scope = tryRequire.global(`./${setup.getPath.targets.target(target)}`);
+        else
+            this.Scope = tryRequire.global(`./${setup.getPath.generic.scope()}`);
 
         if (session) {
             this.sessionId = Apify.isAtHome() ?
@@ -299,6 +308,23 @@ class Robot {
         log.default({OUTPUT: this.OUTPUT});
         await this.stop();
     }
+
+    initTasks = async ({INPUT: {target, tasks: taskNames}, setup}) => {
+        const setupTasks = setup.tasks ? setup.tasks : setup.getTasks(target);
+
+        if (this.Scope.adaptTasks)
+            this.Scope.tasks = setupTasks;
+
+        const bootTasks = transformTasks(this.Scope.tasks || setupTasks);
+        const tasks = this.tasks = resolveTaskTree(bootTasks, taskNames);
+
+        if (!this.isRetry) {
+            log.info('Task list from task tree:');
+            tasks.flatMap(task => log.default(task));
+        }
+
+        return this.tasks;
+    };
 
     initPage = async ({INPUT: {block, target, stream, stealth}, page, setup}) => {
         const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
@@ -336,12 +362,11 @@ class Robot {
         // TODO consider nested under actor/robot
         this.context = {
             INPUT,
-            // OUTPUT,
             input: Object.freeze(input),
             output: null,
-            page: Object.freeze(page),
+            page,
             relay,
-            server: Object.freeze(server),
+            server,
             step: null,
             task: null,
         };
@@ -349,32 +374,16 @@ class Robot {
         return this.context;
     }
 
-    initTarget = async ({INPUT: {target}, setup}) => {
-        const setupTasks = setup.tasks ? setup.tasks : setup.getTasks(target);
+    initScope = async () => {
+        // support standalone steps
+        if (!this.Scope) return null;
 
-        if (target) {
-            this.target = this.Target ? new this.Target(this.context, this) : new Robot.Target(this.context, this);
-            this.target.robot = this;
+        // instantiate even later with complete context?
+        this.scope = this.Scope ? new this.Scope(this.context, this) : new Robot.Scope(this.context, this);
+        this.scope.robot = this;
 
-            if (this.target.adaptTasks)
-                this.target.tasks = setupTasks;
-
-            return this.target;
-        }
+        return this.scope;
     }
-
-    initTasks = async ({INPUT: {target, tasks: taskNames}, setup}) => {
-        const setupTasks = setup.tasks ? setup.tasks : setup.getTasks(target);
-        const bootTasks = transformTasks(this.Target.tasks || setupTasks);
-        const tasks = this.tasks = resolveTaskTree(bootTasks, taskNames);
-
-        if (!this.isRetry) {
-            log.info('Task list from task tree:');
-            tasks.flatMap(task => log.default(task));
-        }
-
-        return this.tasks;
-    };
 
     handleTasks = async ({INPUT, OUTPUT, input, output, page, relay, setup, tasks}) => {
         const {target} = INPUT;
@@ -438,7 +447,7 @@ class Robot {
                     this.step.output = await this.step.code(this.context);
 
                 else {
-                    this.flow = this.flow || this.target;
+                    this.flow = this.flow || this.scope;
 
                     if (!this.flow[step.name]) {
                         let Flow;
@@ -450,7 +459,7 @@ class Robot {
                         else {
                             log.join.debug(`FLOW: Generic handler not found for step [${step.name}] of task [${task.name}]`);
                             // Flow = target.flow[task.name] ? new target.flow[task.name] : new target.flow;
-                            Flow = this.target.getFlow(task.name);
+                            Flow = this.scope.getFlow(task.name);
 
                             if (Flow)
                                 log.join.info(`FLOW: Target handler found for step [${step.name}] of task [${task.name}] for target [${target}]`);
@@ -458,9 +467,10 @@ class Robot {
                                 log.join.debug(`FLOW: Target handler not found for step [${step.name}] of task [${task.name}] for target [${target}]`);
                         }
 
-                        if (!Flow && !this.target[step.name])
+                        if (!Flow && !this.scope[step.name])
                             throw Error(`Handler not found for step [${step.name}] of task [${task.name}]`);
 
+                        // deprecate in favor of mandatory scope class?
                         const flow = this.flow = new Flow(this.context);
                         // flow.target = target;
                         // flow.name = task.name;
@@ -486,17 +496,17 @@ class Robot {
                     this.step.output = {};
                 }
 
-                if (this.target.step.output && typeof this.target.step.output !== 'object') {
+                if (this.scope.step.output && typeof this.scope.step.output !== 'object') {
                     log.join.warning('STEP: ignoring step output (not an object)', output);
-                    this.target.step.output = {};
+                    this.scope.step.output = {};
                 }
 
                 this.step.output = this.step.output || {};
-                this.target.step.output = this.target.step.output || {};
+                this.scope.step.output = this.scope.step.output || {};
 
                 this.step.output = {
                     ...this.step.output,
-                    ...this.target.step.output,
+                    ...this.scope.step.output,
                 };
 
                 this.task.output = {
