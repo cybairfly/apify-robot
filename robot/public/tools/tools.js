@@ -130,7 +130,7 @@ const foundSearchPattern = (text, searchPatterns) =>
             .toLowerCase()
             .includes(searchPattern.toLowerCase()));
 
-const verifyResult = (selector, contents) => {
+const verifyResult = ({selector, contents}) => {
     const $element = document.querySelector(selector);
 
     if (!$element)
