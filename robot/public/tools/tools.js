@@ -52,18 +52,16 @@ const handleDialog = async ({type, message}, dialog) => {
         await dialog.dismiss();
 };
 
-const searchPolicyNumber = async ({page, selectors, policyNumber}) => {
+const searchResult = async ({page, selectors, policyNumber: input}) => {
     await page.waitForSelector(selectors.input);
-    await page.type(selectors.input, policyNumber);
+    await page.type(selectors.input, input);
 
     if (selectors.button)
         await page.click(selectors.button);
     else
         await page.keyboard.press('Enter');
 
-    return await page.waitForSelector(selectors.found, {
-        timeout: TIMEOUTS.half,
-    }).catch(error => null);
+    return page.waitForSelector(selectors.found).catch(error => null);
 };
 
 const matchPattern = async (page, patterns) => {
@@ -147,7 +145,7 @@ module.exports = {
     login,
     getPageUrl,
     handleDialog,
-    searchPolicyNumber,
+    searchResult,
     foundSearchPattern,
     matchPattern,
     iteratePatterns,
