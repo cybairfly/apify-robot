@@ -1,5 +1,6 @@
 .idea
 .bckp
+.npmrc
 .vscode
 node_modules
 apify_storage

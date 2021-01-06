@@ -334,7 +334,8 @@ class Robot {
 
         if (!page) {
             if (stealth) {
-                this.browserPool = await getBrowserPool(this.proxyConfig, this.session);
+                const pluginOptions = this.options.browserPool && this.options.browserPool.pluginOptions || {};
+                this.browserPool = await getBrowserPool(pluginOptions, this.proxyConfig, this.session);
                 this.page = page = await this.browserPool.newPage();
             } else {
                 const proxyUrl = this.proxyConfig.newUrl(this.sessionId);
@@ -582,7 +583,7 @@ class Robot {
 
     stop = async () => {
         if (this.browserPool) {
-            await this.browserPool.retire();
+            await this.browserPool.retireAllBrowsers();
             await this.browserPool.destroy();
         }
 

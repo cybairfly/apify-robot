@@ -362,6 +362,13 @@ const decorate = (instance, methods, decorator) => {
 };
 
 const decoratePage = (page, server) => {
+    page.typeHuman = async (selector, text, options) => {
+        const characters = text.split('');
+
+        for (const character of characters)
+            await page.type(selector, character, {...options, delay: Math.random() * 100});
+    };
+
     const decorateGoto = async (page, args, originalMethod) => {
         const response = await originalMethod.apply(page, args);
         const status = response.status();
@@ -382,7 +389,7 @@ const decoratePage = (page, server) => {
     PUPPETEER.page.methodsNames.logging.map(methodName => {
         const originalMethod = page[methodName];
 
-        if (PUPPETEER.page.methodsNames.liveView.some(methodNameLiveView => methodName.includes(methodNameLiveView))) {
+        if (PUPPETEER.page.methodsNames.liveView.some(liveViewMethodName => methodName.includes(liveViewMethodName))) {
             page[methodName] = async (...args) => {
                 const argsForLog = args => args.map(arg => typeof arg === 'function' ? arg.toString().replace(/\s+/g, ' ') : arg);
                 console.log({[methodName]: argsForLog(args)});
@@ -403,29 +410,21 @@ const decoratePage = (page, server) => {
             };
         } else {
             page[methodName] = async (...args) => {
-                // log.info(`${methodName}${Array.isArray(args) ? '(' + args.map(arg => JSON.stringify(arg)).join(', ') + ')' : ''}`);
-                // const argsString = args.length && `(${args.map(arg => JSON.stringify(arg)).join(', ')})`;
-                // const argsForLog = args => args.map(arg => typeof arg === 'function' ? arg.toString().replace(/\s+/g, ' ') : arg);
-                // const argsForLog = args => args.map(arg => {
-                //     switch (typeof arg) {
-                //         case 'object': return Array.isArray(arg) ? arg.toString() : JSON.stringify(arg);
-                //         case 'string': return arg;
-                //         case 'function': return arg.toString();
-                //     }
-                // }).join(', ');
-                // console.log({[methodName]: args});
-
                 // SANITIZE SENSITIVE DATA
-                const argsForLog = args =>
-                    methodName === 'type' ?
-                        args.slice(0, 1) :
-                        args.map(arg => typeof arg === 'function' ?
-                            arg
-                                .toString()
-                                .replace(/\s+/g, ' ') :
-                            arg);
+                const getArgsForLog = args => {
+                    if (methodName === 'type') {
+                        const [selector, text, ...restArgs] = args;
+                        return [selector, ...restArgs];
+                    }
 
-                console.log({[methodName]: argsForLog(args)});
+                    return args.map(arg => typeof arg === 'function' ?
+                        arg
+                            .toString()
+                            .replace(/\s+/g, ' ') :
+                        arg);
+                };
+
+                console.log({[methodName]: getArgsForLog(args)});
 
                 if (methodName === 'goto')
                     return await decorateGoto(page, args, originalMethod);
