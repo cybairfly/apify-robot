@@ -32,6 +32,14 @@
                 "task3"
             ]
         },
+        "retry": {
+            "title": "Retry",
+            "type": "integer",
+            "description": "Number of retries",
+            "default": 0,
+            "maximum": 9,
+            "unit": "retries"
+        },
         "abort": {
             "title": "Abort?",
             "type": "boolean",
@@ -49,7 +57,14 @@
         "debug": {
             "title": "Debug?",
             "type": "boolean",
-            "description": "Run actor in verbose debug mode and silence external notifications",
+            "description": "Run actor in verbose debug mode",
+            "editor": "checkbox",
+            "default": false
+        },
+        "silent": {
+            "title": "Silent?",
+            "type": "boolean",
+            "description": "Mute error alerts to external channels",
             "editor": "checkbox",
             "default": false
         },
@@ -59,6 +74,20 @@
             "description": "Live view from the actor to watch tasks performed in near real time",
             "editor": "checkbox",
             "default": true
+        },
+        "session": {
+            "title": "Session?",
+            "type": "boolean",
+            "description": "Keep proxy session across runs",
+            "editor": "checkbox",
+            "default": false
+        },
+        "stealth": {
+            "title": "Stealth?",
+            "type": "boolean",
+            "description": "Enable detection evasion mode",
+            "editor": "checkbox",
+            "default": false
         },
         "proxyConfig": {
             "title": "Proxy",
