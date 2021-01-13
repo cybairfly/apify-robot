@@ -1,4 +1,4 @@
-0.1.18 / 2021-01-13
+0.1.0 / 2021-01-13
 ===================
 ## Breaking
 ### `INPUT`
@@ -16,7 +16,7 @@
 ### `INPUT`
 - `debug` + `retry` - debug mode will save debug buffers to store on each retry
 
-0.1.17 / 2020-12-31
+0.0.17 / 2020-12-31
 ===================
 ## Overview
 ## Breaking
