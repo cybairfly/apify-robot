@@ -45,7 +45,7 @@
             "type": "boolean",
             "description": "Aborts task before final step - useful for testing and debugging.",
             "editor": "checkbox",
-            "default": true
+            "default": false
         },
         "block": {
             "title": "Block?",
@@ -73,7 +73,7 @@
             "type": "boolean",
             "description": "Live view from the actor to watch tasks performed in near real time",
             "editor": "checkbox",
-            "default": true
+            "default": false
         },
         "session": {
             "title": "Session?",
