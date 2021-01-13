@@ -1,4 +1,4 @@
-0.1.18 / 2021-01-05
+0.1.18 / 2021-01-13
 ===================
 ## Breaking
 ### `INPUT`
@@ -10,9 +10,13 @@
   - accept a single argument instead of separate arguments to be compatible with Playwright API
 
 - `searchPolicyNumber` ➜ `searchResult` 
-  - generalize the utility for other use cases
+  - generalize the utility for generic use cases
 
-0.1.17 / 2021-01-31
+## Updates
+### `INPUT`
+- `debug` + `retry` - debug mode will save debug buffers to store on each retry
+
+0.1.17 / 2020-12-31
 ===================
 ## Overview
 ## Breaking
