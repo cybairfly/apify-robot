@@ -1,11 +1,16 @@
 0.1.18 / 2021-01-05
 ===================
 ## Breaking
-`Robot.tools.verifyResult(selector, contents)` ➜ `Robot.tools.verifyResult({selector, contents})`
-- accept a single argument instead of separate arguments to be compatible with Playwright API
+### `INPUT`
+- `debug` - enable debug mode but no longer silence error alerts
+- `silent` - enable silent mode (mute external notifications)
 
-`Robot.tools.searchPolicyNumber` ➜ `Robot.tools.searchResult` 
-- generalize the utility for other use cases
+### `Robot.tools`
+- `verifyResult(selector, contents)` ➜ `verifyResult({selector, contents})`
+  - accept a single argument instead of separate arguments to be compatible with Playwright API
+
+- `searchPolicyNumber` ➜ `searchResult` 
+  - generalize the utility for other use cases
 
 0.1.17 / 2021-01-31
 ===================
