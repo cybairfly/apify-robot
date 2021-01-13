@@ -419,19 +419,18 @@ class Robot {
         if (Object.keys(OUTPUT).length)
             await saveOutput({INPUT, OUTPUT, input, page});
 
+        // TODO rename & support other channels
         const {channel} = setup.SLACK;
 
-        if (!INPUT.debug) {
-            if (channel) {
-                await sendNotification({INPUT, OUTPUT, channel, error});
-                console.error('---------------------------------------------------------');
-                console.error('Error in robot - support notified to update configuration');
-                console.error('---------------------------------------------------------');
-            } else {
-                console.error('---------------------------------------------------------------');
-                console.error('Error in robot - please contact support to update configuration');
-                console.error('---------------------------------------------------------------');
-            }
+        if (!INPUT.silent && setup.SLACK.channel) {
+            await sendNotification({INPUT, OUTPUT, channel, error});
+            console.error('---------------------------------------------------------');
+            console.error('Error in robot - support notified to update configuration');
+            console.error('---------------------------------------------------------');
+        } else {
+            console.error('---------------------------------------------------------------');
+            console.error('Error in robot - please contact support to update configuration');
+            console.error('---------------------------------------------------------------');
         }
 
         await this.stop();
