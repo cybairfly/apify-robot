@@ -446,12 +446,12 @@ const startServer = (page, setup, options) => {
     return server;
 };
 
-const saveScreenshot = async ({page, store, id, name}) => {
+const saveScreenshot = async ({id, name, page, retryCount, store}) => {
     // Cannot take screenshot with 0 width.
     try {
         await page.waitForFunction(() => document.readyState !== 'loading').catch(() => null);
         const screenshotBuffer = await page.screenshot({type: 'jpeg', quality: 70, fullPage: true});
-        const fileName = `PAGE-SNAP-${name || 'FINAL'}-${id || Date.now()}`;
+        const fileName = `PAGE-SNAP-${name || retryCount ? `RETRY_R-${retryCount}` : 'FINAL'}-${id || Date.now()}`;
 
         if (store)
             await store.setValue(fileName, screenshotBuffer, {contentType: 'image/png'});
@@ -467,9 +467,9 @@ const saveScreenshot = async ({page, store, id, name}) => {
     }
 };
 
-const savePageContent = async ({page, store, id, name}) => {
+const savePageContent = async ({id, name, page, retryCount, store}) => {
     try {
-        const fileName = `PAGE-HTML-${name || 'FINAL'}-${id || Date.now()}`;
+        const fileName = `PAGE-HTML-${name || retryCount ? `RETRY_R-${retryCount}` : 'FINAL'}-${id || Date.now()}`;
 
         if (store)
             await store.setValue(fileName, await page.content(), {contentType: 'text/html'});
@@ -485,10 +485,10 @@ const savePageContent = async ({page, store, id, name}) => {
     }
 };
 
-const saveOutput = async ({page, name, input, store, OUTPUT}) => {
+const saveOutput = async ({page, name, input, retryCount, store, OUTPUT}) => {
     const {id} = input;
-    const pageContentUrl = await savePageContent({page, store, id, name}) || null;
-    const screenshotUrl = await saveScreenshot({page, store, id, name}) || null;
+    const pageContentUrl = await savePageContent({id, name, page, retryCount, store}) || null;
+    const screenshotUrl = await saveScreenshot({id, name, page, retryCount, store}) || null;
     const actorRunUrl = `https://my.apify.com/view/runs/${process.env.APIFY_ACTOR_RUN_ID}`;
 
     OUTPUT = {...OUTPUT, actorRunUrl, screenshotUrl, pageContentUrl};

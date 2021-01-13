@@ -47,6 +47,8 @@ class Robot {
         this.target = INPUT.target;
         this.OUTPUTS = this.setup.OUTPUTS;
         this.isRetry = false;
+        this.retryIndex = 0;
+        this.retryCount = INPUT.retry;
         this.context = {};
 
         this.page = null;
@@ -140,11 +142,17 @@ class Robot {
         try {
             return await retry(this);
         } catch (error) {
-            if (INPUT.retry) {
+            if (INPUT.retry > this.retryIndex) {
+                if (INPUT.debug) {
+                    const {OUTPUT, input, page, retryCount} = this;
+                    await saveOutput({INPUT, OUTPUT, input, page, retryCount});
+                }
+
+                this.isRetry = true;
+                this.retryCount--;
+                this.retryIndex++;
                 await this.stop();
 
-                INPUT.retry--;
-                this.isRetry = true;
                 log.error(error.message);
                 log.error(error.stack);
 
