@@ -157,7 +157,7 @@ class Robot {
                 log.error(error.stack);
 
                 log.default('◄'.repeat(100));
-                log.info(`RETRY [R-${INPUT.retry}]`);
+                log.info(`RETRY [R-${INPUT.retryCount}]`);
                 log.default('◄'.repeat(100));
 
                 return await this.retry(this);
