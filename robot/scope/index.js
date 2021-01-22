@@ -109,7 +109,7 @@ class Scope {
         }
 
         this._step = step;
-        this._steps[step.name] = step;
+        // this._steps[step.name] = step;
     }
 
     get output() {
@@ -139,16 +139,16 @@ class Scope {
         this._robot = robot;
     }
 
-    setStep(step) {
-        if (typeof step !== 'string') {
+    will(text) {
+        if (typeof text !== 'string') {
             log.error('Custom steps only accept step name as an argument');
             return;
         }
 
         // TODO fire custom event?
-        log.default('~'.repeat(100));
-        log.info(`STEP [${step}]`);
-        log.default('~'.repeat(100));
+        log.default('-'.repeat(100));
+        log.info(`NEXT [${text}]`);
+        log.default('-'.repeat(100));
     }
 
     getFlow = task =>

@@ -85,9 +85,10 @@ class Robot {
         return this._step;
     }
 
+    // TODO reduce copies
     set task(task) {
         this._task = task;
-        const taskCopy = {...task};
+        const taskCopy = task;
         this.context.task = taskCopy;
 
         if (this.scope)
@@ -390,11 +391,11 @@ class Robot {
         const {target} = INPUT;
 
         for (const task of tasks) {
-            this.task = task;
+            this.task = {...task};
 
-            log.default('#'.repeat(100));
+            log.default('█'.repeat(100));
             log.info(`TASK [${task.name}]`);
-            log.default('#'.repeat(100));
+            log.default('█'.repeat(100));
 
             this.task.init = !task.init || task.init({INPUT, OUTPUT, input, output, relay});
             this.task.skip = task.skip && task.skip({INPUT, OUTPUT, input, output, relay});
@@ -410,11 +411,11 @@ class Robot {
             }
 
             for (const step of task.steps) {
-                this.step = step;
+                this.step = {...step};
 
-                log.default('-'.repeat(100));
+                log.default('■'.repeat(100));
                 log.info(`STEP [${step.name}]`);
-                log.default('-'.repeat(100));
+                log.default('■'.repeat(100));
 
                 // const output = this.output = this.steps[step.name].output = {};
 
@@ -445,7 +446,7 @@ class Robot {
                 }
 
                 if (this.step.code)
-                    this.step.output = await this.step.code(this.context);
+                    this.step.output = await this.step.code(this.context, this);
 
                 else {
                     this.flow = this.flow || this.scope;
@@ -489,7 +490,7 @@ class Robot {
                     }
 
                     log.join.info(`FLOW: Target handler found for step [${step.name}] of task [${task.name}] for target [${target}]`);
-                    this.step.output = await this.flow[step.name](this.context);
+                    this.step.output = await this.flow[step.name](this.context, this);
                 }
 
                 if (this.step.output && typeof this.step.output !== 'object') {
@@ -558,6 +559,7 @@ class Robot {
         };
     };
 
+    // TODO auto debug mode with debug buffers
     handleError = async ({INPUT, OUTPUT, input, page, setup}, error) => {
         if (Object.keys(OUTPUT).length)
             await saveOutput({INPUT, OUTPUT, input, page});
