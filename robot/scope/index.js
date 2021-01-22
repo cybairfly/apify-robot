@@ -3,8 +3,68 @@ const log = require('../tools/log');
 
 // #####################################################################################################################
 
+/**
+* @typedef {import('@types/puppeteer').Page} page
+* @typedef {{
+    * INPUT: {
+        * target: String,
+        * tasks: Array,
+        * retry: Number,
+        * abort: Boolean,
+        * block: Boolean,
+        * debug: Boolean,
+        * stream: Boolean,
+        * session: Boolean,
+        * stealth: Boolean
+    * },
+    * OUTPUT: {any},
+    * input: Object,
+    * output: Object,
+    * page: page,
+    * relay: Object,
+    * server: {
+        * ws: {
+            * send: (message: String) => message: String,
+            * cast: (message: String) => message: String
+        * },
+        * http: {},
+        * live: {}
+    * }
+    * }} RobotContext
+*/
+
 class Scope {
-    constructor(...[, robot]) {
+    /**
+     * Generic scope for either generic or target dependent steps to be executed by the robot
+     * @param {RobotContext} context
+     * @param {*} robot
+     */
+    constructor(context, robot) {
+        log.default('|'.repeat(100));
+        console.log(`Target: ${this.constructor.name}`);
+        log.default('|'.repeat(100));
+
+        this.context = context;
+
+        const {
+            INPUT,
+            OUTPUT,
+            input,
+            page,
+            relay,
+            server,
+            task = null,
+            step = null,
+            output = null,
+        } = context;
+
+        this.INPUT = INPUT;
+        this.OUTPUT = OUTPUT;
+        this.input = input;
+        this.page = page;
+        this.relay = relay;
+        this.server = server;
+
         this.name = robot.target;
         this.setup = robot.setup;
         this.tasks = this.constructor.tasks;
@@ -12,7 +72,6 @@ class Scope {
 
         this._task = {};
         this._step = {};
-        this._steps = {};
         this._output = {};
     }
 
