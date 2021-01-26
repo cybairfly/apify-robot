@@ -292,6 +292,7 @@ class Robot {
                 // const output = this.output = this.steps[step.name].output = {};
 
                 // TODO consider nested under actor/robot
+                // TODO include other comms channels (Slack)
                 this.context = {
                     INPUT,
                     OUTPUT,
