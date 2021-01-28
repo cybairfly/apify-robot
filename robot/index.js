@@ -380,7 +380,7 @@ class Robot {
         // support standalone steps
         if (!this.Scope) return null;
 
-        // instantiate even later with complete context?
+        // TODO instantiate even later with complete context?
         this.scope = this.Scope ? new this.Scope(this.context, this) : new Robot.Scope(this.context, this);
         this.scope.robot = this;
 
