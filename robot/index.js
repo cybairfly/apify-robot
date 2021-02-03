@@ -66,12 +66,12 @@ class Robot {
         this.server = null;
         this.strategy = null;
 
+        this.Scope = {};
+        this.scope = {};
         this._step = null;
         this._task = null;
-        this.flow = null;
         this.tasks = {};
         this.steps = {};
-        this.flows = {};
 
         this.retry = this.catch(this.retry);
         this.saveOutput = saveOutput;
@@ -85,66 +85,12 @@ class Robot {
         return this._step;
     }
 
-    // TODO reduce copies
     set task(task) {
         this._task = task;
-        const taskCopy = task;
-        this.context.task = taskCopy;
-
-        if (this.scope)
-            this.scope.task = taskCopy;
     }
 
     set step(step) {
         this._step = step;
-        const outputPrototype = {};
-
-        Object.defineProperty(outputPrototype, 'attach', {
-            value(output) {
-                if (!output || typeof output !== 'object') {
-                    console.error('Ignoring output - not an object');
-                    return;
-                }
-
-                Object.entries(output).map(entry => {
-                    const [key, value] = entry;
-                    this[key] = value;
-                });
-
-                return this;
-            },
-            enumerable: false,
-        });
-
-        const output = Object.create(outputPrototype);
-
-        const stepCopy = {
-            ...step,
-            _output: output,
-            get output() {
-                return this._output;
-            },
-            set output(output) {
-                try {
-                    Object.entries(output).map(entry => {
-                        const [key, value] = entry;
-                        this._output[key] = value;
-                    });
-                } catch (error) {
-                    log.error(`Failed to set step output: ${output}`);
-                }
-            },
-        };
-
-        stepCopy.attachOutput = function (output) {
-            this.output = output;
-            return this.output;
-        };
-
-        this.context.step = stepCopy;
-
-        if (this.scope)
-            this.scope.step = stepCopy;
     }
 
     get output() {
@@ -267,7 +213,6 @@ class Robot {
         this.tasks = await this.initTasks(this);
         this.page = await this.initPage(this);
         this.context = await this.createContext(this);
-        this.scope = await this.initScope(this);
         this.OUTPUT = await this.handleTasks(this);
 
         return this.OUTPUT;
@@ -279,9 +224,9 @@ class Robot {
         input.id = await setup.getInputId(input);
 
         if (target)
-            this.Scope = tryRequire.global(`./${setup.getPath.targets.target(target)}`);
+            this.Scope = tryRequire.global(`./${setup.getPath.targets.target(target)}`) || this.Scope;
         else
-            this.Scope = tryRequire.global(`./${setup.getPath.generic.scope()}`);
+            this.Scope = tryRequire.global(`./${setup.getPath.generic.scope()}`) || this.Scope;
 
         if (session) {
             this.sessionId = Apify.isAtHome() ?
@@ -367,8 +312,29 @@ class Robot {
             input: Object.freeze(input),
             output: null,
             page,
+            pools: {
+                browserPool: 'placeholder',
+                sessionPool: 'placeholder',
+            },
+            events: {
+                emit: 'placeholder',
+                listen: 'placeholder',
+            },
+            server: {
+                ws: 'placeholder',
+                http: 'placeholder',
+                view: 'placeholder',
+            },
+            tools: {
+                slack: {
+                    post: 'placeholder',
+                },
+                // tools pre-initialized with page and other internals
+                typeHuman: 'placeholder',
+                matchPattern: 'placeholder',
+                verifyResult: 'placeholder',
+            },
             relay,
-            server,
             step: null,
             task: null,
         };
@@ -376,26 +342,20 @@ class Robot {
         return this.context;
     }
 
-    initScope = async () => {
-        // support standalone steps
-        if (!this.Scope) return null;
-
-        // TODO instantiate even later with complete context?
-        this.scope = this.Scope ? new this.Scope(this.context, this) : new Robot.Scope(this.context, this);
-        this.scope.robot = this;
-
-        return this.scope;
-    }
-
     handleTasks = async ({INPUT, OUTPUT, input, output, page, relay, setup, tasks}) => {
         const {target} = INPUT;
 
+        log.default('●'.repeat(100));
+        console.log(`Target: ${target}`);
+        log.default('●'.repeat(100));
+
         for (const task of tasks) {
             this.task = {...task};
+            this.sync.task(task);
 
-            log.default('█'.repeat(100));
+            log.default('■'.repeat(100));
             log.info(`TASK [${task.name}]`);
-            log.default('█'.repeat(100));
+            log.default('■'.repeat(100));
 
             this.task.init = !task.init || task.init({INPUT, OUTPUT, input, output, relay});
             this.task.skip = task.skip && task.skip({INPUT, OUTPUT, input, output, relay});
@@ -412,12 +372,11 @@ class Robot {
 
             for (const step of task.steps) {
                 this.step = {...step};
+                this.sync.step(step);
 
-                log.default('■'.repeat(100));
-                log.info(`STEP [${step.name}]`);
-                log.default('■'.repeat(100));
-
-                // const output = this.output = this.steps[step.name].output = {};
+                log.default('▬'.repeat(100));
+                log.info(`STEP [${step.name}] @ TASK [${task.name}]`);
+                log.default('▬'.repeat(100));
 
                 this.step.init = !step.init || step.init({INPUT, OUTPUT, input, output, relay});
                 this.step.skip = step.skip && step.skip({INPUT, OUTPUT, input, output, relay});
@@ -440,57 +399,50 @@ class Robot {
 
                     this.step.code = tryRequire.global(path.join(setup.getPath.targets.steps(target), step.name));
                     if (this.step.code)
-                        log.join.info(`STEP: Target handler found for step [${step.name}] of task [${task.name}] for target [${target}]`);
+                        log.join.info(`STEP: Target handler found for step [${step.name}] of task [${task.name}] in ${target ? 'target' : 'scope'} [${target}]`);
                     else
-                        log.join.debug(`STEP: Target handler not found for step [${step.name}] of task [${task.name}] for target [${target}]`);
+                        log.join.debug(`STEP: Target handler not found for step [${step.name}] of task [${task.name}] in ${target ? 'target' : 'scope'} [${target}]`);
                 }
 
                 if (this.step.code)
                     this.step.output = await this.step.code(this.context, this);
 
                 else {
-                    this.flow = this.flow || this.scope;
+                    this.step.code = this.scope[task.name] ?
+                        this.scope[task.name](this.context, this)[step.name] :
+                        this.scope[step.name];
 
-                    if (!this.flow[step.name]) {
-                        let Flow;
-                        // Flow = tryRequire(`../tasks/generic/${task.name}`);
-                        Flow = tryRequire.global(path.join(setup.getPath.generic.flows(), task.name));
+                    if (!this.step.code) {
+                        this.scope = this.Scope ? new this.Scope(this.context, this) : new Robot.Scope(this.context, this);
+                        this.scope.robot = this;
+                        this.sync.step(step);
 
-                        if (Flow)
-                            log.join.info(`FLOW: Generic handler found for step [${step.name}] of task [${task.name}]`);
-                        else {
-                            log.join.debug(`FLOW: Generic handler not found for step [${step.name}] of task [${task.name}]`);
-                            // Flow = target.flow[task.name] ? new target.flow[task.name] : new target.flow;
-                            Flow = this.scope.getFlow(task.name);
+                        this.step.code = this.scope[task.name] ?
+                            this.scope[task.name](this.context, this)[step.name] :
+                            this.scope[step.name];
 
-                            if (Flow)
-                                log.join.info(`FLOW: Target handler found for step [${step.name}] of task [${task.name}] for target [${target}]`);
-                            else
-                                log.join.debug(`FLOW: Target handler not found for step [${step.name}] of task [${task.name}] for target [${target}]`);
+                        if (!this.step.code) {
+                            const message = target ?
+                                `TARGET: Scope handler not found for step [${step.name}] of task [${task.name}] as scope [${target}]` :
+                                `SCOPE: Scope handler not found for step [${step.name}] of task [${task.name}]`;
+
+                            log.join.debug(message);
+                            throw Error(message);
                         }
-
-                        if (!Flow && !this.scope[step.name])
-                            throw Error(`Handler not found for step [${step.name}] of task [${task.name}]`);
-
-                        // deprecate in favor of mandatory scope class?
-                        const flow = this.flow = new Flow(this.context);
-                        // flow.target = target;
-                        // flow.name = task.name;
-                        // flow.code = flow;
-                        flow.step = flow[step.name];
-                        this.flows[task.name] = flow;
-
-                        if (!this.flow[step.name])
-                            throw Error(`Handler not found within flow for step [${step.name}] of task [${task.name}]`);
-
-                        const line = this.flow.target ?
-                            `FLOW: Handler found for step [${step.name}] of task [${task.name}] in flow [${task.name}] on target [${this.flow.target}]` :
-                            `FLOW: Handler found for step [${step.name}] of task [${task.name}] in flow [${task.name}]`;
-                        log.join.debug(line);
                     }
 
-                    log.join.info(`FLOW: Target handler found for step [${step.name}] of task [${task.name}] for target [${target}]`);
-                    this.step.output = await this.flow[step.name](this.context, this);
+                    // TODO support task scope modules to enable scope per task usage
+                    // const line = target ?
+                    //     `${target ? 'TARGET' : 'SCOPE'} Target scope found for step [${step.name}] of task [${task.name}] as scope [${task.name}] for target [${target}]` :
+                    //     `${target ? 'TARGET' : 'SCOPE'} Generic scope found for step [${step.name}] of task [${task.name}] as scope [${task.name}]`;
+                    // log.join.debug(line);
+
+                    const message = target ?
+                        `STEP: Target handler found for step [${step.name}] of task [${task.name}] in scope [${target}]` :
+                        `STEP: Generic handler found for step [${step.name}] of task [${task.name}]`;
+
+                    log.join.info(message);
+                    this.step.output = await this.step.code(this.context, this);
                 }
 
                 if (this.step.output && typeof this.step.output !== 'object') {
@@ -581,6 +533,79 @@ class Robot {
 
         await this.stop();
         throw error;
+    };
+
+    sync = {
+        task: task => {
+            this._task = task;
+            const taskCopy = task;
+            this.context.task = taskCopy;
+
+            if (this.scope)
+                this.scope.task = taskCopy;
+        },
+        step: step => {
+            const outputPrototype = {};
+
+            Object.defineProperty(outputPrototype, 'attach', {
+                value(output) {
+                    if (!output || typeof output !== 'object') {
+                        console.error('Ignoring output - not an object');
+                        return;
+                    }
+
+                    Object.entries(output).map(entry => {
+                        const [key, value] = entry;
+                        this[key] = value;
+                    });
+
+                    return this;
+                },
+                enumerable: false,
+            });
+
+            const output = Object.create(outputPrototype);
+
+            const stepCopy = {
+                ...step,
+                _output: output,
+                get output() {
+                    return this._output;
+                },
+                set output(output) {
+                    try {
+                        Object.entries(output).map(entry => {
+                            const [key, value] = entry;
+                            this._output[key] = value;
+                        });
+                    } catch (error) {
+                        log.error(`Failed to set step output: ${output}`);
+                    }
+                },
+                will(text) {
+                    if (typeof text !== 'string') {
+                        log.error('Custom steps only accept step name as an argument');
+                        return;
+                    }
+
+                    // TODO fire custom event
+                    // TODO fire websocket event
+                    log.default('-'.repeat(100));
+                    log.info(`NEXT [${text}]`);
+                    log.default('-'.repeat(100));
+                },
+            };
+
+            stepCopy.attachOutput = function (output) {
+                this.output = output;
+                return this.output;
+            };
+
+            this.context.step = stepCopy;
+
+            if (this.scope)
+                this.scope.step = stepCopy;
+        },
     };
 
     stop = async () => {

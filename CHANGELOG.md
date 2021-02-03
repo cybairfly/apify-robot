@@ -22,6 +22,7 @@ Properties available directly on the scope instance, outside of the context:
   - `this.step.output.attach(output: object)` - same as above
 - `this.step` current global output is available outside of the context, directly on the scope instance
 - `this.will(text: string)` - trigger a virtual **inline step** without requiring a separate step function pre-defined for and shared by all targets in `Robot.Setup`
+- `step.will(text: string)` - same as above for generic or loose steps without class binding
   - Objective
     - improve readability for long automation logs through clearly separated segments of runtime information
     - enable additional layer of segmentation where using logically separate steps isn't possible or desired
