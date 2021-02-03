@@ -5,14 +5,15 @@ const { addFingerprintToBrowserController, overrideNewPageToUseFingerprint, over
 // log.setLevel(log.LEVELS.DEBUG);
 
 const getBrowserPool = async (pluginOptions = {}, proxyConfiguration, session) => {
+    const sessionId = session.id;
+    console.log({ sessionId });
     pluginOptions = {
         ...pluginOptions,
         // launchOptions: { headless: false, devtools: false, ignoreDefaultArgs: ['--mute-audio'] },
-
         // createProxyUrlFunction: async () => await proxyConfiguration.newUrl(session.id),
         createContextFunction: async () => {
             return new BrowserControllerContext({
-                proxyUrl: await proxyConfiguration.newUrl(session.id),
+                proxyUrl: await proxyConfiguration.newUrl(sessionId),
                 session,
             });
         },

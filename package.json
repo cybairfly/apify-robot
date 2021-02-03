@@ -1,6 +1,6 @@
 {
 	"name": "apify-robot",
-	"version": "0.0.17",
+	"version": "0.1.0",
 	"description": "Automation framework built on Apify",
 	"main": "robot/index.js",
 	"files": [
@@ -17,7 +17,7 @@
 		"@types/puppeteer": "^5.4.2",
 		"apify": "^0.21.10",
 		"browser-pool": "0.1.0-beta.6",
-		"playwright": "^1.7.1",
+		"playwright": "^1.8.0",
 		"ramda": "^0.27.0",
 		"shortid": "^2.2.16",
 		"slack-node": "^0.1.8",

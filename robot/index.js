@@ -48,13 +48,15 @@ class Robot {
         this.target = INPUT.target;
         this.setup = setup;
         this.isRetry = false;
-        this.OUTPUT = null;
+        this.retryIndex = 0;
+        this.retryCount = INPUT.retry;
         // expose in target class somehow
         this.OUTPUTS = this.setup.OUTPUTS;
 
         this.relay = {};
         this.context = {};
         this._output = {};
+        this.OUTPUT = {};
 
         this.page = null;
         this.browser = null;
@@ -190,16 +192,22 @@ class Robot {
         try {
             return await retry(this);
         } catch (error) {
-            if (INPUT.retry) {
+            if (INPUT.retry > this.retryIndex) {
+                if (INPUT.debug) {
+                    const {OUTPUT, input, page, retryCount} = this;
+                    await saveOutput({INPUT, OUTPUT, input, page, retryCount});
+                }
+
+                this.isRetry = true;
+                this.retryCount--;
+                this.retryIndex++;
                 await this.stop();
 
-                INPUT.retry--;
-                this.isRetry = true;
                 log.error(error.message);
                 log.error(error.stack);
 
                 log.default('◄'.repeat(100));
-                log.info(`RETRY [R-${INPUT.retry}]`);
+                log.info(`RETRY [R-${INPUT.retryCount}]`);
                 log.default('◄'.repeat(100));
 
                 return await this.retry(this);
@@ -516,19 +524,18 @@ class Robot {
         if (Object.keys(OUTPUT).length)
             await saveOutput({INPUT, OUTPUT, input, page});
 
+        // TODO rename & support other channels
         const {channel} = setup.SLACK;
 
-        if (!INPUT.debug) {
-            if (channel) {
-                await sendNotification({INPUT, OUTPUT, channel, error});
-                console.error('---------------------------------------------------------');
-                console.error('Error in robot - support notified to update configuration');
-                console.error('---------------------------------------------------------');
-            } else {
-                console.error('---------------------------------------------------------------');
-                console.error('Error in robot - please contact support to update configuration');
-                console.error('---------------------------------------------------------------');
-            }
+        if (!INPUT.silent && setup.SLACK.channel) {
+            await sendNotification({INPUT, OUTPUT, channel, error});
+            console.error('---------------------------------------------------------');
+            console.error('Error in robot - support notified to update configuration');
+            console.error('---------------------------------------------------------');
+        } else {
+            console.error('---------------------------------------------------------------');
+            console.error('Error in robot - please contact support to update configuration');
+            console.error('---------------------------------------------------------------');
         }
 
         await this.stop();
