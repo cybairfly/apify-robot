@@ -40,35 +40,21 @@ class Scope {
      * @param {*} robot
      */
     constructor(context, robot) {
-        log.default('|'.repeat(100));
-        console.log(`Target: ${this.constructor.name}`);
-        log.default('|'.repeat(100));
-
-        this.context = context;
-
-        const {
-            INPUT,
-            OUTPUT,
-            input,
-            page,
-            relay,
-            server,
-            task = null,
-            step = null,
-            output = null,
-        } = context;
-
-        this.INPUT = INPUT;
-        this.OUTPUT = OUTPUT;
-        this.input = input;
-        this.page = page;
-        this.relay = relay;
-        this.server = server;
-
         this.name = robot.target;
         this.setup = robot.setup;
         this.tasks = this.constructor.tasks;
         this._robot = robot;
+
+        this.context = context;
+        this.INPUT = context.INPUT;
+        this.OUTPUT = context.OUTPUT;
+        this.input = context.input;
+        this.page = context.page;
+        this.relay = context.relay;
+        this.pools = context.pools;
+        this.events = context.events;
+        this.server = context.server;
+        this.tools = context.tools;
 
         this._task = {};
         this._step = {};
@@ -204,15 +190,12 @@ class Scope {
             return;
         }
 
-        // TODO fire custom event?
+        // TODO fire custom event
+        // TODO fire websocket event
         log.default('-'.repeat(100));
         log.info(`NEXT [${text}]`);
         log.default('-'.repeat(100));
     }
-
-    getFlow = task =>
-        tryRequire.global(this.setup.getPath.targets.flows(this.name))
-        || tryRequire.global(`${this.setup.getPath.targets.flows(this.name)}/${task}`);
 }
 
 module.exports = Scope;
