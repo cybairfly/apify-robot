@@ -207,7 +207,7 @@ class Robot {
                 log.error(error.stack);
 
                 log.default('◄'.repeat(100));
-                log.info(`RETRY [R-${INPUT.retryCount}]`);
+                log.info(`RETRY [R-${this.retryCount}]`);
                 log.default('◄'.repeat(100));
 
                 return await this.retry(this);
@@ -328,11 +328,6 @@ class Robot {
                 emit: 'placeholder',
                 listen: 'placeholder',
             },
-            server: {
-                ws: 'placeholder',
-                http: 'placeholder',
-                view: 'placeholder',
-            },
             tools: {
                 slack: {
                     post: 'placeholder',
@@ -342,6 +337,7 @@ class Robot {
                 matchPattern: 'placeholder',
                 verifyResult: 'placeholder',
             },
+            server,
             relay,
             step: null,
             task: null,
@@ -543,6 +539,11 @@ class Robot {
     };
 
     sync = {
+        page: (page = null) => {
+            this.page = page;
+            this.scope.page = page;
+            this.context.page = page;
+        },
         task: task => {
             this._task = task;
             const taskCopy = task;
@@ -616,6 +617,8 @@ class Robot {
     };
 
     stop = async () => {
+        this.sync.page(null);
+
         if (this.browserPool) {
             await this.browserPool.retireAllBrowsers();
             await this.browserPool.destroy();
