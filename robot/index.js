@@ -397,15 +397,15 @@ class Robot {
 
                 this.step.code = tryRequire.global(path.join(setup.getPath.generic.steps(), step.name));
                 if (this.step.code)
-                    log.join.info(`STEP: Generic handler found for step [${step.name}] of task [${task.name}]`);
+                    log.join.info(`STEP Generic handler found for step [${step.name}] of task [${task.name}]`);
                 else {
-                    log.join.debug(`STEP: Generic handler not found for step [${step.name}] of task [${task.name}]`);
+                    log.join.debug(`STEP Generic handler not found for step [${step.name}] of task [${task.name}]`);
 
                     this.step.code = tryRequire.global(path.join(setup.getPath.targets.steps(target), step.name));
                     if (this.step.code)
-                        log.join.info(`STEP: Target handler found for step [${step.name}] of task [${task.name}] in ${target ? 'target' : 'scope'} [${target}]`);
+                        log.join.info(`STEP Target handler found for step [${step.name}] of task [${task.name}] in ${target ? 'target' : 'scope'} [${target}]`);
                     else
-                        log.join.debug(`STEP: Target handler not found for step [${step.name}] of task [${task.name}] in ${target ? 'target' : 'scope'} [${target}]`);
+                        log.join.debug(`STEP Target handler not found for step [${step.name}] of task [${task.name}] in ${target ? 'target' : 'scope'} [${target}]`);
                 }
 
                 if (this.step.code)
@@ -442,20 +442,20 @@ class Robot {
                     // log.join.debug(line);
 
                     const message = target ?
-                        `STEP: Target handler found for step [${step.name}] of task [${task.name}] in scope [${target}]` :
-                        `STEP: Generic handler found for step [${step.name}] of task [${task.name}]`;
+                        `STEP Target handler found for step [${step.name}] of task [${task.name}] in scope [${target}]` :
+                        `STEP Generic handler found for step [${step.name}] of task [${task.name}]`;
 
                     log.join.info(message);
                     this.step.output = await this.step.code(this.context, this);
                 }
 
                 if (this.step.output && typeof this.step.output !== 'object') {
-                    log.join.warning('STEP: ignoring step output (not an object)', output);
+                    log.join.warning('STEP ignoring step output (not an object)', output);
                     this.step.output = {};
                 }
 
                 if (this.scope.step.output && typeof this.scope.step.output !== 'object') {
-                    log.join.warning('STEP: ignoring step output (not an object)', output);
+                    log.join.warning('STEP ignoring step output (not an object)', output);
                     this.scope.step.output = {};
                 }
 
