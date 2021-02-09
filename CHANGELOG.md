@@ -6,7 +6,6 @@
   - simplify optional scope/target constructors
 - `super(setup, target)` ➜ `super(...arguments)`
   - adapt parent template class call to the above
-
 - `stepName = () => {}` ➜ `taskName = context => ({ stepName: context => {}, ... })`
   - steps are now optionally (recommended and will become the default) wrapped by their respective tasks in `Robot.Scope/Target` implementations to follow the structure in `Robot.Setup` more closely and provide other additional benefits through this closure, including type hints in step signatures. Updated `context` is passed to both tasks and steps at runtime.
 
@@ -47,7 +46,6 @@ Properties available directly on the scope instance, outside of the context:
 ### `Robot.tools`
 - `verifyResult(selector, contents)` ➜ `verifyResult({selector, contents})`
   - accept a single argument instead of separate arguments to be compatible with Playwright API
-
 - `searchPolicyNumber` ➜ `searchResult` 
   - generalize the utility for generic use cases
 
