@@ -10,20 +10,20 @@
   - steps are now optionally (recommended and will become the default) wrapped by their respective tasks in `Robot.Scope/Target` implementations to follow the structure in `Robot.Setup` more closely and provide other additional benefits through this closure, including type hints in step signatures. Updated `context` is passed to both tasks and steps at runtime.
 
 ## Updates
-Bindings to contents of `context` are automatically initialized through `Robot.Scope`, therefore constructor is optional and not required if there is no need to manage local state of current scope outside the `relay` object for sharing state across all steps and tasks, not only the current scope.
+Bindings between children classes inheriting from `Robot.Scope/Target` and contents of `context` are automatically initialized through the `Robot.Scope` base class. Therefore constructor is optional when there is no need to manage **local** state of the scope. The `relay` object hosted by `context` is intended for sharing and managing **global** state across all scopes, steps and tasks at runtime.
 
 - `Robot.Target` extends `Robot.Scope`
   - support for generic scope class for larger target independent automations 
 
 ### `Robot.Scope(Target)`
 Properties available directly on the scope instance, outside of the context:
-- `this.task` currently processed task as defined in `Robot.Setup`
+- `this.task` - currently processed task as defined in `Robot.Setup`
   - `this.task.output` - output of current task
-- `this.step` currently processed step as defined in `Robot.Setup`
+- `this.step` - currently processed step as defined in `Robot.Setup`
   - `this.step.output` - output of current step
   - `this.step.attachOutput(output: object)` - attach output to current step (object merge)
   - `this.step.output.attach(output: object)` - same as above
-- `this.step` current global output is available outside of the context, directly on the scope instance
+- `this.step` - current global output is available outside of the context, directly on the scope instance
 - `this.will(text: string)` - trigger a virtual **inline step** without requiring a separate step function pre-defined for and shared by all targets in `Robot.Setup`
 - `step.will(text: string)` - same as above for generic or loose steps without binding to `Robot.Scope/Target`
   - Objective
