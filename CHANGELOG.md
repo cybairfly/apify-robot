@@ -1,6 +1,10 @@
 0.2.0 / 2021-02-XX
 ==================
 ## Breaking
+### `Robot.tools.login`
+  - `selectors.loggedIn` ➜ `selectors.verify`
+  - throw if none of either `predicate` or `selectors.verify` is present for login status verification
+
 ### `Robot.Scope(Target)`
 - `constructor(setup, target, robot)` ➜ `constructor(context)`
   - simplify optional scope/target constructors
