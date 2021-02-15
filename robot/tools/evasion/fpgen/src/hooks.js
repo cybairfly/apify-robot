@@ -5,33 +5,28 @@ const { attachFingerprint } = require('./fingeprint-generator/attach-fingerprint
 
 const fingerprintGenerator = new FingerprintGenerator();
 
-const addFingerprintToBrowserController = async (browserController) => {
+const addFingerprintToBrowserController = async (pageId, browserController) => {
     const fingerprint = await fingerprintGenerator.createFingerprint();
 
     log.debug('Fingerprint generated', { fingerprint });
 
-    browserController.userData.fingerprint = fingerprint;
+    browserController.launchContext.extend({ fingerprint });
 };
 
-const overrideNewPageToUseFingerprint = async (browserController) => {
-    const { fingerprint } = browserController.userData;
+const addContextOptionsToPageOptions = async (pageId, browserController, pageOptions) => {
+    const { fingerprint } = browserController.launchContext;
     const { screen, language, userAgent } = fingerprint;
 
-    const oldLaunch = browserController.browser.newPage;
-    browserController.browser.newPage = async () => {
-        return oldLaunch.bind(browserController.browser)({
-            locale: language,
-            userAgent,
-            viewport: {
-                width: screen.width,
-                height: screen.height,
-            },
-        });
+    pageOptions.userAgent = userAgent;
+    pageOptions.locale = language;
+    pageOptions.viewport = {
+        width: screen.width,
+        height: screen.height,
     };
 };
 
-const overrideTheRestOfFingerprint = async (browserController, page) => {
-    const { fingerprint } = browserController.userData;
+const overrideTheRestOfFingerprint = async (page, browserController) => {
+    const { fingerprint } = browserController.launchContext;
 
     await attachFingerprint(fingerprint, page);
 
@@ -40,6 +35,6 @@ const overrideTheRestOfFingerprint = async (browserController, page) => {
 
 module.exports = {
     addFingerprintToBrowserController,
-    overrideNewPageToUseFingerprint,
+    addContextOptionsToPageOptions,
     overrideTheRestOfFingerprint,
 };

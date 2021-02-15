@@ -1,23 +1,17 @@
 const playwright = require('playwright');
 const { BrowserPool, PlaywrightPlugin, BrowserControllerContext } = require('browser-pool');
-const { addFingerprintToBrowserController, overrideNewPageToUseFingerprint, overrideTheRestOfFingerprint } = require('./hooks');
+
+const {
+    addFingerprintToBrowserController,
+    addContextOptionsToPageOptions,
+    overrideTheRestOfFingerprint,
+} = require('./hooks');
 
 // log.setLevel(log.LEVELS.DEBUG);
 
 const getBrowserPool = async (pluginOptions = {}, proxyConfiguration, session) => {
     const sessionId = session.id;
     console.log({ sessionId });
-    pluginOptions = {
-        ...pluginOptions,
-        // launchOptions: { headless: false, devtools: false, ignoreDefaultArgs: ['--mute-audio'] },
-        // createProxyUrlFunction: async () => await proxyConfiguration.newUrl(session.id),
-        createContextFunction: async () => {
-            return new BrowserControllerContext({
-                proxyUrl: await proxyConfiguration.newUrl(sessionId),
-                session,
-            });
-        },
-    };
 
     const playwrightPlugin = new PlaywrightPlugin(playwright.firefox, pluginOptions);
 
@@ -25,9 +19,17 @@ const getBrowserPool = async (pluginOptions = {}, proxyConfiguration, session) =
         browserPlugins: [
             playwrightPlugin,
         ],
+        preLaunchHooks: [
+            async (pageId, launchContext) => {
+                launchContext.useIncognitoPages = true;
+                launchContext.proxyUrl = await proxyConfiguration.newUrl(sessionId);
+            },
+        ],
         postLaunchHooks: [
             addFingerprintToBrowserController,
-            overrideNewPageToUseFingerprint,
+        ],
+        prePageCreateHooks: [
+            addContextOptionsToPageOptions,
         ],
         postPageCreateHooks: [
             overrideTheRestOfFingerprint,
