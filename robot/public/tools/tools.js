@@ -26,17 +26,17 @@ const sortByList = (list, array) => array.sort((a, b) => list.indexOf(a) - list.
  * Either `predicate` or `selectors.verify` is mandatory for checking login result.
  * @param {Object} options
  * @param {Object} options.page
- * @param {Number} options.timeout
- * @param {Function} options.predicate
+ * @param {Number} [options.timeout = 10 * 1000]
+ * @param {Function} [options.predicate]
  * @param {Object} options.selectors
  * @param {String} options.selectors.username
  * @param {String} options.selectors.password
- * @param {String} options.selectors.submit
- * @param {String} options.selectors.verify
+ * @param {String} [options.selectors.submit]
+ * @param {String} [options.selectors.verify]
  * @param {Object} options.credentials
  * @param {String} options.credentials.username
  * @param {String} options.credentials.password
- * @returns {Array} Returns an array with all promises of performed actions and the login response at first index
+ * @returns {Promise<any[]>} Returns an array with all promises of performed actions and the login response at first index
  */
 const login = async ({page, timeout, predicate, selectors, credentials: {username, password}}) => {
     if (!predicate || !selectors.verify)
