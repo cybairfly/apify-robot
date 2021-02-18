@@ -22,7 +22,7 @@ const {
 
 const {
     getBrowserPool,
-} = require('./tools/evasion/fpgen/src/main');
+} = require('./pools');
 
 const {
     getProxyConfiguration,
@@ -55,6 +55,7 @@ class Robot {
         this.browser = null;
         this.browserPool = null;
         this.options = null;
+        this.stealth = null;
         this.session = null;
         this.sessionId = null;
         this.sessionPool = null;
@@ -202,6 +203,8 @@ class Robot {
             this.sessionId = Apify.isAtHome() ?
                 setup.getProxySessionId.apify({INPUT, input}) :
                 setup.getProxySessionId.local({INPUT, input});
+
+            log.info({sessionId: this.sessionId});
         }
 
         if (stealth) {
@@ -225,16 +228,15 @@ class Robot {
         await this.stop();
     }
 
-    initPage = async ({INPUT: {block, target, stream, stealth}, setup}, page) => {
+    initPage = async ({INPUT: {block, target, stream, stealth}, page = null, setup}) => {
         const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
         const url = source.TARGET && source.TARGET.url;
 
         if (!this.isRetry && url) log.default({url});
 
         if (!page) {
-            if (stealth) {
-                const pluginOptions = this.options.browserPool && this.options.browserPool.pluginOptions || {};
-                this.browserPool = await getBrowserPool(pluginOptions, this.proxyConfig, this.session);
+            if (!this.options.browserPool.disable) {
+                this.browserPool = await getBrowserPool(this.options.browserPool, this.proxyConfig, this.session, this.stealth);
                 this.page = page = await this.browserPool.newPage();
             } else {
                 const proxyUrl = this.proxyConfig.newUrl(this.sessionId);
@@ -245,7 +247,7 @@ class Robot {
             }
         }
 
-        if (block && !stealth)
+        if (block && this.options.browserPool.disable)
             await Apify.utils.puppeteer.blockRequests(page, this.options.blockRequests);
 
         // const singleThread = setup.maxConcurrency === 1;
