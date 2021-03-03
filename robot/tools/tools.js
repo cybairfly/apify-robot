@@ -485,21 +485,21 @@ const savePageContent = async ({id, name, page, retryCount, store}) => {
     }
 };
 
-const saveOutput = async ({page, name, input, retryCount, store, OUTPUT}) => {
+const saveOutput = async ({page, name, input, retryCount, store, actorOutput}) => {
     const {id} = input;
     const pageContentUrl = await savePageContent({id, name, page, retryCount, store}) || null;
     const screenshotUrl = await saveScreenshot({id, name, page, retryCount, store}) || null;
     const actorRunUrl = `https://my.apify.com/view/runs/${process.env.APIFY_ACTOR_RUN_ID}`;
 
-    OUTPUT = {...OUTPUT, actorRunUrl, screenshotUrl, pageContentUrl};
+    actorOutput = {...actorOutput, actorRunUrl, screenshotUrl, pageContentUrl};
 
     if (store)
-        await store.setValue('OUTPUT', JSON.stringify(OUTPUT), {contentType: 'application/json'});
+        await store.setValue('OUTPUT', JSON.stringify(actorOutput), {contentType: 'application/json'});
 
     else
-        await Apify.setValue('OUTPUT', JSON.stringify(OUTPUT), {contentType: 'application/json'});
+        await Apify.setValue('OUTPUT', JSON.stringify(actorOutput), {contentType: 'application/json'});
 
-    return OUTPUT;
+    return actorOutput;
 };
 
 const sendNotification = async ({actorInput, channel, error}) => {

@@ -56,7 +56,7 @@ class Robot {
         this.relay = {};
         this.context = {};
         this._output = {};
-        this.OUTPUT = {};
+        this.actorOutput = {};
 
         this.page = null;
         this.browser = null;
@@ -194,8 +194,8 @@ class Robot {
         } catch (error) {
             if (actorInput.retry > this.retryIndex) {
                 if (actorInput.debug) {
-                    const {OUTPUT, input, page, retryCount} = this;
-                    await saveOutput({actorInput, OUTPUT, input, page, retryCount});
+                    const {actorOutput, input, page, retryCount} = this;
+                    await saveOutput({actorInput, actorOutput, input, page, retryCount});
                 }
 
                 this.isRetry = true;
@@ -221,9 +221,9 @@ class Robot {
         this.tasks = await this.initTasks(this);
         this.page = await this.initPage(this);
         this.context = await this.createContext(this);
-        this.OUTPUT = await this.handleTasks(this);
+        this.actorOutput = await this.handleTasks(this);
 
-        return this.OUTPUT;
+        return this.actorOutput;
     };
 
     start = async () => {
@@ -255,11 +255,11 @@ class Robot {
             log.redact.object(options);
         }
 
-        this.OUTPUT = setup.OutputTemplate && setup.OutputTemplate({actorInput, input}) || {};
-        this.OUTPUT = await this.retry(this);
+        this.actorOutput = setup.OutputTemplate && setup.OutputTemplate({actorInput, input}) || {};
+        this.actorOutput = await this.retry(this);
 
         await saveOutput({...this, ...{}});
-        log.default({OUTPUT: this.OUTPUT});
+        log.default({OUTPUT: this.actorOutput});
         await this.stop();
     }
 
@@ -313,7 +313,7 @@ class Robot {
         return page;
     };
 
-    createContext = async ({actorInput, OUTPUT, input, output, page, relay, server}) => {
+    createContext = async ({actorInput, actorOutput, input, output, page, relay, server}) => {
         // TODO consider nested under actor/robot
         this.context = {
             input: Object.freeze(input),
@@ -348,7 +348,7 @@ class Robot {
         return this.context;
     }
 
-    handleTasks = async ({actorInput, OUTPUT, input, output, page, relay, setup, tasks}) => {
+    handleTasks = async ({actorInput, actorOutput, input, output, page, relay, setup, tasks}) => {
         const {target} = actorInput;
 
         log.default('●'.repeat(100));
@@ -363,8 +363,8 @@ class Robot {
             log.info(`TASK [${task.name}]`);
             log.default('■'.repeat(100));
 
-            this.task.init = !task.init || task.init({actorInput, OUTPUT, input, output, relay});
-            this.task.skip = task.skip && task.skip({actorInput, OUTPUT, input, output, relay});
+            this.task.init = !task.init || task.init({actorInput, actorOutput, input, output, relay});
+            this.task.skip = task.skip && task.skip({actorInput, actorOutput, input, output, relay});
 
             if (!this.task.init) {
                 log.join.info(`Skipping task [${task.name}] on test ${task.init}`);
@@ -384,8 +384,8 @@ class Robot {
                 log.info(`STEP [${step.name}] @ TASK [${task.name}]`);
                 log.default('▬'.repeat(100));
 
-                this.step.init = !step.init || step.init({actorInput, OUTPUT, input, output, relay});
-                this.step.skip = step.skip && step.skip({actorInput, OUTPUT, input, output, relay});
+                this.step.init = !step.init || step.init({actorInput, actorOutput, input, output, relay});
+                this.step.skip = step.skip && step.skip({actorInput, actorOutput, input, output, relay});
 
                 if (!this.step.init) {
                     log.join.info(`Skipping step [${step.name}] of task [${task.name}] on test ${step.init}`);
@@ -480,8 +480,8 @@ class Robot {
                     ...this.step.output,
                 };
 
-                this.step.done = !step.done || step.done({actorInput, OUTPUT, input, output, relay});
-                this.step.stop = step.stop && step.stop({actorInput, OUTPUT, input, output, relay});
+                this.step.done = !step.done || step.done({actorInput, actorOutput, input, output, relay});
+                this.step.stop = step.stop && step.stop({actorInput, actorOutput, input, output, relay});
 
                 if (this.step.stop) {
                     log.join.warning(`Breaking on step [${step.name}] of task [${task.name}] on test ${step.stop}`);
@@ -495,8 +495,8 @@ class Robot {
                 }
             }
 
-            this.task.done = !task.done || task.done({actorInput, OUTPUT, input, output, relay});
-            this.task.stop = task.stop && task.stop({actorInput, OUTPUT, input, output, relay});
+            this.task.done = !task.done || task.done({actorInput, actorOutput, input, output, relay});
+            this.task.stop = task.stop && task.stop({actorInput, actorOutput, input, output, relay});
 
             if (this.task.stop) {
                 log.join.warning(`Breaking on task [${task.name}] on test ${task.stop}`);
@@ -512,21 +512,21 @@ class Robot {
         }
 
         return {
-            ...OUTPUT,
+            ...actorOutput,
             ...this.output,
         };
     };
 
     // TODO auto debug mode with debug buffers
-    handleError = async ({actorInput, OUTPUT, input, page, setup}, error) => {
-        if (Object.keys(OUTPUT).length)
-            await saveOutput({actorInput, OUTPUT, input, page});
+    handleError = async ({actorInput, actorOutput, input, page, setup}, error) => {
+        if (Object.keys(actorOutput).length)
+            await saveOutput({actorInput, actorOutput, input, page});
 
         // TODO rename & support other channels
         const {channel} = setup.SLACK;
 
         if (!actorInput.silent && setup.SLACK.channel) {
-            await sendNotification({actorInput, OUTPUT, channel, error});
+            await sendNotification({actorInput, actorOutput, channel, error});
             console.error('---------------------------------------------------------');
             console.error('Error in robot - support notified to update configuration');
             console.error('---------------------------------------------------------');

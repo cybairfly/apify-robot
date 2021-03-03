@@ -18,8 +18,8 @@ const log = require('../tools/log');
             * session: Boolean,
             * stealth: Boolean
         * },
+        * actorOutput: {any},
     * },
-    * OUTPUT: {any},
     * input: Object,
     * output: Object,
     * page: page,
@@ -58,7 +58,6 @@ class Scope {
 
         this.context = context;
         this.actor = context.actor;
-        this.OUTPUT = context.OUTPUT;
         this.input = context.input;
         this.page = context.page;
         this.relay = context.relay;
