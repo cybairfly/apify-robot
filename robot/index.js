@@ -41,15 +41,15 @@ const {
 // #####################################################################################################################
 
 class Robot {
-    constructor(INPUT, setup) {
+    constructor(actorInput, setup) {
         this.log = log;
-        this.INPUT = INPUT;
-        this.input = INPUT.input;
-        this.target = INPUT.target;
+        this.actorInput = actorInput;
+        this.input = actorInput.input;
+        this.target = actorInput.target;
         this.setup = setup;
         this.isRetry = false;
         this.retryIndex = 0;
-        this.retryCount = INPUT.retry;
+        this.retryCount = actorInput.retry;
         // expose in target class somehow
         this.OUTPUTS = this.setup.OUTPUTS;
 
@@ -141,12 +141,12 @@ class Robot {
         return this;
     }
 
-    static check = INPUT => {
-        if (!INPUT)
-            throw Error('INPUT not found. Check input before building robot: Robot.check(INPUT).build(setup).start()');
+    static check = actorInput => {
+        if (!actorInput)
+            throw Error('actorInput not found. Check input before building robot: Robot.check(actorInput).build(setup).start()');
 
         // TODO json validation
-        const {input, tasks, target} = INPUT;
+        const {input, tasks, target} = actorInput;
 
         if (typeof input !== 'object' || input === null)
             throw Error('Task input missing in actor input: input<object>');
@@ -154,21 +154,21 @@ class Robot {
         if (typeof tasks !== 'string' && !Array.isArray(tasks) || !tasks.length)
             throw Error('Task missing in actor input: tasks<array>');
 
-        this.INPUT = INPUT;
+        this.actorInput = actorInput;
 
         return this;
     };
 
     static build = setup => {
         if (!this.route)
-            throw Error('Route not found. Provide project root path before building robot: Robot.route(route).check(INPUT).build(setup).start()');
+            throw Error('Route not found. Provide project root path before building robot: Robot.route(route).check(actorInput).build(setup).start()');
 
-        if (!this.INPUT)
-            throw Error('INPUT not found. Check input before building robot: Robot.route(route).check(INPUT).build(setup).start()');
+        if (!this.actorInput)
+            throw Error('actorInput not found. Check input before building robot: Robot.route(route).check(actorInput).build(setup).start()');
 
         this.setup = setup;
         this.setup.rootPath = this.route;
-        const {debug, target} = this.INPUT;
+        const {debug, target} = this.actorInput;
 
         global.tryRequire = {
             local: tools.tryRequire.local(log),
@@ -183,19 +183,19 @@ class Robot {
             this.setup = R.mergeDeepRight(setup, targetSetup);
         }
 
-        return new Robot(this.INPUT, this.setup);
+        return new Robot(this.actorInput, this.setup);
     };
 
     catch = retry => async () => {
-        const {INPUT, setup} = this;
+        const {actorInput, setup} = this;
 
         try {
             return await retry(this);
         } catch (error) {
-            if (INPUT.retry > this.retryIndex) {
-                if (INPUT.debug) {
+            if (actorInput.retry > this.retryIndex) {
+                if (actorInput.debug) {
                     const {OUTPUT, input, page, retryCount} = this;
-                    await saveOutput({INPUT, OUTPUT, input, page, retryCount});
+                    await saveOutput({actorInput, OUTPUT, input, page, retryCount});
                 }
 
                 this.isRetry = true;
@@ -227,8 +227,8 @@ class Robot {
     };
 
     start = async () => {
-        const {INPUT, setup} = this;
-        const {input, tasks: taskNames, target, session, stealth} = INPUT;
+        const {actorInput, setup} = this;
+        const {input, tasks: taskNames, target, session, stealth} = actorInput;
         input.id = await setup.getInputId(input);
 
         if (target)
@@ -238,8 +238,8 @@ class Robot {
 
         if (session) {
             this.sessionId = Apify.isAtHome() ?
-                setup.getProxySessionId.apify({INPUT, input}) :
-                setup.getProxySessionId.local({INPUT, input});
+                setup.getProxySessionId.apify({actorInput, input}) :
+                setup.getProxySessionId.local({actorInput, input});
         }
 
         if (stealth) {
@@ -247,15 +247,15 @@ class Robot {
             this.session = await this.sessionPool.getSession(session && this.sessionId);
         }
 
-        const options = this.options = Options({INPUT, input, setup});
+        const options = this.options = Options({actorInput, input, setup});
         this.proxyConfig = await getProxyConfiguration(this);
 
         if (!this.isRetry) {
-            log.redact.object(INPUT);
+            log.redact.object(actorInput);
             log.redact.object(options);
         }
 
-        this.OUTPUT = setup.OutputTemplate && setup.OutputTemplate({INPUT, input}) || {};
+        this.OUTPUT = setup.OutputTemplate && setup.OutputTemplate({actorInput, input}) || {};
         this.OUTPUT = await this.retry(this);
 
         await saveOutput({...this, ...{}});
@@ -263,7 +263,7 @@ class Robot {
         await this.stop();
     }
 
-    initTasks = async ({INPUT: {target, tasks: taskNames}, setup}) => {
+    initTasks = async ({actorInput: {target, tasks: taskNames}, setup}) => {
         const setupTasks = setup.tasks ? setup.tasks : setup.getTasks(target);
 
         if (this.Scope.adaptTasks)
@@ -280,7 +280,7 @@ class Robot {
         return this.tasks;
     };
 
-    initPage = async ({INPUT: {block, target, stream, stealth}, page, setup}) => {
+    initPage = async ({actorInput: {block, target, stream, stealth}, page, setup}) => {
         const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
         const url = source.TARGET && source.TARGET.url;
 
@@ -313,12 +313,13 @@ class Robot {
         return page;
     };
 
-    createContext = async ({INPUT, OUTPUT, input, output, page, relay, server}) => {
+    createContext = async ({actorInput, OUTPUT, input, output, page, relay, server}) => {
         // TODO consider nested under actor/robot
         this.context = {
-            INPUT,
             input: Object.freeze(input),
-            output: null,
+            actor: {
+                actorInput,
+            },
             page,
             pools: {
                 browserPool: 'placeholder',
@@ -341,13 +342,14 @@ class Robot {
             relay,
             step: null,
             task: null,
+            output: null,
         };
 
         return this.context;
     }
 
-    handleTasks = async ({INPUT, OUTPUT, input, output, page, relay, setup, tasks}) => {
-        const {target} = INPUT;
+    handleTasks = async ({actorInput, OUTPUT, input, output, page, relay, setup, tasks}) => {
+        const {target} = actorInput;
 
         log.default('●'.repeat(100));
         console.log(`Target: ${target}`);
@@ -361,8 +363,8 @@ class Robot {
             log.info(`TASK [${task.name}]`);
             log.default('■'.repeat(100));
 
-            this.task.init = !task.init || task.init({INPUT, OUTPUT, input, output, relay});
-            this.task.skip = task.skip && task.skip({INPUT, OUTPUT, input, output, relay});
+            this.task.init = !task.init || task.init({actorInput, OUTPUT, input, output, relay});
+            this.task.skip = task.skip && task.skip({actorInput, OUTPUT, input, output, relay});
 
             if (!this.task.init) {
                 log.join.info(`Skipping task [${task.name}] on test ${task.init}`);
@@ -382,8 +384,8 @@ class Robot {
                 log.info(`STEP [${step.name}] @ TASK [${task.name}]`);
                 log.default('▬'.repeat(100));
 
-                this.step.init = !step.init || step.init({INPUT, OUTPUT, input, output, relay});
-                this.step.skip = step.skip && step.skip({INPUT, OUTPUT, input, output, relay});
+                this.step.init = !step.init || step.init({actorInput, OUTPUT, input, output, relay});
+                this.step.skip = step.skip && step.skip({actorInput, OUTPUT, input, output, relay});
 
                 if (!this.step.init) {
                     log.join.info(`Skipping step [${step.name}] of task [${task.name}] on test ${step.init}`);
@@ -478,8 +480,8 @@ class Robot {
                     ...this.step.output,
                 };
 
-                this.step.done = !step.done || step.done({INPUT, OUTPUT, input, output, relay});
-                this.step.stop = step.stop && step.stop({INPUT, OUTPUT, input, output, relay});
+                this.step.done = !step.done || step.done({actorInput, OUTPUT, input, output, relay});
+                this.step.stop = step.stop && step.stop({actorInput, OUTPUT, input, output, relay});
 
                 if (this.step.stop) {
                     log.join.warning(`Breaking on step [${step.name}] of task [${task.name}] on test ${step.stop}`);
@@ -493,8 +495,8 @@ class Robot {
                 }
             }
 
-            this.task.done = !task.done || task.done({INPUT, OUTPUT, input, output, relay});
-            this.task.stop = task.stop && task.stop({INPUT, OUTPUT, input, output, relay});
+            this.task.done = !task.done || task.done({actorInput, OUTPUT, input, output, relay});
+            this.task.stop = task.stop && task.stop({actorInput, OUTPUT, input, output, relay});
 
             if (this.task.stop) {
                 log.join.warning(`Breaking on task [${task.name}] on test ${task.stop}`);
@@ -516,15 +518,15 @@ class Robot {
     };
 
     // TODO auto debug mode with debug buffers
-    handleError = async ({INPUT, OUTPUT, input, page, setup}, error) => {
+    handleError = async ({actorInput, OUTPUT, input, page, setup}, error) => {
         if (Object.keys(OUTPUT).length)
-            await saveOutput({INPUT, OUTPUT, input, page});
+            await saveOutput({actorInput, OUTPUT, input, page});
 
         // TODO rename & support other channels
         const {channel} = setup.SLACK;
 
-        if (!INPUT.silent && setup.SLACK.channel) {
-            await sendNotification({INPUT, OUTPUT, channel, error});
+        if (!actorInput.silent && setup.SLACK.channel) {
+            await sendNotification({actorInput, OUTPUT, channel, error});
             console.error('---------------------------------------------------------');
             console.error('Error in robot - support notified to update configuration');
             console.error('---------------------------------------------------------');

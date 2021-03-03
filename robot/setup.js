@@ -3,10 +3,10 @@ class RobotSetup {
     // tasks = {
     //     taskName: {
     //         /* task flow control - execution sequence predicates */
-    //         init: ({INPUT, OUTPUT, input, output, relay}) => Boolean,
-    //         skip: ({INPUT, OUTPUT, input, output, relay}) => Boolean,
-    //         stop: ({INPUT, OUTPUT, input, output, relay}) => Boolean,
-    //         done: ({INPUT, OUTPUT, input, output, relay}) => Boolean,
+    //         init: ({actorInput, OUTPUT, input, output, relay}) => Boolean,
+    //         skip: ({actorInput, OUTPUT, input, output, relay}) => Boolean,
+    //         stop: ({actorInput, OUTPUT, input, output, relay}) => Boolean,
+    //         done: ({actorInput, OUTPUT, input, output, relay}) => Boolean,
 
     //         /* task dependencies used to build dependency tree before launch */
     //         merge: [
@@ -17,17 +17,17 @@ class RobotSetup {
     //             {
     //                 name: string,
     //                 /* step flow control - execution sequence predicates */
-    //                 init: ({INPUT, OUTPUT, input, output, relay}) => Boolean,
-    //                 skip: ({INPUT, OUTPUT, input, output, relay}) => Boolean,
-    //                 stop: ({INPUT, OUTPUT, input, output, relay}) => Boolean,
-    //                 done: ({INPUT, OUTPUT, input, output, relay}) => Boolean
+    //                 init: ({actorInput, OUTPUT, input, output, relay}) => Boolean,
+    //                 skip: ({actorInput, OUTPUT, input, output, relay}) => Boolean,
+    //                 stop: ({actorInput, OUTPUT, input, output, relay}) => Boolean,
+    //                 done: ({actorInput, OUTPUT, input, output, relay}) => Boolean
     //             },
     //         ],
     //     }
     // };
 
     /* default output generator */
-    // OutputTemplate = ({INPUT, input}) => Object
+    // OutputTemplate = ({actorInput, input}) => Object
 
     /* TODO */
     // getTasks = target => ({});

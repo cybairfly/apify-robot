@@ -180,7 +180,7 @@ const resolveTaskTree = (bootTasks, taskNames) => {
     return taskList;
 };
 
-const getProxyConfiguration = async ({INPUT: { proxyConfig = {} }, sessionId}) => {
+const getProxyConfiguration = async ({actorInput: { proxyConfig = {} }, sessionId}) => {
     const [inputProxyUrl] = proxyConfig && proxyConfig.proxyUrls || [];
     // FIXME
     const proxyUrl = inputProxyUrl && inputProxyUrl.includes('proxy.apify.com')
@@ -502,8 +502,8 @@ const saveOutput = async ({page, name, input, retryCount, store, OUTPUT}) => {
     return OUTPUT;
 };
 
-const sendNotification = async ({INPUT, channel, error}) => {
-    const {debug, target} = INPUT;
+const sendNotification = async ({actorInput, channel, error}) => {
+    const {debug, target} = actorInput;
 
     const notStatusError = !error.name || error.name !== 'StatusError';
     const notNetworkError = !error.message.startsWith('net::');

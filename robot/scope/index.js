@@ -6,16 +6,18 @@ const log = require('../tools/log');
 /**
 * @typedef {import('@types/puppeteer').Page} page
 * @typedef {{
-    * INPUT: {
-        * target: String,
-        * tasks: Array,
-        * retry: Number,
-        * abort: Boolean,
-        * block: Boolean,
-        * debug: Boolean,
-        * stream: Boolean,
-        * session: Boolean,
-        * stealth: Boolean
+    * actor: {
+        * actorInput: {
+            * target: String,
+            * tasks: Array,
+            * retry: Number,
+            * abort: Boolean,
+            * block: Boolean,
+            * debug: Boolean,
+            * stream: Boolean,
+            * session: Boolean,
+            * stealth: Boolean
+        * },
     * },
     * OUTPUT: {any},
     * input: Object,
@@ -55,7 +57,7 @@ class Scope {
         this._robot = robot;
 
         this.context = context;
-        this.INPUT = context.INPUT;
+        this.actor = context.actor;
         this.OUTPUT = context.OUTPUT;
         this.input = context.input;
         this.page = context.page;

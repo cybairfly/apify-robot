@@ -20,7 +20,7 @@ const CustomError = ({name = 'CustomError', data = {}, message = 'Custom Error'}
     return error;
 };
 
-const Options = ({ INPUT, input, setup, INPUT: { block, stream, proxyConfig } }) => {
+const Options = ({ actorInput, input, setup, actorInput: { block, stream, proxyConfig } }) => {
     const defaultOptions = {
         launchPuppeteer: {
             // useApifyProxy: proxyConfig ? proxyConfig.useApifyProxy : true,
