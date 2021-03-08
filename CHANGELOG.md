@@ -1,6 +1,14 @@
 0.2.0 / 2021-02-XX
 ==================
 ## Breaking
+### `Robot.Context`
+Rename actor input and output for clearer distinction from robot's own input/output. Consolidate all actor related properties including input and output in a new context property `actor`
+- `INPUT` ➜ `actor.actorInput`
+- `OUTPUT` ➜ `actor.actorOutput`
+
+### `Robot.Setup`
+- `OutputTemplate` ➜ `OutputSchema`
+
 ### `Robot.Scope(Target)`
 - `constructor(setup, target, robot)` ➜ `constructor(context)`
   - simplify optional scope/target constructors

@@ -2,25 +2,7 @@ const Apify = require('apify');
 
 const {log} = Apify.utils;
 
-const deepTransform = (object, transformer, ...args) => {
-    Object.keys(object).forEach(key => {
-        transformer(object, key, ...args);
-
-        if (typeof object[key] === 'object' && object[key] !== null)
-            return deepTransform(object[key], transformer, ...args);
-    });
-
-    return object;
-};
-
-const redactObject = (object, redactKeys = ['proxyUrl', 'proxyUrls', 'password', 'credentials']) => {
-    const transformer = (object, key, redactKeys) => {
-        if (redactKeys.some(redactKey => key === redactKey))
-            object[key] = '<redacted>';
-    };
-
-    return deepTransform(object, transformer, redactKeys);
-};
+const {redactObject} = require('../tools/generic');
 
 const extendLog = (log, id) => {
     log.default = (...args) => console.log(...args);

@@ -1,8 +1,6 @@
 const Config = require('./config');
 const Scope = require('../scope');
-const log = require('../tools/log');
-
-// #####################################################################################################################
+const log = require('../logger');
 
 class Target extends Scope {}
 

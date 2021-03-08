@@ -7,10 +7,6 @@ const {
 } = require('../../consts');
 
 const {
-    OUTPUTS,
-} = require('../../setup');
-
-const {
     CustomError,
 } = require('../../errors');
 

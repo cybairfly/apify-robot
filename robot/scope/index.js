@@ -1,7 +1,5 @@
 const Config = require('./config');
-const log = require('../tools/log');
-
-// #####################################################################################################################
+const log = require('../logger');
 
 /**
 * @typedef {import('@types/puppeteer').Page} page

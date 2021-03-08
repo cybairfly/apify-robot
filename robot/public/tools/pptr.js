@@ -11,7 +11,11 @@ const {
 } = require('../../errors');
 
 const goto = async (page, url, options = {}) => {
-    const response = await page.goto(url, {waitUntil: PUPPETEER.events.domcontentloaded, ...options});
+    const response = await page.goto(url, {
+        waitUntil: PUPPETEER.events.domcontentloaded,
+        ...options,
+    });
+
     const status = response.status();
 
     if (status >= 400) {

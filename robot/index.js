@@ -4,10 +4,7 @@ const path = require('path');
 
 const {sleep} = Apify.utils;
 
-const consts = require('./public/consts');
-const tools = require('./public/tools');
-const log = require('./tools/log');
-
+const log = require('./logger');
 const Setup = require('./setup');
 const Scope = require('./scope');
 const Target = require('./target');
@@ -15,38 +12,26 @@ const Target = require('./target');
 const ScopeConfig = Scope.Config;
 const TargetConfig = Target.Config;
 
-const {
-    PUPPETEER,
-} = require('./consts');
+const { RobotOptions } = require('./tools/options');
+const { notifyChannel } = require('./tools/notify');
+const { transformTasks, resolveTaskTree } = require('./tools/tasks');
+const { decoratePage, initEventLoggers } = require('./tools/hooks');
+const { getProxyConfig } = require('./tools/proxy');
+const { getBrowserPool } = require('./tools/evasion/fpgen/src/main');
+const { startServer } = require('./tools/server');
+const { syncContext } = require('./tools/context');
+const { saveOutput } = require('./tools');
 
-const {
-    Options,
-} = require('./create');
-
-const {
-    getBrowserPool,
-} = require('./tools/evasion/fpgen/src/main');
-
-const {
-    getProxyConfiguration,
-    initEventLoggers,
-    decoratePage,
-    startServer,
-    transformTasks,
-    resolveTaskTree,
-    saveOutput,
-    sendNotification,
-} = require('./tools');
-
-// #####################################################################################################################
+const consts = require('./public/consts');
+const tools = require('./public/tools');
 
 class Robot {
-    constructor(actorInput, setup) {
+    constructor(actorInput, robotSetup) {
         this.log = log;
         this.actorInput = actorInput;
         this.input = actorInput.input;
         this.target = actorInput.target;
-        this.setup = setup;
+        this.setup = robotSetup;
         this.isRetry = false;
         this.retryIndex = 0;
         this.retryCount = actorInput.retry;
@@ -76,7 +61,7 @@ class Robot {
         this.steps = {};
 
         this.retry = this.catch(this.retry);
-        this.saveOutput = saveOutput;
+        this.syncContext = syncContext(this);
     }
 
     get task() {
@@ -186,9 +171,7 @@ class Robot {
         return new Robot(this.actorInput, this.setup);
     };
 
-    catch = retry => async () => {
-        const {actorInput, setup} = this;
-
+    catch = retry => async ({actorInput} = this) => {
         try {
             return await retry(this);
         } catch (error) {
@@ -226,9 +209,7 @@ class Robot {
         return this.actorOutput;
     };
 
-    start = async () => {
-        const {actorInput, setup} = this;
-        const {input, tasks: taskNames, target, session, stealth} = actorInput;
+    start = async ({actorInput, actorInput: {input, tasks: taskNames, target, session, stealth}, setup} = this) => {
         input.id = await setup.getInputId(input);
 
         if (target)
@@ -247,15 +228,15 @@ class Robot {
             this.session = await this.sessionPool.getSession(session && this.sessionId);
         }
 
-        const options = this.options = Options({actorInput, input, setup});
-        this.proxyConfig = await getProxyConfiguration(this);
+        this.options = RobotOptions({actorInput, input, setup});
+        this.proxyConfig = await getProxyConfig(this);
 
         if (!this.isRetry) {
             log.redact.object(actorInput);
-            log.redact.object(options);
+            log.redact.object(this.options);
         }
 
-        this.actorOutput = setup.OutputTemplate && setup.OutputTemplate({actorInput, input}) || {};
+        this.actorOutput = (setup.OutputSchema && setup.OutputSchema({actorInput, input})) || {};
         this.actorOutput = await this.retry(this);
 
         await saveOutput({...this, ...{}});
@@ -263,24 +244,24 @@ class Robot {
         await this.stop();
     }
 
-    initTasks = async ({actorInput: {target, tasks: taskNames}, setup}) => {
+    initTasks = async ({actorInput: {target, tasks: taskNames}, setup} = this) => {
         const setupTasks = setup.tasks ? setup.tasks : setup.getTasks(target);
 
         if (this.Scope.adaptTasks)
             this.Scope.tasks = setupTasks;
 
         const bootTasks = transformTasks(this.Scope.tasks || setupTasks);
-        const tasks = this.tasks = resolveTaskTree(bootTasks, taskNames);
+        this.tasks = resolveTaskTree(bootTasks, taskNames);
 
         if (!this.isRetry) {
             log.info('Task list from task tree:');
-            tasks.flatMap(task => log.default(task));
+            this.tasks.flatMap(task => log.default(task));
         }
 
         return this.tasks;
     };
 
-    initPage = async ({actorInput: {block, target, stream, stealth}, page, setup}) => {
+    initPage = async ({actorInput: {block, target, stream, stealth}, page, setup} = this) => {
         const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
         const url = source.TARGET && source.TARGET.url;
 
@@ -313,12 +294,13 @@ class Robot {
         return page;
     };
 
-    createContext = async ({actorInput, actorOutput, input, output, page, relay, server}) => {
+    createContext = async ({actorInput, actorOutput, input, output, page, relay, server} = this) => {
         // TODO consider nested under actor/robot
         this.context = {
             input: Object.freeze(input),
             actor: {
                 actorInput,
+                actorOutput,
             },
             page,
             pools: {
@@ -348,7 +330,7 @@ class Robot {
         return this.context;
     }
 
-    handleTasks = async ({actorInput, actorOutput, input, output, page, relay, setup, tasks}) => {
+    handleTasks = async ({actorInput, actorOutput, context, input, output, page, relay, setup, tasks} = this) => {
         const {target} = actorInput;
 
         log.default('●'.repeat(100));
@@ -357,14 +339,14 @@ class Robot {
 
         for (const task of tasks) {
             this.task = {...task};
-            this.sync.task(task);
+            this.syncContext.task(task);
 
             log.default('■'.repeat(100));
             log.info(`TASK [${task.name}]`);
             log.default('■'.repeat(100));
 
-            this.task.init = !task.init || task.init({actorInput, actorOutput, input, output, relay});
-            this.task.skip = task.skip && task.skip({actorInput, actorOutput, input, output, relay});
+            this.task.init = !task.init || task.init(context);
+            this.task.skip = task.skip && task.skip(context);
 
             if (!this.task.init) {
                 log.join.info(`Skipping task [${task.name}] on test ${task.init}`);
@@ -378,14 +360,14 @@ class Robot {
 
             for (const step of task.steps) {
                 this.step = {...step};
-                this.sync.step(step);
+                this.syncContext.step(step);
 
                 log.default('▬'.repeat(100));
                 log.info(`STEP [${step.name}] @ TASK [${task.name}]`);
                 log.default('▬'.repeat(100));
 
-                this.step.init = !step.init || step.init({actorInput, actorOutput, input, output, relay});
-                this.step.skip = step.skip && step.skip({actorInput, actorOutput, input, output, relay});
+                this.step.init = !step.init || step.init(context);
+                this.step.skip = step.skip && step.skip(context);
 
                 if (!this.step.init) {
                     log.join.info(`Skipping step [${step.name}] of task [${task.name}] on test ${step.init}`);
@@ -421,7 +403,7 @@ class Robot {
                     if (!this.step.code) {
                         this.scope = this.Scope ? new this.Scope(this.context, this) : new Robot.Scope(this.context, this);
                         this.scope.robot = this;
-                        this.sync.step(step);
+                        this.syncContext.step(step);
 
                         this.step.code = this.scope[task.name] ?
                             this.scope[task.name](this.context, this)[step.name] :
@@ -480,8 +462,8 @@ class Robot {
                     ...this.step.output,
                 };
 
-                this.step.done = !step.done || step.done({actorInput, actorOutput, input, output, relay});
-                this.step.stop = step.stop && step.stop({actorInput, actorOutput, input, output, relay});
+                this.step.done = !step.done || step.done(context);
+                this.step.stop = step.stop && step.stop(context);
 
                 if (this.step.stop) {
                     log.join.warning(`Breaking on step [${step.name}] of task [${task.name}] on test ${step.stop}`);
@@ -495,8 +477,8 @@ class Robot {
                 }
             }
 
-            this.task.done = !task.done || task.done({actorInput, actorOutput, input, output, relay});
-            this.task.stop = task.stop && task.stop({actorInput, actorOutput, input, output, relay});
+            this.task.done = !task.done || task.done(context);
+            this.task.stop = task.stop && task.stop(context);
 
             if (this.task.stop) {
                 log.join.warning(`Breaking on task [${task.name}] on test ${task.stop}`);
@@ -518,7 +500,7 @@ class Robot {
     };
 
     // TODO auto debug mode with debug buffers
-    handleError = async ({actorInput, actorOutput, input, page, setup}, error) => {
+    handleError = async ({actorInput, actorOutput, input, page, setup} = this, error) => {
         if (Object.keys(actorOutput).length)
             await saveOutput({actorInput, actorOutput, input, page});
 
@@ -526,7 +508,7 @@ class Robot {
         const {channel} = setup.SLACK;
 
         if (!actorInput.silent && setup.SLACK.channel) {
-            await sendNotification({actorInput, actorOutput, channel, error});
+            await notifyChannel({actorInput, actorOutput, channel, error});
             console.error('---------------------------------------------------------');
             console.error('Error in robot - support notified to update configuration');
             console.error('---------------------------------------------------------');
@@ -540,101 +522,23 @@ class Robot {
         throw error;
     };
 
-    sync = {
-        page: (page = null) => {
-            this.page = page;
-            this.scope.page = page;
-            this.context.page = page;
-        },
-        task: task => {
-            this._task = task;
-            const taskCopy = task;
-            this.context.task = taskCopy;
+    stop = async ({browserPool, browser, options, server, page} = this) => {
+        this.syncContext.page(null);
 
-            if (this.scope)
-                this.scope.task = taskCopy;
-        },
-        step: step => {
-            const outputPrototype = {};
-
-            Object.defineProperty(outputPrototype, 'attach', {
-                value(output) {
-                    if (!output || typeof output !== 'object') {
-                        console.error('Ignoring output - not an object');
-                        return;
-                    }
-
-                    Object.entries(output).map(entry => {
-                        const [key, value] = entry;
-                        this[key] = value;
-                    });
-
-                    return this;
-                },
-                enumerable: false,
-            });
-
-            const output = Object.create(outputPrototype);
-
-            const stepCopy = {
-                ...step,
-                _output: output,
-                get output() {
-                    return this._output;
-                },
-                set output(output) {
-                    try {
-                        Object.entries(output).map(entry => {
-                            const [key, value] = entry;
-                            this._output[key] = value;
-                        });
-                    } catch (error) {
-                        log.error(`Failed to set step output: ${output}`);
-                    }
-                },
-                will(text) {
-                    if (typeof text !== 'string') {
-                        log.error('Custom steps only accept step name as an argument');
-                        return;
-                    }
-
-                    // TODO fire custom event
-                    // TODO fire websocket event
-                    log.default('-'.repeat(100));
-                    log.info(`NEXT [${text}]`);
-                    log.default('-'.repeat(100));
-                },
-            };
-
-            stepCopy.attachOutput = function (output) {
-                this.output = output;
-                return this.output;
-            };
-
-            this.context.step = stepCopy;
-
-            if (this.scope)
-                this.scope.step = stepCopy;
-        },
-    };
-
-    stop = async () => {
-        this.sync.page(null);
-
-        if (this.browserPool) {
-            await this.browserPool.retireAllBrowsers();
-            await this.browserPool.destroy();
+        if (browserPool) {
+            await browserPool.retireAllBrowsers();
+            await browserPool.destroy();
         }
 
-        if (this.browser) {
-            await this.browser.close().catch(error => {
+        if (browser) {
+            await browser.close().catch(error => {
                 log.debug('Failed to close browser');
             });
         }
 
-        if (this.server) {
-            await sleep(this.options.liveViewServer.snapshotTimeoutSecs || 3 * 1000);
-            await this.server.serve(this.page);
+        if (server) {
+            await sleep(options.liveViewServer.snapshotTimeoutSecs || 3 * 1000);
+            await server.serve(page);
             await sleep(5 * 1000);
         }
     };
