@@ -41,7 +41,7 @@ const syncContext = robot => ({
             ...step,
             _output: output,
             get output() {
-                return robot._output;
+                return this._output;
             },
             set output(output) {
                 try {
