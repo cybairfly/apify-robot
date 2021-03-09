@@ -4,14 +4,32 @@
     "description": "Robot will act upon received input and automate arbitrary tasks using headless browser with various presets, tools and features available in the options below",
     "schemaVersion": 1,
     "properties": {
-        "input": {
-            "title": "Input",
-            "type": "object",
-            "description": "Object with input data for the robot",
-            "prefill": { "data": "actionable automation data item" },
-            "editor": "json"
+        "target": {
+            "title": "Target",
+            "type": "string",
+            "editor": "select",
+            "default": "target1",
+            "description": "Choose target to perform selected tasks",
+            "enum": [
+                "target1",
+                "target2",
+                "target3"
+            ]
+        },
+        "tasks": {
+            "title": "Tasks",
+            "type": "string",
+            "editor": "select",
+            "default": "task1",
+            "description": "Choose tasks for the robot to perform",
+            "enum": [
+                "task1",
+                "task2",
+                "task3"
+            ]
         },
         "username": {
+            "sectionCaption": "Input",
             "title": "Username",
             "type": "string",
             "description": "Encrypted username",
@@ -23,35 +41,30 @@
             "description": "Encrypted password",
             "editor": "textfield"
         },
-        "target": {
-            "title": "Target",
-            "type": "string",
-            "editor": "select",
-            "default": "domain",
-            "description": "Choose target to perform selected tasks",
-            "enum": [
-                "domain"
-            ]
-        },
-        "tasks": {
-            "title": "Tasks",
-            "type": "string",
-            "editor": "select",
-            "default": "login",
-            "description": "Choose tasks for the robot to perform",
-            "enum": [
-                "task1",
-                "task2",
-                "task3"
-            ]
-        },
-        "retry": {
-            "title": "Retry",
+        "daysBack": {
+            "title": "Days back",
             "type": "integer",
-            "description": "Number of retries",
+            "description": "Refund days back",
             "default": 0,
             "maximum": 9,
-            "unit": "retries"
+            "unit": "days"
+        },
+        "ticketId": {
+            "title": "TicketID",
+            "type": "string",
+            "description": "Paired ticket ID",
+            "default": "ID123"
+        },
+        "runType": {
+            "title": "Run type",
+            "type": "string",
+            "editor": "select",
+            "default": "sync",
+            "description": "Async or sync run",
+            "enum": [
+                "async",
+                "sync"
+            ]
         },
         "abort": {
             "sectionCaption": "Options",
