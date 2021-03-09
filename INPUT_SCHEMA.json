@@ -61,6 +61,7 @@
             "type": "string",
             "editor": "select",
             "default": "task1",
+            "prefill": "task1",
             "description": "Choose tasks for the robot to perform",
             "enum": [
                 "task1",
