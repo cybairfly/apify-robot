@@ -208,7 +208,6 @@
         }
     },
     "required": [
-        "input",
         "tasks"
     ]
 }
