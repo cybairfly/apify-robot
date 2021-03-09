@@ -32,28 +32,29 @@
             "sectionCaption": "Input",
             "title": "Username",
             "type": "string",
-            "description": "Encrypted username",
-            "editor": "textfield"
+            "editor": "textfield",
+            "description": "Encrypted username"
         },
         "password": {
             "title": "Password", 
             "type": "string",
-            "description": "Encrypted password",
-            "editor": "textfield"
+            "editor": "textfield",
+            "description": "Encrypted password"
         },
         "daysBack": {
             "title": "Days back",
             "type": "integer",
-            "description": "Refund days back",
             "default": 0,
             "maximum": 9,
-            "unit": "days"
+            "unit": "days",
+            "description": "Refund days back"
         },
         "ticketId": {
             "title": "TicketID",
             "type": "string",
-            "description": "Paired ticket ID",
-            "default": "ID123"
+            "editor": "textfield",
+            "default": "ID123",
+            "description": "Paired ticket ID"
         },
         "runType": {
             "title": "Run type",
