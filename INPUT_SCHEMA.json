@@ -4,8 +4,34 @@
     "description": "Robot can act upon received input and automate arbitrary tasks using headless browser with various presets, tools and features available in the options below",
     "schemaVersion": 1,
     "properties": {
+        "tasks": {
+            "title": "Tasks",
+            "type": "string",
+            "editor": "select",
+            "default": "task1",
+            "prefill": "task1",
+            "description": "Choose tasks for the robot to perform",
+            "enum": [
+                "task1",
+                "task2",
+                "task3"
+            ]
+        },
+        "target": {
+            "title": "Target",
+            "type": "string",
+            "editor": "select",
+            "default": "",
+            "description": "Choose target to perform selected tasks",
+            "enum": [
+                "",
+                "target1",
+                "target2",
+                "target3"
+            ]
+        },
         "username": {
-            "sectionCaption": "Input",
+            "sectionCaption": "Inputs",
             "title": "Username",
             "type": "string",
             "editor": "textfield",
@@ -41,32 +67,6 @@
             "enum": [
                 "async",
                 "sync"
-            ]
-        },
-        "target": {
-            "title": "Target",
-            "type": "string",
-            "editor": "select",
-            "default": "none",
-            "description": "Choose target to perform selected tasks",
-            "enum": [
-                "none",
-                "target1",
-                "target2",
-                "target3"
-            ]
-        },
-        "tasks": {
-            "title": "Tasks",
-            "type": "string",
-            "editor": "select",
-            "default": "task1",
-            "prefill": "task1",
-            "description": "Choose tasks for the robot to perform",
-            "enum": [
-                "task1",
-                "task2",
-                "task3"
             ]
         },
         "abort": {
