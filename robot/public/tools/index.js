@@ -1,8 +1,9 @@
 const pptrTools = require('./pptr');
 const publicTools = require('./tools');
 
+const log = require('../../logger');
+
 const {
-    log,
     tryRequire,
     saveOutput,
     savePageContent,
