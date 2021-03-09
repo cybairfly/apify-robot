@@ -1,6 +1,7 @@
 {
     "title": "Input schema for actor-robot",
     "type": "object",
+    "description": "Robot will act upon received input and automate arbitrary tasks using headless browser with various presets, tools and features available in the options below",
     "schemaVersion": 1,
     "properties": {
         "input": {
@@ -9,6 +10,18 @@
             "description": "Object with input data for the robot",
             "prefill": { "data": "actionable automation data item" },
             "editor": "json"
+        },
+        "username": {
+            "title": "Username",
+            "type": "string",
+            "description": "Encrypted username",
+            "editor": "textfield"
+        },
+        "password": {
+            "title": "Password", 
+            "type": "string",
+            "description": "Encrypted password",
+            "editor": "textfield"
         },
         "target": {
             "title": "Target",
@@ -27,7 +40,7 @@
             "default": "login",
             "description": "Choose tasks for the robot to perform",
             "enum": [
-                "task2",
+                "task1",
                 "task2",
                 "task3"
             ]
@@ -41,6 +54,7 @@
             "unit": "retries"
         },
         "abort": {
+            "sectionCaption": "Options",
             "title": "Abort?",
             "type": "boolean",
             "description": "Aborts task before final step - useful for testing and debugging.",
@@ -85,14 +99,90 @@
         "stealth": {
             "title": "Stealth?",
             "type": "boolean",
-            "description": "Enable detection evasion mode",
+            "description": "Enable stealth mode",
+            "editor": "checkbox",
+            "default": false
+        },
+        "coder": {
+            "sectionCaption": "Coder",
+            "title": "Coder",
+            "type": "boolean",
+            "description": "Enables visual task creator utility",
+            "editor": "checkbox",
+            "default": false
+        },
+        "human": {
+            "sectionCaption": "Human",
+            "title": "Human",
+            "type": "boolean",
+            "description": "Enable human-like behavior patterns",
+            "editor": "checkbox",
+            "default": false
+        },
+        "chromium": {
+            "sectionCaption": "Browsers",
+            "title": "Chromium",
+            "type": "boolean",
+            "description": "Launch Chromium",
+            "editor": "checkbox",
+            "default": false
+        },
+        "firefox": {
+            "title": "Firefox",
+            "type": "boolean",
+            "description": "Launch Firefox",
+            "editor": "checkbox",
+            "default": false
+        },
+        "webkit": {
+            "title": "Webkit",
+            "type": "boolean",
+            "description": "Launch Webkit",
+            "editor": "checkbox",
+            "default": false
+        },
+        "report": {
+            "sectionCaption": "Reports",
+            "title": "Slack",
+            "type": "boolean",
+            "description": "Enables communication channel",
+            "editor": "checkbox",
+            "default": false
+        },
+        "server": {
+            "sectionCaption": "Servers",
+            "title": "Server",
+            "type": "boolean",
+            "description": "Enable hypertext server",
+            "editor": "checkbox",
+            "default": false
+        },
+        "websocket": {
+            "title": "Websocket",
+            "type": "boolean",
+            "description": "Enable websocket server",
+            "editor": "checkbox",
+            "default": false
+        },
+        "livecast": {
+            "title": "Livecast",
+            "type": "boolean",
+            "description": "Enable livecast server",
+            "editor": "checkbox",
+            "default": false
+        },
+        "proxy": {
+            "sectionCaption": "Proxy",
+            "title": "Proxy",
+            "type": "boolean",
+            "description": "Enables proxy",
             "editor": "checkbox",
             "default": false
         },
         "proxyConfig": {
-            "title": "Proxy",
+            "title": "Proxy Config",
             "type": "object",
-            "description": "Optionaly use Apify Proxy",
+            "description": "Define proxy to pass data through",
             "prefill": {
                 "useApifyProxy": true
             },
