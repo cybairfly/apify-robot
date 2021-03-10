@@ -2,8 +2,8 @@ const Apify = require('apify');
 
 const { postError } = require('./slack');
 
-const notifyChannel = async ({actorInput, channel, error}) => {
-    const {debug, target} = actorInput;
+const notifyChannel = async ({input, channel, error}) => {
+    const {debug, target} = input;
 
     const notStatusError = !error.name || error.name !== 'StatusError';
     const notNetworkError = !error.message.startsWith('net::');

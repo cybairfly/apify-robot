@@ -1,6 +1,6 @@
 const Apify = require('apify');
 
-const getProxyConfig = async ({actorInput: { proxyConfig = {} }, sessionId}) => {
+const getProxyConfig = async ({input: { proxyConfig = {} }, sessionId}) => {
     const [inputProxyUrl] = (proxyConfig && proxyConfig.proxyUrls) || [];
     // FIXME
     const proxyUrl = inputProxyUrl && inputProxyUrl.includes('proxy.apify.com')

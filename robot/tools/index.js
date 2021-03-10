@@ -85,21 +85,21 @@ const savePageContent = async ({id, name, page, retryCount, store}) => {
     }
 };
 
-const saveOutput = async ({page, name, input, retryCount, store, actorOutput: currentOutput}) => {
+const saveOutput = async ({page, name, input, retryCount, store, output: currentOutput}) => {
     const {id} = input;
     const pageContentUrl = await savePageContent({id, name, page, retryCount, store}) || null;
     const screenshotUrl = await saveScreenshot({id, name, page, retryCount, store}) || null;
     const actorRunUrl = `https://my.apify.com/view/runs/${process.env.APIFY_ACTOR_RUN_ID}`;
 
-    const actorOutput = {...currentOutput, actorRunUrl, screenshotUrl, pageContentUrl};
+    const output = {...currentOutput, actorRunUrl, screenshotUrl, pageContentUrl};
 
     if (store)
-        await store.setValue('OUTPUT', JSON.stringify(actorOutput), {contentType: 'application/json'});
+        await store.setValue('OUTPUT', JSON.stringify(output), {contentType: 'application/json'});
 
     else
-        await Apify.setValue('OUTPUT', JSON.stringify(actorOutput), {contentType: 'application/json'});
+        await Apify.setValue('OUTPUT', JSON.stringify(output), {contentType: 'application/json'});
 
-    return actorOutput;
+    return output;
 };
 
 module.exports = {

@@ -44,7 +44,7 @@ const Options = {
     }),
 };
 
-const RobotOptions = ({ actorInput: { block, stream, proxyConfig }, input, setup}) => {
+const RobotOptions = ({ input: { block, stream, proxyConfig }, input, setup}) => {
     const defaultOptions = {
         launchPuppeteer: {
             // useApifyProxy: proxyConfig ? proxyConfig.useApifyProxy : true,
