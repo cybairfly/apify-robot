@@ -63,6 +63,7 @@
             "type": "string",
             "editor": "select",
             "default": "sync",
+            "prefill": "sync",
             "description": "Async or sync run",
             "enum": [
                 "async",
