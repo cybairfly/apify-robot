@@ -8,23 +8,40 @@ const {
 
 const {
     urlLogger,
+    parseDomain,
     responseErrorLogger,
 } = require('./tools');
 
-const initEventLoggers = (page, target, string) => {
-    try {
-        const parsedUrl = new URL(string);
-        string = parsedUrl.hostname;
-    } catch (error) {
-        string = target;
-    }
-
-    // TODO
-    const [fallback, domain] = string.split('.').reverse();
+const initEventLoggers = (page, target, url, options = {debug: false}) => {
+    const domain = parseDomain(url, target);
     const urlLoggerBound = urlLogger.bind(null, page);
-    const responseErrorLoggerBound = responseErrorLogger.bind(null, domain || fallback);
+    const responseErrorLoggerBound = responseErrorLogger.bind(null, domain);
     page.on(PUPPETEER.events.domcontentloaded, urlLoggerBound);
     page.on(PUPPETEER.events.response, responseErrorLoggerBound);
+
+    if (options.debug) {
+        const responseHandler = domain => async response => {
+            const url = response.url();
+            const status = response.status();
+            console.log(status, domain, url);
+            if (!url.startsWith('data:') && url.includes(domain)) {
+                const headers = response.headers();
+                const text = await response.text().catch(() => null);
+                const requestUrl = await response.request().url();
+                const requestHeaders = await response.request().headers();
+                const requestPostData = await response.request().postData();
+                console.log(status, url, {
+                    headers,
+                    text,
+                    requestUrl,
+                    requestHeaders,
+                    // requestPostData
+                });
+            }
+        };
+
+        page.on(PUPPETEER.events.response, responseHandler(domain));
+    }
 };
 
 const decoratePage = (page, server) => {

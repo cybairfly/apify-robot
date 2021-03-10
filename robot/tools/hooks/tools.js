@@ -1,3 +1,17 @@
+const parseDomain = (url, target) => {
+    try {
+        const parsedUrl = new URL(url);
+        url = parsedUrl.hostname;
+    } catch (error) {
+        url = target;
+    }
+
+    // TODO improve domain parsing
+    const [fallback, domain] = url.split('.').reverse();
+
+    return domain || fallback;
+};
+
 const urlLogger = async page => {
     const lastUrl = await page.evaluate(() => window.location.href).catch(() => null);
     if (lastUrl) console.log({lastUrl});
@@ -26,6 +40,7 @@ const responseErrorLogger = async (domain, response) => {
 };
 
 module.exports = {
+    parseDomain,
     urlLogger,
     responseErrorLogger,
 };

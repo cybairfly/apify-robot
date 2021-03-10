@@ -261,7 +261,7 @@ class Robot {
         return this.tasks;
     };
 
-    initPage = async ({actorInput: {block, target, stream, stealth}, page, setup} = this) => {
+    initPage = async ({actorInput: {block, debug, target, stream, stealth}, page, setup} = this) => {
         const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
         const url = source.TARGET && source.TARGET.url;
 
@@ -288,8 +288,8 @@ class Robot {
         const shouldStartServer = !this.server && stream;
         const server = this.server = this.server || (shouldStartServer && startServer(page, setup, this.options.liveViewServer));
 
-        initEventLoggers(page, target, url);
         decoratePage(page, server);
+        initEventLoggers(page, target, url, {debug});
 
         return page;
     };
