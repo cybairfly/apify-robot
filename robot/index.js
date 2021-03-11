@@ -260,7 +260,7 @@ class Robot {
         return this.tasks;
     };
 
-    initPage = async ({input: {block, target, stream, stealth}, page, setup} = this) => {
+    initPage = async ({input: {block, debug, target, stream, stealth}, page, setup} = this) => {
         const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
         const url = source.TARGET && source.TARGET.url;
 

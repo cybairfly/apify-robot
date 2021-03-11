@@ -1,10 +1,6 @@
-const {
-    PUPPETEER,
-} = require('../../consts');
-
-const {
-    CustomError,
-} = require('../../errors');
+const log = require('../../logger');
+const { PUPPETEER } = require('../../consts');
+const { CustomError } = require('../../errors');
 
 const {
     urlLogger,
@@ -21,22 +17,25 @@ const initEventLoggers = (page, target, url, options = {debug: false}) => {
 
     if (options.debug) {
         const responseHandler = domain => async response => {
+            const ok = response.ok();
             const url = response.url();
             const status = response.status();
-            console.log(status, domain, url);
+            const method = response.request().method();
+            const type = response.request().resourceType();
+            const headers = response.headers();
+            const text = await response.text().catch(() => null);
+            log.default(`${(ok && '√OK') || status} | ${method.padEnd(7, ' ')} | ${type.padEnd(11, ' ')} | ${' '.repeat(domain.length)} | ${url}`);
             if (!url.startsWith('data:') && url.includes(domain)) {
-                const headers = response.headers();
-                const text = await response.text().catch(() => null);
-                const requestUrl = await response.request().url();
-                const requestHeaders = await response.request().headers();
-                const requestPostData = await response.request().postData();
-                console.log(status, url, {
-                    headers,
-                    text,
-                    requestUrl,
-                    requestHeaders,
-                    // requestPostData
-                });
+                // TODO highlight host responses
+                // log.default(`${(ok && '√OK') || status} | ${method.padEnd(7, ' ')} | ${type.padEnd(11, ' ')} | ${domain} | ${url}`);
+
+                // console.log(status, url, {
+                //     headers,
+                //     text,
+                //     requestUrl,
+                //     requestHeaders,
+                //     // requestPostData
+                // });
             }
         };
 
