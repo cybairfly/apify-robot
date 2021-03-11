@@ -26,22 +26,21 @@ const consts = require('./public/consts');
 const tools = require('./public/tools');
 
 class Robot {
-    constructor(actorInput, robotSetup) {
+    constructor(input, setup) {
         this.log = log;
-        this.actorInput = actorInput;
-        this.input = actorInput.input;
-        this.target = actorInput.target;
-        this.setup = robotSetup;
+        this.input = input;
+        this.target = input.target;
+        this.setup = setup;
         this.isRetry = false;
         this.retryIndex = 0;
-        this.retryCount = actorInput.retry;
+        this.retryCount = input.retry;
         // expose in target class somehow
         this.OUTPUTS = this.setup.OUTPUTS;
 
         this.relay = {};
         this.context = {};
         this._output = {};
-        this.actorOutput = {};
+        this.output = {};
 
         this.page = null;
         this.browser = null;
@@ -126,12 +125,12 @@ class Robot {
         return this;
     }
 
-    static check = actorInput => {
-        if (!actorInput)
-            throw Error('actorInput not found. Check input before building robot: Robot.check(actorInput).build(setup).start()');
+    static check = input => {
+        if (!input)
+            throw Error('input not found. Check input before building robot: Robot.check(input).build(setup).start()');
 
         // TODO json validation
-        const {input, tasks, target} = actorInput;
+        const {tasks, target} = input;
 
         if (typeof input !== 'object' || input === null)
             throw Error('Task input missing in actor input: input<object>');
@@ -139,21 +138,21 @@ class Robot {
         if (typeof tasks !== 'string' && !Array.isArray(tasks) || !tasks.length)
             throw Error('Task missing in actor input: tasks<array>');
 
-        this.actorInput = actorInput;
+        this.input = input;
 
         return this;
     };
 
     static build = setup => {
         if (!this.route)
-            throw Error('Route not found. Provide project root path before building robot: Robot.route(route).check(actorInput).build(setup).start()');
+            throw Error('Route not found. Provide project root path before building robot: Robot.route(route).check(input).build(setup).start()');
 
-        if (!this.actorInput)
-            throw Error('actorInput not found. Check input before building robot: Robot.route(route).check(actorInput).build(setup).start()');
+        if (!this.input)
+            throw Error('input not found. Check input before building robot: Robot.route(route).check(input).build(setup).start()');
 
         this.setup = setup;
         this.setup.rootPath = this.route;
-        const {debug, target} = this.actorInput;
+        const {debug, target} = this.input;
 
         global.tryRequire = {
             local: tools.tryRequire.local(log),
@@ -168,17 +167,17 @@ class Robot {
             this.setup = R.mergeDeepRight(setup, targetSetup);
         }
 
-        return new Robot(this.actorInput, this.setup);
+        return new Robot(this.input, this.setup);
     };
 
-    catch = retry => async ({actorInput} = this) => {
+    catch = retry => async ({input} = this) => {
         try {
             return await retry(this);
         } catch (error) {
-            if (actorInput.retry > this.retryIndex) {
-                if (actorInput.debug) {
-                    const {actorOutput, input, page, retryCount} = this;
-                    await saveOutput({actorInput, actorOutput, input, page, retryCount});
+            if (input.retry > this.retryIndex) {
+                if (input.debug) {
+                    const {output, input, page, retryCount} = this;
+                    await saveOutput({input, output, page, retryCount});
                 }
 
                 this.isRetry = true;
@@ -204,12 +203,12 @@ class Robot {
         this.tasks = await this.initTasks(this);
         this.page = await this.initPage(this);
         this.context = await this.createContext(this);
-        this.actorOutput = await this.handleTasks(this);
+        this.output = await this.handleTasks(this);
 
-        return this.actorOutput;
+        return this.output;
     };
 
-    start = async ({actorInput, actorInput: {input, tasks: taskNames, target, session, stealth}, setup} = this) => {
+    start = async ({input, input: {tasks: taskNames, target, session, stealth}, setup} = this) => {
         input.id = await setup.getInputId(input);
 
         if (target)
@@ -219,8 +218,8 @@ class Robot {
 
         if (session) {
             this.sessionId = Apify.isAtHome() ?
-                setup.getProxySessionId.apify({actorInput, input}) :
-                setup.getProxySessionId.local({actorInput, input});
+                setup.getProxySessionId.apify({input}) :
+                setup.getProxySessionId.local({input});
         }
 
         if (stealth) {
@@ -228,23 +227,23 @@ class Robot {
             this.session = await this.sessionPool.getSession(session && this.sessionId);
         }
 
-        this.options = RobotOptions({actorInput, input, setup});
+        this.options = RobotOptions({input, setup});
         this.proxyConfig = await getProxyConfig(this);
 
         if (!this.isRetry) {
-            log.redact.object(actorInput);
+            log.redact.object(input);
             log.redact.object(this.options);
         }
 
-        this.actorOutput = (setup.OutputSchema && setup.OutputSchema({actorInput, input})) || {};
-        this.actorOutput = await this.retry(this);
+        this.output = (setup.OutputSchema && setup.OutputSchema({input})) || {};
+        this.output = await this.retry(this);
 
         await saveOutput({...this, ...{}});
-        log.default({OUTPUT: this.actorOutput});
+        log.default({OUTPUT: this.output});
         await this.stop();
     }
 
-    initTasks = async ({actorInput: {target, tasks: taskNames}, setup} = this) => {
+    initTasks = async ({input: {target, tasks: taskNames}, setup} = this) => {
         const setupTasks = setup.tasks ? setup.tasks : setup.getTasks(target);
 
         if (this.Scope.adaptTasks)
@@ -261,7 +260,7 @@ class Robot {
         return this.tasks;
     };
 
-    initPage = async ({actorInput: {block, debug, target, stream, stealth}, page, setup} = this) => {
+    initPage = async ({input: {block, target, stream, stealth}, page, setup} = this) => {
         const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
         const url = source.TARGET && source.TARGET.url;
 
@@ -294,14 +293,11 @@ class Robot {
         return page;
     };
 
-    createContext = async ({actorInput, actorOutput, input, output, page, relay, server} = this) => {
+    createContext = async ({input, output, page, relay, server} = this) => {
         // TODO consider nested under actor/robot
         this.context = {
             input: Object.freeze(input),
-            actor: {
-                actorInput,
-                actorOutput,
-            },
+            output,
             page,
             pools: {
                 browserPool: 'placeholder',
@@ -324,14 +320,13 @@ class Robot {
             relay,
             step: null,
             task: null,
-            output: null,
         };
 
         return this.context;
     }
 
-    handleTasks = async ({actorInput, actorOutput, context, input, output, page, relay, setup, tasks} = this) => {
-        const {target} = actorInput;
+    handleTasks = async ({input, output, context, page, relay, setup, tasks} = this) => {
+        const {target} = input;
 
         log.default('●'.repeat(100));
         console.log(`Target: ${target}`);
@@ -405,9 +400,10 @@ class Robot {
                         this.scope.robot = this;
                         this.syncContext.step(step);
 
-                        this.step.code = this.scope[task.name] ?
-                            this.scope[task.name](this.context, this)[step.name] :
-                            this.scope[step.name];
+                        // TODO legacy support - reverse logic
+                        this.step.code = this.scope[step.name] ?
+                            this.scope[step.name] :
+                            this.scope[task.name] && this.scope[task.name](this.context, this)[step.name];
 
                         if (!this.step.code) {
                             const message = target ?
@@ -493,22 +489,19 @@ class Robot {
             // }
         }
 
-        return {
-            ...actorOutput,
-            ...this.output,
-        };
+        return output;
     };
 
     // TODO auto debug mode with debug buffers
-    handleError = async ({actorInput, actorOutput, input, page, setup} = this, error) => {
-        if (Object.keys(actorOutput).length)
-            await saveOutput({actorInput, actorOutput, input, page});
+    handleError = async ({input, output, page, setup} = this, error) => {
+        if (Object.keys(output).length)
+            await saveOutput({input, output, page});
 
         // TODO rename & support other channels
         const {channel} = setup.SLACK;
 
-        if (!actorInput.silent && setup.SLACK.channel) {
-            await notifyChannel({actorInput, actorOutput, channel, error});
+        if (!input.silent && setup.SLACK.channel) {
+            await notifyChannel({input, output, channel, error});
             console.error('---------------------------------------------------------');
             console.error('Error in robot - support notified to update configuration');
             console.error('---------------------------------------------------------');

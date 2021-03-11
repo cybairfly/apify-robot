@@ -27,7 +27,7 @@ class RobotSetup {
     // };
 
     /* default output generator */
-    // OutputSchema = ({actorInput, input}) => Object
+    // OutputSchema = ({input}) => Object
 
     /* TODO */
     // getTasks = target => ({});
