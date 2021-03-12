@@ -296,6 +296,9 @@ class Robot {
     createContext = async ({input, output, page, relay, server} = this) => {
         // TODO consider nested under actor/robot
         this.context = {
+            // TODO remove legacy input support
+            INPUT: Object.freeze(input),
+
             input: Object.freeze(input),
             output,
             page,
