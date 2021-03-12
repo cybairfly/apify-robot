@@ -15,7 +15,7 @@ const TargetConfig = Target.Config;
 const { RobotOptions } = require('./tools/options');
 const { notifyChannel } = require('./tools/notify');
 const { transformTasks, resolveTaskTree } = require('./tools/tasks');
-const { decoratePage, initEventLoggers } = require('./tools/hooks');
+const { decoratePage, initEventLogger } = require('./tools/hooks');
 const { getProxyConfig } = require('./tools/proxy');
 const { getBrowserPool } = require('./tools/evasion/fpgen/src/main');
 const { startServer } = require('./tools/server');
@@ -288,7 +288,7 @@ class Robot {
         const server = this.server = this.server || (shouldStartServer && startServer(page, setup, this.options.liveViewServer));
 
         decoratePage(page, server);
-        initEventLoggers(page, target, url, {debug});
+        initEventLogger(page, target, url, {debug});
 
         return page;
     };

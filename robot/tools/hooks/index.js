@@ -2,45 +2,23 @@ const log = require('../../logger');
 const { PUPPETEER } = require('../../consts');
 const { CustomError } = require('../../errors');
 
+const handlers = require('./handlers');
+
 const {
     urlLogger,
     parseDomain,
     responseErrorLogger,
 } = require('./tools');
 
-const initEventLoggers = (page, target, url, options = {debug: false}) => {
+const initEventLogger = (page, target, url, options = {debug: false, trimUrls: true, hostOnly: false}) => {
     const domain = parseDomain(url, target);
     const urlLoggerBound = urlLogger.bind(null, page);
     const responseErrorLoggerBound = responseErrorLogger.bind(null, domain);
     page.on(PUPPETEER.events.domcontentloaded, urlLoggerBound);
     page.on(PUPPETEER.events.response, responseErrorLoggerBound);
 
-    if (options.debug) {
-        const responseHandler = domain => async response => {
-            const ok = response.ok();
-            const url = response.url();
-            const status = response.status();
-            const method = response.request().method();
-            const type = response.request().resourceType();
-            const headers = response.headers();
-            const text = await response.text().catch(() => null);
-            log.default(`${(ok && '√OK') || status} | ${method.padEnd(7, ' ')} | ${type.padEnd(11, ' ')} | ${' '.repeat(domain.length)} | ${url}`);
-            if (!url.startsWith('data:') && url.includes(domain)) {
-                // TODO highlight host responses
-                // log.default(`${(ok && '√OK') || status} | ${method.padEnd(7, ' ')} | ${type.padEnd(11, ' ')} | ${domain} | ${url}`);
-
-                // console.log(status, url, {
-                //     headers,
-                //     text,
-                //     requestUrl,
-                //     requestHeaders,
-                //     // requestPostData
-                // });
-            }
-        };
-
-        page.on(PUPPETEER.events.response, responseHandler(domain));
-    }
+    if (options.debug)
+        page.on(PUPPETEER.events.response, handlers.response(domain, options));
 };
 
 const decoratePage = (page, server) => {
@@ -125,6 +103,6 @@ const decoratePage = (page, server) => {
 };
 
 module.exports = {
-    initEventLoggers,
+    initEventLogger,
     decoratePage,
 };

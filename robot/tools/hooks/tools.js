@@ -17,6 +17,7 @@ const urlLogger = async page => {
     if (lastUrl) console.log({lastUrl});
 };
 
+// TODO merge with handlers
 const responseErrorLogger = async (domain, response) => {
     const url = response.url();
     const status = response.status();
