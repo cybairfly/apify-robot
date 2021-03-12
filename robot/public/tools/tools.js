@@ -14,7 +14,7 @@ const {
     saveScreenshot,
 } = require('../../tools');
 
-const getPageUrl = async page => await page.evaluate(() => window.location.href);
+const getPageUrl = async page => page.evaluate(() => window.location.href).catch(error => null);
 const sortByList = (list, array) => array.sort((a, b) => list.indexOf(a) - list.indexOf(b));
 
 const login = async ({page, timeout, predicate, selectors, credentials: {username, password}}) => {
