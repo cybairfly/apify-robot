@@ -1,12 +1,10 @@
 const Config = require('./config');
-const log = require('../tools/log');
-
-// #####################################################################################################################
+const log = require('../logger');
 
 /**
 * @typedef {import('@types/puppeteer').Page} page
 * @typedef {{
-    * INPUT: {
+    * input: {
         * target: String,
         * tasks: Array,
         * retry: Number,
@@ -17,8 +15,6 @@ const log = require('../tools/log');
         * session: Boolean,
         * stealth: Boolean
     * },
-    * OUTPUT: {any},
-    * input: Object,
     * output: Object,
     * page: page,
     * relay: Object,
@@ -55,9 +51,8 @@ class Scope {
         this._robot = robot;
 
         this.context = context;
-        this.INPUT = context.INPUT;
-        this.OUTPUT = context.OUTPUT;
         this.input = context.input;
+        this.output = context.output;
         this.page = context.page;
         this.relay = context.relay;
         this.pools = context.pools;
