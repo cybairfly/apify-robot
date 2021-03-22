@@ -5,10 +5,21 @@ const { CustomError } = require('../../errors');
 const handlers = require('./handlers');
 
 const {
-    urlLogger,
+    abortRoute,
     parseDomain,
     responseErrorLogger,
+    urlLogger,
 } = require('./tools');
+
+// TODO merge with debug mode
+const initTrafficFilter = async (page, options) =>
+    page.route('**/*', route => {
+        const {resourceTypes, urlPatterns} = options.trafficFilter;
+        const patternMatch = urlPatterns.some(pattern => route.request().url().includes(pattern));
+        const resourceMatch = resourceTypes.some(resource => route.request().resourceType().includes(resource));
+
+        return (resourceMatch || patternMatch) ? abortRoute(route) : route.continue();
+    });
 
 const initEventLogger = (page, target, url, options = {debug: false, trimUrls: true, hostOnly: false}) => {
     const domain = parseDomain(url, target);
@@ -103,6 +114,7 @@ const decoratePage = (page, server) => {
 };
 
 module.exports = {
-    initEventLogger,
     decoratePage,
+    initEventLogger,
+    initTrafficFilter,
 };

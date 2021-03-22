@@ -117,8 +117,21 @@ class RobotSetup {
         /* https://sdk.apify.com/docs/typedefs/session-pool-options */
         sessionPool: {},
 
+        /* https://playwright.dev/docs/network/#abort-requests */
         /* https://sdk.apify.com/docs/api/puppeteer#puppeteerblockrequestspage-options */
-        blockRequests: {},
+        trafficFilter: {
+            /* https://playwright.dev/docs/api/class-request#requestresourcetype */
+            resources: [],
+
+            /* https://playwright.dev/docs/api/class-request#requesturl */
+            patterns: {
+                /* resource extension or arbitrary pattern in url */
+                url: [],
+
+                /* host domain pattern black-list for urls (ads) */
+                host: [],
+            },
+        },
 
         /* https://sdk.apify.com/docs/api/apify#launchpuppeteer */
         launchPuppeteer: {},

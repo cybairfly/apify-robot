@@ -14,15 +14,16 @@ const redactOptions = options => ({
 });
 
 const transformOptions = {
-    blockRequests: patterns =>
-        Array.isArray(patterns) ?
-            patterns : {
+    trafficFilter: options =>
+        Array.isArray(options) ?
+            options : {
+                resourceTypes: options.resources,
                 urlPatterns: Object
-                    .keys(patterns)
+                    .keys(options.patterns)
                     .reduce((pool, next) => {
                         return pool = [
                             ...pool,
-                            ...patterns[next],
+                            ...options.patterns[next],
                         ];
                     }, []),
             },
@@ -72,7 +73,7 @@ const RobotOptions = ({ input: { block, stream, proxyConfig }, input, setup}) =>
     }
 
     if (block)
-        options.blockRequests = transformOptions.blockRequests(options.blockRequests);
+        options.trafficFilter = transformOptions.trafficFilter(options.trafficFilter);
 
     return options;
 };

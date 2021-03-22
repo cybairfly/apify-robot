@@ -1,3 +1,23 @@
+const abortRoute = route => {
+    const request = route.request();
+    const url = request.url();
+    const method = request.method();
+    const type = request.resourceType();
+
+    const cols = {
+        status: '►█◄',
+        method: method.padEnd(7, '-'),
+        type: type.padEnd(11, '-'),
+        url,
+        // TODO pass host here
+        domain: '-'.repeat(10),
+    };
+
+    // log.debug(`${cols.status} | ${cols.method} | ${cols.type} | ${cols.domain} | ${cols.url}`);
+
+    return route.abort();
+};
+
 const parseDomain = (url, target) => {
     try {
         const parsedUrl = new URL(url);
@@ -41,6 +61,7 @@ const responseErrorLogger = async (domain, response) => {
 };
 
 module.exports = {
+    abortRoute,
     parseDomain,
     urlLogger,
     responseErrorLogger,
