@@ -24,6 +24,8 @@ const {
     getBrowserPool,
 } = require('./pools');
 
+const {initTrafficFilter} = require('./hooks');
+
 const {
     getProxyConfiguration,
     initEventLoggers,
@@ -228,7 +230,7 @@ class Robot {
         await this.stop();
     }
 
-    initPage = async ({INPUT: {block, target, stream, stealth}, page = null, setup}) => {
+    initPage = async ({INPUT: {block, target, stream, stealth}, page = null, options, setup}) => {
         const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
         const url = source.TARGET && source.TARGET.url;
 
@@ -238,6 +240,9 @@ class Robot {
             if (!this.options.browserPool.disable) {
                 this.browserPool = await getBrowserPool(this.options.browserPool, this.proxyConfig, this.session, this.stealth);
                 this.page = page = await this.browserPool.newPage();
+
+                if (block)
+                    initTrafficFilter(page, options);
             } else {
                 const proxyUrl = this.proxyConfig.newUrl(this.sessionId);
                 const options = {...this.options.launchPuppeteer, proxyUrl};
@@ -248,7 +253,7 @@ class Robot {
         }
 
         if (block && this.options.browserPool.disable)
-            await Apify.utils.puppeteer.blockRequests(page, this.options.blockRequests);
+            await Apify.utils.puppeteer.blockRequests(page, this.options.trafficFilter);
 
         // const singleThread = setup.maxConcurrency === 1;
         const shouldStartServer = !this.server && stream;

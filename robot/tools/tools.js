@@ -93,15 +93,16 @@ const decryptObject = async object => {
 };
 
 const transformOptions = {
-    blockRequests: patterns =>
-        Array.isArray(patterns) ?
-            patterns : {
+    trafficFilter: options =>
+        Array.isArray(options) ?
+            options : {
+                resourceTypes: options.resources,
                 urlPatterns: Object
-                    .keys(patterns)
+                    .keys(options.patterns)
                     .reduce((pool, next) => {
                         return pool = [
                             ...pool,
-                            ...patterns[next],
+                            ...options.patterns[next],
                         ];
                     }, []),
             },
@@ -217,15 +218,15 @@ const getUserAgent = () => {
 };
 
 const getOptions = {
-    blockRequests: (target, CUSTOM_OPTIONS, DEFAULT_OPTIONS) => ({
+    trafficFilter: (target, CUSTOM_OPTIONS, DEFAULT_OPTIONS) => ({
         urlPatterns: Object
-            .keys(DEFAULT_OPTIONS.blockRequests)
+            .keys(DEFAULT_OPTIONS.trafficFilter)
             .reduce((pool, next) => {
                 return pool = [
                     ...pool,
-                    ...(CUSTOM_OPTIONS && CUSTOM_OPTIONS.blockRequests ?
-                        CUSTOM_OPTIONS.blockRequests[next] || DEFAULT_OPTIONS.blockRequests[next] :
-                        DEFAULT_OPTIONS.blockRequests[next]),
+                    ...(CUSTOM_OPTIONS && CUSTOM_OPTIONS.trafficFilter ?
+                        CUSTOM_OPTIONS.trafficFilter[next] || DEFAULT_OPTIONS.trafficFilter[next] :
+                        DEFAULT_OPTIONS.trafficFilter[next]),
                 ];
             }, []),
     }),
