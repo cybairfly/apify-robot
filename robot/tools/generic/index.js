@@ -38,7 +38,7 @@ const deepTransform = (object, transformer, ...args) => {
     Object.keys(object).forEach(key => {
         transformer(object, key, ...args);
 
-        if (typeof object[key] === 'object')
+        if (object[key] && typeof object[key] === 'object')
             return deepTransform(object[key], transformer, ...args);
     });
 
