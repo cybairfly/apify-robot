@@ -1,10 +1,37 @@
 const log = require('../../logger');
+const {urlParamsToEllipsis} = require('../generic');
 
 module.exports = {
-    request: {},
+    request: (domain, {trimUrls = true, hostOnly = false}) => async request => {
+        const url = request.url();
+
+        const drop = hostOnly
+            && (url.startsWith('data:')
+            || (hostOnly && !url.includes(domain)));
+
+        if (drop) return;
+
+        const method = request.method();
+        const type = request.resourceType();
+        // const headers = request.headers();
+        // const text = await request.text().catch(() => null);
+
+        const cols = {
+            status: '-'.repeat(3),
+            method: method.padEnd(7, '-'),
+            type: type.padEnd(11, '-'),
+            domain: (url.includes(domain) && domain) || '-'.repeat(domain.length),
+            url: trimUrls ? urlParamsToEllipsis(url) : url,
+            // headers,
+            // text,
+        };
+
+        log.debug(`► TX | ${cols.status} | ${cols.method} | ${cols.type} | ${cols.domain} | ${cols.url}`);
+    },
     response: (domain, {trimUrls = true, hostOnly = false}) => async response => {
         const ok = response.ok();
         const url = response.url();
+
         const drop = hostOnly
             && (url.startsWith('data:')
             || (hostOnly && !url.includes(domain)));
@@ -14,8 +41,8 @@ module.exports = {
         const status = response.status();
         const method = response.request().method();
         const type = response.request().resourceType();
-        const headers = response.headers();
-        const text = await response.text().catch(() => null);
+        // const headers = response.headers();
+        // const text = await response.text().catch(() => null);
         const urlCutOffIndex = trimUrls && url.indexOf('?') + 1;
 
         const cols = {
@@ -23,14 +50,11 @@ module.exports = {
             method: method.padEnd(7, '-'),
             type: type.padEnd(11, '-'),
             domain: (url.includes(domain) && domain) || '-'.repeat(domain.length),
-            url: (trimUrls && urlCutOffIndex) ?
-                `${url.slice(0, urlCutOffIndex)}...` :
-                url,
+            url: trimUrls ? urlParamsToEllipsis(url) : url,
             // headers,
             // text,
         };
 
-        // log.default(cols);
-        log.debug(`${cols.status} | ${cols.method} | ${cols.type} | ${cols.domain} | ${cols.url}`);
+        log.debug(`◄ RX | ${cols.status} | ${cols.method} | ${cols.type} | ${cols.domain} | ${cols.url}`);
     },
 };

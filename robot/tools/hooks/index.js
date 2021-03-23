@@ -6,30 +6,33 @@ const handlers = require('./handlers');
 
 const {
     abortRoute,
-    parseDomain,
     responseErrorLogger,
     urlLogger,
 } = require('./tools');
 
 // TODO merge with debug mode
-const initTrafficFilter = async (page, options) =>
+// PW @ 1.9.0 - The handler will only be called for the first url if the response is a redirect.
+const initTrafficFilter = async (page, domain, options = {trafficFilter: {resourceTypes: [], urlPatterns: []}}) =>
     page.route('**/*', route => {
         const {resourceTypes, urlPatterns} = options.trafficFilter;
         const patternMatch = urlPatterns.some(pattern => route.request().url().includes(pattern));
         const resourceMatch = resourceTypes.some(resource => route.request().resourceType().includes(resource));
 
-        return (resourceMatch || patternMatch) ? abortRoute(route) : route.continue();
+        return (resourceMatch || patternMatch) ?
+            abortRoute(route, domain) :
+            route.continue();
     });
 
-const initEventLogger = (page, target, url, options = {debug: false, trimUrls: true, hostOnly: false}) => {
-    const domain = parseDomain(url, target);
+const initEventLogger = (page, domain, options = {debug: false, trimUrls: true, hostOnly: false}) => {
     const urlLoggerBound = urlLogger.bind(null, page);
     const responseErrorLoggerBound = responseErrorLogger.bind(null, domain);
     page.on(PUPPETEER.events.domcontentloaded, urlLoggerBound);
     page.on(PUPPETEER.events.response, responseErrorLoggerBound);
 
-    if (options.debug)
+    if (options.debug) {
+        page.on(PUPPETEER.events.request, handlers.request(domain, options));
         page.on(PUPPETEER.events.response, handlers.response(domain, options));
+    }
 };
 
 const decoratePage = (page, server) => {

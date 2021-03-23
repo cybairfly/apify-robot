@@ -46,6 +46,20 @@ const getUserAgent = () => {
     return match ? userAgent : getUserAgent();
 };
 
+const parseDomain = (url, target) => {
+    try {
+        const parsedUrl = new URL(url);
+        url = parsedUrl.hostname;
+    } catch (error) {
+        url = target;
+    }
+
+    // TODO improve domain parsing
+    const [fallback, domain] = url.split('.').reverse();
+
+    return domain || fallback;
+};
+
 const saveScreenshot = async ({id, name, page, retryCount, store}) => {
     // Cannot take screenshot with 0 width.
     try {
@@ -106,6 +120,7 @@ module.exports = {
     tryRequire,
     getUserAgent,
     getPage,
+    parseDomain,
     saveOutput,
     savePageContent,
     saveScreenshot,

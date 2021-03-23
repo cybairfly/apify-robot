@@ -1,35 +1,23 @@
-const abortRoute = route => {
+const log = require('../../logger');
+const {urlParamsToEllipsis} = require('../generic');
+
+const abortRoute = (route, domain, options = {trimUrls: true, hostOnly: false}) => {
     const request = route.request();
     const url = request.url();
     const method = request.method();
     const type = request.resourceType();
 
     const cols = {
-        status: '►█◄',
+        status: '-'.repeat(3),
         method: method.padEnd(7, '-'),
         type: type.padEnd(11, '-'),
-        url,
-        // TODO pass host here
-        domain: '-'.repeat(10),
+        domain: (url.includes(domain) && domain) || '-'.repeat(domain.length),
+        url: options.trimUrls ? urlParamsToEllipsis(url) : url,
     };
 
-    // log.debug(`${cols.status} | ${cols.method} | ${cols.type} | ${cols.domain} | ${cols.url}`);
+    log.debug(`█ TX | ${cols.status} | ${cols.method} | ${cols.type} | ${cols.domain} | ${cols.url}`);
 
     return route.abort();
-};
-
-const parseDomain = (url, target) => {
-    try {
-        const parsedUrl = new URL(url);
-        url = parsedUrl.hostname;
-    } catch (error) {
-        url = target;
-    }
-
-    // TODO improve domain parsing
-    const [fallback, domain] = url.split('.').reverse();
-
-    return domain || fallback;
 };
 
 const urlLogger = async page => {
@@ -62,7 +50,6 @@ const responseErrorLogger = async (domain, response) => {
 
 module.exports = {
     abortRoute,
-    parseDomain,
     urlLogger,
     responseErrorLogger,
 };

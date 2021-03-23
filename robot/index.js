@@ -20,7 +20,7 @@ const { getProxyConfig } = require('./tools/proxy');
 const { getBrowserPool } = require('./pools');
 const { startServer } = require('./tools/server');
 const { syncContext } = require('./tools/context');
-const { saveOutput } = require('./tools');
+const { parseDomain, saveOutput } = require('./tools');
 
 const consts = require('./public/consts');
 const tools = require('./public/tools');
@@ -264,6 +264,7 @@ class Robot {
     initPage = async ({input: {block, debug, target, stream, stealth}, page = null, setup, options} = this) => {
         const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
         const url = source.TARGET && source.TARGET.url;
+        const domain = parseDomain(url, target);
 
         if (!this.isRetry && url) log.default({url});
 
@@ -273,7 +274,7 @@ class Robot {
                 this.page = page = await this.browserPool.newPage();
 
                 if (block)
-                    initTrafficFilter(page, options);
+                    initTrafficFilter(page, domain, options);
             } else {
                 const proxyUrl = this.proxyConfig.newUrl(this.sessionId);
                 const options = {...this.options.launchPuppeteer, proxyUrl};
@@ -291,7 +292,7 @@ class Robot {
         const server = this.server = this.server || (shouldStartServer && startServer(page, setup, this.options.liveViewServer));
 
         decoratePage(page, server);
-        initEventLogger(page, target, url, {debug});
+        initEventLogger(page, domain, {debug});
 
         return page;
     };
@@ -402,7 +403,13 @@ class Robot {
                         this.scope[step.name];
 
                     if (!this.step.code) {
-                        this.scope = this.Scope ? new this.Scope(this.context, this) : new Robot.Scope(this.context, this);
+                        try {
+                            this.scope = this.Scope ? new this.Scope(this.context, this) : new Robot.Scope(this.context, this);
+                        } catch (error) {
+                            log.warning('DEPRECATED: Running target in backward compatibility mode - please update target to match the new API');
+                            this.scope = this.Scope ? new this.Scope(this.context, target, this) : new Robot.Scope(this.context, target, this);
+                        }
+
                         this.scope.robot = this;
                         this.syncContext.step(step);
 
@@ -417,6 +424,7 @@ class Robot {
                                 `SCOPE: Scope handler not found for step [${step.name}] of task [${task.name}]`;
 
                             log.join.debug(message);
+                            await this.stop();
                             throw Error(message);
                         }
                     }

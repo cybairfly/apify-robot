@@ -53,9 +53,15 @@ const redactor = (object, key, redactKeys) => {
 const redactObject = (object, transformer = redactor, redactKeys = ['proxyUrl', 'proxyUrls']) =>
     deepTransform(object, transformer, redactKeys);
 
+const urlParamsToEllipsis = url => {
+    const urlCutOffIndex = url.indexOf('?') + 1;
+    return urlCutOffIndex ? `${url.slice(0, urlCutOffIndex)}...` : url;
+};
+
 module.exports = {
     decorators,
     decorate,
     deepTransform,
     redactObject,
+    urlParamsToEllipsis,
 };
