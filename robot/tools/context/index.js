@@ -77,6 +77,27 @@ const syncContext = robot => ({
         if (robot.scope)
             robot.scope.step = stepCopy;
     },
+    output: output => {
+        try {
+            Object.entries(output).map(entry => {
+                const [key, value] = entry;
+                robot._output[key] = value;
+            });
+
+            // TODO remove legacy support
+            robot.context.OUTPUT = robot.output;
+            robot.context.output = robot.output;
+
+            if (robot.scope) {
+                robot.scope.output = robot.output;
+
+                if (robot.scope.task)
+                    robot.scope.task.output = robot.output;
+            }
+        } catch (error) {
+            log.error(`Failed to set robot output: ${output}`);
+        }
+    },
 });
 
 module.exports = {

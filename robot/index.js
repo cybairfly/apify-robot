@@ -40,7 +40,7 @@ class Robot {
         this.relay = {};
         this.context = {};
         this._output = {};
-        this.output = {};
+        // this.output = {};
 
         this.page = null;
         this.browser = null;
@@ -85,25 +85,7 @@ class Robot {
     }
 
     set output(output) {
-        try {
-            Object.entries(output).map(entry => {
-                const [key, value] = entry;
-                this._output[key] = value;
-            });
-
-            // TODO remove legacy support
-            this.context.OUTPUT = this.output;
-            this.context.output = this.output;
-
-            if (this.scope) {
-                this.scope.output = this.output;
-
-                if (this.scope.task)
-                    this.scope.task.output = this.output;
-            }
-        } catch (error) {
-            log.error(`Failed to set robot output: ${output}`);
-        }
+        this.syncContext.output(output);
     }
 
     static Setup = Setup;
