@@ -50,6 +50,10 @@ class Scope {
         this.tasks = this.constructor.tasks;
         this._robot = robot;
 
+        // TODO remove - legacy support
+        this.INPUT = context.input;
+        this.OUTPUT = context.output;
+
         this.context = context;
         this.input = context.input;
         this.output = context.output;
