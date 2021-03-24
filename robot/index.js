@@ -242,7 +242,7 @@ class Robot {
         this.output = (setup.OutputSchema && setup.OutputSchema({input})) || {};
         this.output = await this.retry(this);
 
-        await saveOutput({...this, ...{}});
+        await saveOutput(this);
         log.default({OUTPUT: this.output});
         await this.stop();
     }
