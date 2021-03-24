@@ -91,6 +91,8 @@ class Robot {
                 this._output[key] = value;
             });
 
+            // TODO remove legacy support
+            this.context.OUTPUT = this.output;
             this.context.output = this.output;
 
             if (this.scope) {
@@ -301,8 +303,9 @@ class Robot {
     createContext = async ({input, output, page, relay, server} = this) => {
         // TODO consider nested under actor/robot
         this.context = {
-            // TODO remove legacy input support
+            // TODO remove legacy support
             INPUT: Object.freeze(input),
+            OUTPUT: output,
 
             input: Object.freeze(input),
             output,
