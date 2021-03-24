@@ -74,27 +74,63 @@ class RobotSetup {
 
     /* robot options (global setup) */
     /* runtime priority: target setup > global setup > default options */
-    // OPTIONS = {
-    //     browserPool: {
-    //         pluginOptions: {
-    //             launchOptions: {}
-    //         }
-    //     },
-    //     blockRequests: {
-    //         https://sdk.apify.com/docs/api/puppeteer#puppeteerblockrequestspage-options
-    //     },
-    //     launchPuppeteer: {
-    //         https://sdk.apify.com/docs/api/apify#launchpuppeteer
-    //     },
-    //     liveViewServer: {
-    //         https://sdk.apify.com/docs/api/live-view-server
-    //     },
-    // };
+    OPTIONS = {
+        browserPool: {
+            disable: false,
+            browser: {
+                // firefox: true,
+                // chrome: true,
+                // webkit: true,
+            },
+            library: {
+                // playwright: true,
+                // puppeteer: true,
+            },
+            options: {
+                // launchOptions: {},
+            },
+            hooks: {
+                // preLaunchHooks: () => {},
+                // postLaunchHooks: () => {},
+                // prePageCreateHooks: () => {},
+                // postPageCreateHooks: () => {},
+                // prePageCloseHooks: () => {},
+                // postPageCloseHooks: () => {},
+
+                browser: {
+                    // before: () => {},
+                    // after: () => {},
+                },
+                page: {
+                    before: {
+                        // open: () => {},
+                        // close: () => {},
+                    },
+                    after: {
+                        // open: () => {},
+                        // close: () => {},
+                    },
+                },
+            },
+        },
+
+        /* https://sdk.apify.com/docs/typedefs/session-pool-options */
+        sessionPool: {},
+
+        /* https://sdk.apify.com/docs/api/puppeteer#puppeteerblockrequestspage-options */
+        blockRequests: {},
+
+        /* https://sdk.apify.com/docs/api/apify#launchpuppeteer */
+        launchPuppeteer: {},
+
+        /* https://sdk.apify.com/docs/api/live-view-server */
+        liveViewServer: {},
+    };
 
     /* output presets to be used by task steps */
     // OUTPUTS = {
-    //     sampleOutputName: {
-    //         sampleOutputProperty: sampleOutputValue
+    //     outputTemplate: {
+    //         outputProperty: outputValue
     //     }
     // };
 

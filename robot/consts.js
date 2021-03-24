@@ -1,3 +1,4 @@
+const Apify = require('apify');
 const crypto = require('crypto');
 
 const APIFY = {
@@ -37,6 +38,45 @@ const DEFAULT_OPTIONS = {
         },
         decrypt: {
             padding: crypto.constants.RSA_PKCS1_PADDING,
+        },
+    },
+    browserPool: {
+        disable: false,
+        browser: {
+            // firefox: true,
+            // chrome: true,
+            // webkit: true,
+        },
+        library: {
+            // playwright: true,
+            // puppeteer: true,
+        },
+        options: {
+            launchOptions: {
+                headless: Apify.isAtHome(),
+            },
+        },
+        hooks: {
+            preLaunchHooks: null,
+            postLaunchHooks: null,
+            prePageCreateHooks: null,
+            postPageCreateHooks: null,
+            prePageCloseHooks: null,
+            postPageCloseHooks: null,
+            browser: {
+                before: null,
+                after: null,
+            },
+            page: {
+                before: {
+                    open: null,
+                    close: null,
+                },
+                after: {
+                    open: null,
+                    close: null,
+                },
+            },
         },
     },
     blockRequests: {
