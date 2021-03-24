@@ -211,6 +211,7 @@ class Robot {
 
     start = async ({input, input: {tasks: taskNames, target, session, stealth}, setup} = this) => {
         input.id = await setup.getInputId(input);
+        this.context = await this.createContext(this);
 
         if (target)
             this.Scope = tryRequire.global(`./${setup.getPath.targets.target(target)}`) || this.Scope;
@@ -219,8 +220,8 @@ class Robot {
 
         if (session) {
             this.sessionId = Apify.isAtHome() ?
-                setup.getProxySessionId.apify({input}) :
-                setup.getProxySessionId.local({input});
+                setup.getProxySessionId.apify(this.context) :
+                setup.getProxySessionId.local(this.context);
         }
 
         if (stealth) {
