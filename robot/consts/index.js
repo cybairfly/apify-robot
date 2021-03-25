@@ -152,7 +152,21 @@ const DEFAULT_OPTIONS = {
     },
 };
 
+const EVENTS = {
+    dialog: 'dialog',
+    domcontentloaded: 'domcontentloaded',
+    error: 'error',
+    load: 'load',
+    pageerror: 'pageerror',
+    popup: 'popup',
+    request: 'request',
+    requestfailed: 'requestfailed',
+    requestfinished: 'requestfinished',
+    response: 'response',
+};
+
 const PUPPETEER = {
+    // TODO remove legacy
     events: {
         dialog: 'dialog',
         domcontentloaded: 'domcontentloaded',
@@ -255,6 +269,7 @@ const PUPPETEER = {
 module.exports = {
     APIFY,
     DEFAULT_OPTIONS,
+    EVENTS,
     TIMEOUTS,
     PUPPETEER,
 };

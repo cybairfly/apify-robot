@@ -1,18 +1,12 @@
 const Apify = require('apify');
 
 const {log} = Apify.utils;
-
-const {
-    PUPPETEER,
-} = require('../robot/consts');
-
-const {
-    CustomError,
-} = require('../robot/errors');
+const {EVENTS} = require('../robot/consts');
+const {CustomError} = require('../robot/errors');
 
 const goto = async (page, url, options = {}) => {
     const response = await page.goto(url, {
-        waitUntil: PUPPETEER.events.domcontentloaded,
+        waitUntil: EVENTS.domcontentloaded,
         ...options,
     });
 

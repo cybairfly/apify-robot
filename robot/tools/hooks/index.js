@@ -1,5 +1,5 @@
 const log = require('../../logger');
-const { PUPPETEER } = require('../../consts');
+const { EVENTS, PUPPETEER } = require('../../consts');
 const { CustomError } = require('../../errors');
 
 const handlers = require('./handlers');
@@ -26,18 +26,18 @@ const initTrafficFilter = async (page, domain, options = {trafficFilter: {resour
 const initEventLogger = (page, domain, options = {debug: false, trimUrls: true, hostOnly: false}) => {
     const urlLoggerBound = urlLogger.bind(null, page);
     const responseErrorLoggerBound = responseErrorLogger.bind(null, domain);
-    page.on(PUPPETEER.events.domcontentloaded, urlLoggerBound);
-    page.on(PUPPETEER.events.response, responseErrorLoggerBound);
+    page.on(EVENTS.domcontentloaded, urlLoggerBound);
+    page.on(EVENTS.response, responseErrorLoggerBound);
 
     if (options.debug) {
-        page.on(PUPPETEER.events.request, handlers.request(domain, options));
-        page.on(PUPPETEER.events.response, handlers.response(domain, options));
+        page.on(EVENTS.request, handlers.request(domain, options));
+        page.on(EVENTS.response, handlers.response(domain, options));
     }
 };
 
 const decoratePage = (page, server) => {
     page.gotoDom = async (url, options = {}) => page.goto(url, {
-        waitUntil: PUPPETEER.events.domcontentloaded,
+        waitUntil: EVENTS.domcontentloaded,
         ...options,
     });
 
