@@ -1,5 +1,5 @@
 const log = require('../../logger');
-const { EVENTS, PUPPETEER } = require('../../consts');
+const { EVENTS, LOGGER, SERVER } = require('../../consts');
 const { CustomError } = require('../../errors');
 
 const handlers = require('./handlers');
@@ -49,41 +49,42 @@ const decoratePage = (page, server) => {
     };
 
     const decorateGoto = async (page, args, originalMethod) => {
-        const response = await originalMethod.apply(page, args);
-        const status = response.status();
+        try {
+            const response = await originalMethod.apply(page, args);
+            const status = response.status();
 
-        if (status >= 400) {
-            throw CustomError({
-                name: 'Status',
-                data: {
-                    status,
-                },
-                message: `Page failed to load with status ${status}`,
-            });
+            if (status >= 400) {
+                throw CustomError({
+                    name: 'Status',
+                    data: {
+                        status,
+                    },
+                    message: `Page failed to load with status ${status}`,
+                });
+            }
+
+            return response;
+        } catch (error) {
+            log.error(error);
+            throw error;
         }
-
-        return response;
     };
 
-    PUPPETEER.page.methodsNames.logging.map(methodName => {
+    LOGGER.triggerMethods.map(methodName => {
         const originalMethod = page[methodName];
 
-        if (PUPPETEER.page.methodsNames.liveView.some(liveViewMethodName => methodName.includes(liveViewMethodName))) {
+        if (server && SERVER.livecast.triggerMethods.some(liveViewMethodName => methodName.includes(liveViewMethodName))) {
             page[methodName] = async (...args) => {
                 const argsForLog = args => args.map(arg => typeof arg === 'function' ? arg.toString().replace(/\s+/g, ' ') : arg);
                 console.log({[methodName]: argsForLog(args)});
 
                 try {
                     const result = await originalMethod.apply(page, args);
-
-                    if (server)
-                        await server.serve(page);
-
-                    return result;
+                    await server.serve(page);
+                    return Promise.resolve(result);
                 } catch (error) {
-                    if (server)
-                        await server.serve(page);
-
+                    await server.serve(page);
+                    log.error(error);
                     throw error;
                 }
             };
@@ -106,9 +107,9 @@ const decoratePage = (page, server) => {
                 console.log({[methodName]: getArgsForLog(args)});
 
                 if (methodName === 'goto')
-                    return await decorateGoto(page, args, originalMethod);
+                    return decorateGoto(page, args, originalMethod);
 
-                return await originalMethod.apply(page, args);
+                return originalMethod.apply(page, args);
             };
         }
     });

@@ -1,10 +1,14 @@
 0.2.0 / 2021-02-XX
 ==================
 ## Breaking
+<!-- TODO -->
 ### `Robot.Context`
 Rename actor input and output for clearer distinction from robot's own input/output. Consolidate all actor related properties including input and output in a new context property `actor`
 - `INPUT` ➜ `actor.actorInput`
 - `OUTPUT` ➜ `actor.actorOutput`
+
+### `Robot.consts`
+- `PUPPETEER.events` ➜ `EVENTS`
 
 ### `Robot.Setup`
 - `OutputTemplate` ➜ `OutputSchema`
