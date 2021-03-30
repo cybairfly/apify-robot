@@ -21,6 +21,7 @@ const { getBrowserPool } = require('./pools');
 const { startServer } = require('./tools/server');
 const { syncContext } = require('./tools/context');
 const { parseDomain, saveOutput } = require('./tools');
+const { Errors, RobotError } = require('./errors');
 
 const consts = require('./public/consts');
 const tools = require('./public/tools');
@@ -88,11 +89,15 @@ class Robot {
         this.syncContext.output(output);
     }
 
+    static Errors = Errors;
+
     static Setup = Setup;
 
     static Scope = Scope;
 
     static Target = Target;
+
+    static RobotError = RobotError;
 
     static ScopeConfig = ScopeConfig;
 

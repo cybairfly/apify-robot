@@ -1,14 +1,54 @@
-const CustomError = ({ retry = false, getData = false, name = 'CustomError', data = {}, message = 'Custom Error' }, extras = {}) => {
-    const error = Error(extras.message || message);
-    error.name = extras.name || `${name}Error`;
-    error.data = {
-        ...data,
-        ...extras.data,
-    };
+/* eslint-disable max-classes-per-file */
+/* eslint-disable lines-between-class-members */
+const RobotError = require('./robot.error');
 
-    return error;
-};
+/**
+ * Dictionary of custom errors for the robot
+ * Basic error: class extends RobotError {};
+ * Child error: class extends this.super {};
+ * Extra error: class extends this.super {
+        constructor(options = {}) {
+            super(options);
+            this.prop = options.prop;
+            ...
+        }
+    }
+ */
+class Errors {
+    Access = class extends RobotError {
+        message = 'Access issue on requested resource';
+    }
+
+        MultiFactor = class extends this.Access {
+            message = 'Multifactor authentication required';
+        }
+
+        RateLimit = class extends this.Access {
+            message = 'Resource has been rate limited';
+        }
+
+    Network = class extends RobotError {
+        message = 'Network layer error (check proxy)';
+    }
+
+    Status = class extends RobotError {
+        /**
+         * Response status error
+         * @param {object} options
+         * @param {number} [options.statusCode]
+         */
+        constructor(options = {statusCode: null}) {
+            super(options);
+            this.message = options.statusCode ?
+                `Received response with status ${options.statusCode}` :
+                'Received response with error status';
+        }
+
+        message = 'Received response with status';
+    }
+}
 
 module.exports = {
-    CustomError,
+    RobotError,
+    Errors: new Errors(),
 };
