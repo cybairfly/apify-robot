@@ -13,7 +13,7 @@ Rename actor input and output for clearer distinction from robot's own input/out
 ### `Robot.Setup`
 - `OutputTemplate` ➜ `OutputSchema`
 
-### `Robot.Scope(Target)`
+### `Robot.Scope/Target`
 - `constructor(setup, target, robot)` ➜ `constructor(context)`
   - simplify optional scope/target constructors
 - `super(setup, target)` ➜ `super(...arguments)`
@@ -24,10 +24,20 @@ Rename actor input and output for clearer distinction from robot's own input/out
 ## Updates
 Bindings between children classes inheriting from `Robot.Scope/Target` and contents of `context` are automatically initialized through the `Robot.Scope` base class. Therefore constructor is optional when there is no need to manage **local** state of the scope. The `relay` object hosted by `context` is intended for sharing and managing **global** state across all scopes, steps and tasks at runtime.
 
-- `Robot.Target` extends `Robot.Scope`
-  - support for generic scope class for larger target independent automations 
+### `Robot.Error`
+Native support for custom errors with special flags reserved for use by the robot.
+Usage example: `throw new Robot.Error(options = {name, type, retry, message})`
 
-### `Robot.Scope(Target)`
+Reserved properties:
+- `retry: Boolean` - retry of the current actor/robot run
+
+### `Robot.Scope`
+Adding support for generic scope class for larger target independent automations
+
+### `Robot.Target`
+Extends `Robot.Scope`
+
+### `Robot.Scope/Target`
 Properties available directly on the scope instance, outside of the context:
 - `this.task` - currently processed task as defined in `Robot.Setup`
   - `this.task.output` - output of current task
