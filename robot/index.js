@@ -89,7 +89,7 @@ class Robot {
         this.syncContext.output(output);
     }
 
-    static Errors = Errors;
+    static Error = RobotError;
 
     static Setup = Setup;
 
