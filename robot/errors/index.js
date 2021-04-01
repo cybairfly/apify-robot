@@ -1,3 +1,8 @@
+/**
+ * @typedef {import('./d').RobotErrorOptions} RobotErrorOptions
+ * @typedef {import('./d').StatusErrorOptions} StatusErrorOptions
+ */
+
 /* eslint-disable max-classes-per-file */
 /* eslint-disable lines-between-class-members */
 const RobotError = require('./robot.error');
@@ -32,23 +37,17 @@ class Errors {
     }
 
     Status = class extends RobotError {
-        /**
-         * Response status error
-         * @param {object} options
-         * @param {number} [options.statusCode]
-         */
-        constructor(options = {statusCode: null}) {
+        /** @param {RobotErrorOptions & {statusCode: number}} options */
+        constructor(options) {
             super(options);
             this.message = options.statusCode ?
                 `Received response with status ${options.statusCode}` :
                 'Received response with error status';
         }
-
-        message = 'Received response with status';
     }
 }
 
 module.exports = {
     RobotError,
-    Errors: new Errors(),
+    errors: new Errors(),
 };
