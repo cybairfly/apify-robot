@@ -391,7 +391,7 @@ class Robot {
                     this.step.output = await this.step.code(this.context, this);
 
                 else {
-                    this.step.code = this.scope[task.name] ?
+                    this.step.code = this.scope[task.name] && this.scope[task.name].constructor.name !== 'AsyncFunction' ?
                         this.scope[task.name](this.context, this)[step.name] :
                         this.scope[step.name];
 
