@@ -52,7 +52,6 @@ const getBrowserPool = async (browserPoolOptions, proxyConfiguration, session, s
         options.preLaunchHooks = [
             ...options.preLaunchHooks,
             async (pageId, launchContext) => {
-                launchContext.useChrome = true;
                 launchContext.proxyUrl = await proxyConfiguration.newUrl();
             },
         ];
@@ -62,7 +61,6 @@ const getBrowserPool = async (browserPoolOptions, proxyConfiguration, session, s
         options.preLaunchHooks = [
             ...options.preLaunchHooks,
             async (pageId, launchContext) => {
-                launchContext.useChrome = true;
                 launchContext.proxyUrl = await proxyConfiguration.newUrl(session.id);
             },
         ];
