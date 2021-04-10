@@ -14,7 +14,6 @@ const RobotError = require('./robot.error');
  * Extra error: class extends this.super {
         constructor(options = {}) {
             super(options);
-            this.prop = options.prop;
             ...
         }
     }
@@ -24,16 +23,68 @@ class Errors {
         message = 'Access issue on requested resource';
     }
 
-        MultiFactor = class extends this.Access {
+    access = {
+        MultiFactor: class extends this.Access {
             message = 'Multifactor authentication required';
-        }
+        },
 
-        RateLimit = class extends this.Access {
+        RateLimit: class extends this.Access {
             message = 'Resource has been rate limited';
-        }
+        },
+    }
+
+    Login = class extends RobotError {
+        message = 'Error occured during login attempt';
+    }
+
+    login = {
+        Authentication: class extends this.Login {
+            message = 'Login failed using provided credentials';
+        },
+
+        InvalidUsername: class extends this.Login {
+                message = 'Login failed using provided username';
+        },
+
+        InvalidPassword: class extends this.Login {
+                message = 'Login failed using provided password';
+        },
+    }
 
     Network = class extends RobotError {
         message = 'Network layer error (check proxy)';
+    }
+
+    network = {
+        ConnectionAborted: class extends this.Network {
+            message = 'Connection aborted by target';
+        },
+    }
+
+    Retry = class extends RobotError {
+        retry = true;
+    }
+
+    retry = {
+        Step: class extends this.Retry {
+            /** @param {RobotErrorOptions & {step: object, queryInput: boolean}} options */
+            constructor(options) {
+                super(options);
+                this.step = options.step;
+                this.queryInput = options.queryInput;
+                this.message = `Retry step ${this.step && ` ${this.step.name}`}`;
+            }
+        },
+
+        Task: class extends this.Retry {
+            /** @param {RobotErrorOptions & {task: object, queryInput: boolean}} options */
+            constructor(options) {
+                super(options);
+                this.task = options.task;
+                this.queryInput = options.queryInput;
+                this.message = `Retry task ${this.task && ` ${this.task.name}`}`;
+            }
+        },
     }
 
     Status = class extends RobotError {
@@ -43,6 +94,41 @@ class Errors {
             this.message = options.statusCode ?
                 `Received response with status ${options.statusCode}` :
                 'Received response with error status';
+        }
+    }
+
+    Timeout = class extends RobotError {
+        message = 'Timeout during requested action';
+    }
+
+    timeout = {
+        PageLoad: class extends this.Timeout {
+            message = 'Page failed to load within timeout';
+        },
+
+        Request: class extends this.Timeout {
+            message = 'Failed to receive response before timeout';
+        },
+    }
+
+    RetryLogin = class extends RobotError {
+        /** @param {RobotErrorOptions & {requestSecrets: boolean}} options */
+        constructor(options) {
+            super(options);
+            this.requestSecrets = options.requestSecrets;
+            this.message = `Retry login${options.requestSecrets && ' with new credentials'}`;
+        }
+
+        retry = true;
+    }
+
+    RetireSession = class extends RobotError {
+        retireSession = true;
+    }
+
+    ProcessPatterns = class extends RobotError {
+        handler = context => {
+            // handle patterns
         }
     }
 }

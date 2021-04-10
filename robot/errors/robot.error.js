@@ -6,6 +6,7 @@
 module.exports = class RobotError extends Error {
     #name = '';
     #type = '';
+    #message = '';
 
     /**
      * Custom errors for robot
@@ -13,28 +14,47 @@ module.exports = class RobotError extends Error {
      */
     constructor(options = {}) {
         super(options.message);
+        this.#message = options.message;
         this.#name = options.name;
         this.#type = options.type;
-        this.retry = options.retry || false;
+
+        if (options.error)
+            this.error = options.error;
+
+        if (options.retry)
+            this.error = options.retry;
+
+        if (Error.captureStackTrace)
+            Error.captureStackTrace(this, this.constructor);
 
         Object.entries(options).forEach(([key, value]) => this[key] = value);
     }
 
     get name() {
-        return this.#name || this.constructor.name.toLowerCase().includes('error') ?
-            this.constructor.name :
-            `${this.constructor.name}Error`;
+        return this.#name
+        || (this.constructor.name === 'RobotError' && this.error && this.error.constructor.name)
+        || (this.constructor.name.toLowerCase().includes('error') ? this.constructor.name : `${this.constructor.name}Error`);
     }
 
     set name(name) {
-        this.#name = name;
+        this.#name = this.name || name;
     }
 
     get type() {
-        return this.#type || this.constructor.name + 2;
+        return this.#type || this.constructor.name;
     }
 
     set type(type) {
-        this.#type = type;
+        this.#type = this.type || type;
     }
+
+    get message() {
+        return this.#message || (this.constructor.name === 'RobotError' && this.error && this.error.message) || '';
+    }
+
+    set message(message) {
+        this.#message = this.message || message;
+    }
+
+    toJSON = () => ({ ...this});
 };
