@@ -62,6 +62,14 @@ const RobotOptions = ({ input: { block, stream, proxyConfig }, input, setup}) =>
             //     '--remote-debugging-port=9222'
             // ]
         },
+        sessionPool: {
+            sessionOptions: {
+                userData: {
+                    target,
+                },
+            },
+            persistStateKeyValueStoreId: `sessions-${target}`,
+        },
     };
 
     const options = R.mergeDeepRight(R.mergeDeepRight(DEFAULT_OPTIONS, defaultOptions), setup.OPTIONS);

@@ -79,6 +79,11 @@ const DEFAULT_OPTIONS = {
             },
         },
     },
+    sessionPool: {
+        sessionOptions: {
+            maxAgeSecs: 24 * 60 * 60,
+        },
+    },
     trafficFilter: {
         resources: [
             // 'document',
@@ -254,6 +259,10 @@ const SERVER = {
     },
 };
 
+const SESSION = {
+    retireStatusCodes: [401, 403, 429],
+};
+
 // TODO remove legacy
 const PUPPETEER = {
     events: {
@@ -361,6 +370,7 @@ module.exports = {
     EVENTS,
     LOGGER,
     SERVER,
+    SESSION,
     TIMEOUTS,
     PUPPETEER,
 };
