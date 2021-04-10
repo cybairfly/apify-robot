@@ -29,23 +29,7 @@ const transformOptions = {
             },
 };
 
-// TODO deprecate
-const Options = {
-    blockRequests: (target, CUSTOM_OPTIONS, DEFAULT_OPTIONS) => ({
-        urlPatterns: Object
-            .keys(DEFAULT_OPTIONS.blockRequests)
-            .reduce((pool, next) => {
-                return pool = [
-                    ...pool,
-                    ...(CUSTOM_OPTIONS && CUSTOM_OPTIONS.blockRequests ?
-                        CUSTOM_OPTIONS.blockRequests[next] || DEFAULT_OPTIONS.blockRequests[next] :
-                        DEFAULT_OPTIONS.blockRequests[next]),
-                ];
-            }, []),
-    }),
-};
-
-const RobotOptions = ({ input: { block, stream, proxyConfig }, input, setup}) => {
+const getDefaultOptions = ({ input: { target }, input, setup}) => {
     const defaultOptions = {
         launchPuppeteer: {
             // useApifyProxy: proxyConfig ? proxyConfig.useApifyProxy : true,
@@ -64,7 +48,28 @@ const RobotOptions = ({ input: { block, stream, proxyConfig }, input, setup}) =>
         },
     };
 
-    const options = R.mergeDeepRight(R.mergeDeepRight(DEFAULT_OPTIONS, defaultOptions), setup.OPTIONS);
+    return R.mergeDeepRight(DEFAULT_OPTIONS, defaultOptions);
+};
+
+// TODO deprecate
+const Options = {
+    blockRequests: (target, CUSTOM_OPTIONS, DEFAULT_OPTIONS) => ({
+        urlPatterns: Object
+            .keys(DEFAULT_OPTIONS.blockRequests)
+            .reduce((pool, next) => {
+                return pool = [
+                    ...pool,
+                    ...(CUSTOM_OPTIONS && CUSTOM_OPTIONS.blockRequests ?
+                        CUSTOM_OPTIONS.blockRequests[next] || DEFAULT_OPTIONS.blockRequests[next] :
+                        DEFAULT_OPTIONS.blockRequests[next]),
+                ];
+            }, []),
+    }),
+};
+
+const RobotOptions = ({ input: { block, proxyConfig }, input, setup}) => {
+    const defaultOptions = getDefaultOptions({input, setup});
+    const options = R.mergeDeepRight(defaultOptions, setup.OPTIONS);
 
     if (options.launchPuppeteer.randomUserAgent) {
         options.launchPuppeteer.userAgent = proxyConfig && proxyConfig.userAgent
