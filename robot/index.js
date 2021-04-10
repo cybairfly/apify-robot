@@ -290,7 +290,6 @@ class Robot {
     };
 
     createContext = async ({input, output, page, relay, server} = this) => {
-        // TODO consider nested under actor/robot
         this.context = {
             // TODO remove legacy support
             INPUT: Object.freeze(input),
@@ -499,7 +498,6 @@ class Robot {
         return output;
     };
 
-    // TODO auto debug mode with debug buffers
     handleError = async ({input, output, page, setup} = this, error) => {
         if (Object.keys(output).length)
             await saveOutput({input, output, page});
