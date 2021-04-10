@@ -1,6 +1,6 @@
 const log = require('../../logger');
-const { EVENTS, LOGGER, SERVER } = require('../../consts');
-const { CustomError } = require('../../errors');
+const { EVENTS, LOGGER, SERVER, SESSION } = require('../../consts');
+const { errors, RobotError } = require('../../errors');
 
 const handlers = require('./handlers');
 
@@ -29,13 +29,14 @@ const initEventLogger = (page, domain, options = {debug: false, trimUrls: true, 
     page.on(EVENTS.domcontentloaded, urlLoggerBound);
     page.on(EVENTS.response, responseErrorLoggerBound);
 
+    // TODO expose debug options on input
     if (options.debug) {
         page.on(EVENTS.request, handlers.request(domain, options));
         page.on(EVENTS.response, handlers.response(domain, options));
     }
 };
 
-const decoratePage = (page, server) => {
+const decoratePage = (page, server, session) => {
     page.gotoDom = async (url, options = {}) => page.goto(url, {
         waitUntil: EVENTS.domcontentloaded,
         ...options,
@@ -49,25 +50,20 @@ const decoratePage = (page, server) => {
     };
 
     const decorateGoto = async (page, args, originalMethod) => {
-        try {
-            const response = await originalMethod.apply(page, args);
-            const status = response.status();
+        const response = await originalMethod.apply(page, args);
+        const statusCode = response.status();
 
-            if (status >= 400) {
-                throw CustomError({
-                    name: 'Status',
-                    data: {
-                        status,
-                    },
-                    message: `Page failed to load with status ${status}`,
-                });
-            }
+        if (statusCode >= 400) {
+            const retireSession = SESSION.retireStatusCodes.some(code => code === statusCode);
 
-            return response;
-        } catch (error) {
-            log.error(error);
-            throw error;
+            if (retireSession)
+                throw new errors.RetireSession({statusCode});
+
+            else
+                throw new errors.Status({statusCode});
         }
+
+        return response;
     };
 
     LOGGER.triggerMethods.map(methodName => {
