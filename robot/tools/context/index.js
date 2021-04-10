@@ -78,6 +78,8 @@ const syncContext = robot => ({
             robot.scope.step = stepCopy;
     },
     output: output => {
+        if (!output) return;
+
         try {
             Object.entries(output).map(entry => {
                 const [key, value] = entry;
