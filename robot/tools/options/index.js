@@ -46,6 +46,14 @@ const getDefaultOptions = ({ input: { target }, input, setup}) => {
             //     '--remote-debugging-port=9222'
             // ]
         },
+        sessionPool: {
+            sessionOptions: {
+                userData: {
+                    target,
+                },
+            },
+            persistStateKeyValueStoreId: `sessions-${target}`,
+        },
     };
 
     return R.mergeDeepRight(DEFAULT_OPTIONS, defaultOptions);

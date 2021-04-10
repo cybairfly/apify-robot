@@ -12,6 +12,7 @@ const Target = require('./target');
 const ScopeConfig = Scope.Config;
 const TargetConfig = Target.Config;
 
+const { SESSION } = require('./consts');
 const { RobotOptions } = require('./tools/options');
 const { notifyChannel } = require('./tools/notify');
 const { transformTasks, resolveTaskTree } = require('./tools/tasks');
@@ -203,6 +204,7 @@ class Robot {
     start = async ({input, input: {tasks: taskNames, target, session, stealth}, setup} = this) => {
         input.id = await setup.getInputId(input);
         this.context = await this.createContext(this);
+        this.options = RobotOptions({input, setup});
 
         if (target)
             this.Scope = tryRequire.global(`./${setup.getPath.targets.target(target)}`) || this.Scope;
@@ -215,9 +217,13 @@ class Robot {
                 setup.getProxySessionId.local(this.context);
         }
 
-        if (stealth) {
-            this.sessionPool = await Apify.openSessionPool();
+        if (!this.options.browserPool.disable) {
+            this.sessionPool = await Apify.openSessionPool(this.options.sessionPool);
             this.session = await this.sessionPool.getSession(session && this.sessionId);
+            this.session.retireOnBlockedStatusCodes(SESSION.retireStatusCodes);
+            log.debug('sessionPool state', this.sessionPool.getState());
+            log.debug('sessionPool count - usable', this.sessionPool.usableSessionsCount);
+            log.debug('sessionPool count - retired', this.sessionPool.retiredSessionsCount);
         }
 
         this.options = RobotOptions({input, setup});
@@ -228,6 +234,7 @@ class Robot {
             log.redact.object(this.options);
         }
 
+        this.proxyConfig = await getProxyConfig({input, sessionId: this.sessionId});
         this.output = (setup.OutputSchema && setup.OutputSchema({input})) || {};
         this.output = await this.retry(this);
 
@@ -253,7 +260,7 @@ class Robot {
         return this.tasks;
     };
 
-    initPage = async ({input: {block, debug, target, stream, stealth}, page = null, setup, options} = this) => {
+    initPage = async ({input: {block, debug, target, stream, stealth}, page = null, session, setup, options} = this) => {
         const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
         const url = source.TARGET && source.TARGET.url;
         const domain = parseDomain(url, target);
@@ -283,7 +290,7 @@ class Robot {
         const shouldStartServer = !this.server && stream;
         const server = this.server = this.server || (shouldStartServer && startServer(page, setup, this.options.liveViewServer));
 
-        decoratePage(page, server);
+        decoratePage(page, server, session);
         initEventLogger(page, domain, {debug});
 
         return page;
@@ -520,7 +527,7 @@ class Robot {
         throw error;
     };
 
-    stop = async ({browserPool, browser, options, server, page} = this) => {
+    stop = async ({browserPool, sessionPool, browser, options, session, server, page, errors: [error]} = this) => {
         this.syncContext.page(null);
 
         if (browserPool) {
@@ -528,10 +535,22 @@ class Robot {
             await browserPool.destroy();
         }
 
-        if (browser) {
-            await browser.close().catch(error => {
-                log.debug('Failed to close browser');
-            });
+        if (sessionPool) {
+            if (!error)
+                session.markGood();
+
+            if (error) {
+                if (error instanceof errors.Network || error instanceof errors.RetireSession)
+                    session.retire();
+
+                else if (error.retainSession || error instanceof errors.RetainSession)
+                    session.markGood();
+
+                else
+                    session.markBad();
+            }
+
+            sessionPool.persistState();
         }
 
         if (server) {
