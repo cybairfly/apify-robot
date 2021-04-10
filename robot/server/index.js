@@ -13,7 +13,7 @@ const {LiveViewServer} = Apify;
 const writeFile = promisify(fs.writeFile);
 
 const Snapshot = require('./snapshot');
-const log = require('../tools/log');
+const log = require('../logger');
 
 const {
     CustomError,
@@ -24,8 +24,6 @@ const {
     APIFY_CONTAINER_URL,
     APIFY_DEFAULT_KEY_VALUE_STORE_ID,
 } = process.env;
-
-// #####################################################################################################################
 
 class Server extends LiveViewServer {
     constructor(page, setup, options = {}) {

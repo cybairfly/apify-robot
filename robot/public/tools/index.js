@@ -1,15 +1,24 @@
+const pptrTools = require('./pptr');
+const publicTools = require('./tools');
+
+const log = require('../../logger');
+
 const {
-    log,
     tryRequire,
-    decrypt,
-    decryptObject,
-    deepTransform,
-    redactObject,
     saveOutput,
     savePageContent,
     saveScreenshot,
     // sendNotification,
 } = require('../../tools');
+
+const {
+    decrypt,
+    decryptObject,
+} = require('../../crypto');
+
+const {
+    redactObject,
+} = require('../../tools/generic');
 
 module.exports = {
     log,
@@ -20,6 +29,6 @@ module.exports = {
     saveOutput,
     savePageContent,
     saveScreenshot,
-    ...require('./pptr'),
-    ...require('./tools'),
+    ...pptrTools,
+    ...publicTools,
 };

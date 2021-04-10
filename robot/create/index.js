@@ -48,7 +48,7 @@ const Options = ({ INPUT, input, setup, INPUT: { block, stream, proxyConfig } })
     }
 
     if (block)
-        options.blockRequests = transformOptions.blockRequests(options.blockRequests);
+        options.trafficFilter = transformOptions.trafficFilter(options.trafficFilter);
 
     return options;
 };

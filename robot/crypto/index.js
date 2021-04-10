@@ -1,9 +1,8 @@
 const Apify = require('apify');
 const crypto = require('crypto');
 
-const {
-    DEFAULT_OPTIONS,
-} = require('../consts');
+const log = require('../logger');
+const { DEFAULT_OPTIONS } = require('../consts');
 
 const generateKeys = async keyStore => {
     const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
@@ -80,6 +79,48 @@ const prepareDecrypt = async keyStore => {
     return input => privateDecrypt(privateKey, input, DEFAULT_OPTIONS.crypto.decrypt);
 };
 
+const decrypt = async (input, logSecret = false) => {
+    const keyStore = await Apify.openKeyValueStore('keyStore');
+    const decrypt = await prepareDecrypt(keyStore);
+    log.info(`Encrypted input: [${input}]`);
+
+    try {
+        const decrypted = decrypt(input);
+
+        const logOutput = logSecret ?
+            `Input decrypted: [${decrypted}]` :
+            `Input decrypted: [${input}]`;
+
+        log.info(logOutput);
+
+        return decrypted;
+    } catch (error) {
+        const logOutput = logSecret ?
+            `Failed to decrypt: [${input}]` :
+            'Failed to decrypt input';
+
+        log.warning(logOutput);
+
+        return input;
+    }
+};
+
+const decryptObject = async object => {
+    const keyStore = await Apify.openKeyValueStore('keyStore');
+    const decrypt = await prepareDecrypt(keyStore);
+    log.info('Encrypted input:');
+    console.log(object);
+
+    for (const key of object) {
+        try {
+            object[key] = decrypt(object[key]);
+            log.info(`Input decrypted: [${key}]`);
+        } catch (error) {
+            log.warning(`Failed to decrypt [${key}]`);
+        }
+    }
+};
+
 const testEncryption = async (keyStore, testString) => {
     const encrypt = await prepareEncrypt(keyStore);
     const decrypt = await prepareDecrypt(keyStore);
@@ -101,4 +142,6 @@ module.exports = {
     privateDecrypt,
     prepareDecrypt,
     testEncryption,
+    decryptObject,
+    decrypt,
 };
