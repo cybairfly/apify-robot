@@ -40,6 +40,7 @@ class Robot {
 
         this.relay = {};
         this.context = {};
+        this._error = {};
         this._output = {};
         // this.output = {};
 
@@ -60,6 +61,7 @@ class Robot {
         this._task = null;
         this.tasks = {};
         this.steps = {};
+        this.errors = [];
 
         this.retry = this.catch(this.retry);
         this.syncContext = syncContext(this);
@@ -73,6 +75,14 @@ class Robot {
         return this._step;
     }
 
+    get error() {
+        return this._error;
+    }
+
+    get output() {
+        return this._output;
+    }
+
     set task(task) {
         this._task = task;
     }
@@ -81,8 +91,9 @@ class Robot {
         this._step = step;
     }
 
-    get output() {
-        return this._output;
+    set error(error) {
+        this._error = error;
+        this.errors.unshift(error);
     }
 
     set output(output) {
@@ -166,6 +177,8 @@ class Robot {
         try {
             return await retry(this);
         } catch (error) {
+            this.error = error;
+
             if (input.retry > this.retryIndex) {
                 if (input.debug) {
                     const {output, input, page, retryCount} = this;
@@ -184,10 +197,10 @@ class Robot {
                 log.info(`RETRY [R-${this.retryCount}]`);
                 log.default('◄'.repeat(100));
 
-                return await this.retry(this);
+                return this.retry(this);
             }
 
-            await this.handleError(this, error);
+            await this.handleError(this);
         }
     };
 
@@ -219,9 +232,6 @@ class Robot {
             this.sessionPool = await Apify.openSessionPool();
             this.session = await this.sessionPool.getSession(session && this.sessionId);
         }
-
-        this.options = RobotOptions({input, setup});
-        this.proxyConfig = await getProxyConfig(this);
 
         if (!this.isRetry) {
             log.redact.object(input);
@@ -500,10 +510,15 @@ class Robot {
     };
 
     // TODO auto debug mode with debug buffers
-    handleError = async ({input, output, page, setup} = this, error) => {
+    handleError = async ({input, output, error, page, setup} = this) => {
         if (Object.keys(output).length)
             await saveOutput({input, output, page});
 
+        const isNetworkError = ['net::', 'NS_BINDING_ABORTED'].some(item => error.message.startsWith(item));
+        if (isNetworkError)
+            this.error = new errors.Network({error});
+
+        await this.stop();
         // TODO rename & support other channels
         const {channel} = setup.SLACK;
 
@@ -518,12 +533,17 @@ class Robot {
             console.error('---------------------------------------------------------------');
         }
 
-        await this.stop();
         throw error;
     };
 
     stop = async ({browserPool, browser, options, server, page} = this) => {
         this.syncContext.page(null);
+
+        if (browser) {
+            await browser.close().catch(error => {
+                log.debug('Failed to close browser');
+            });
+        }
 
         if (browserPool) {
             await browserPool.retireAllBrowsers();
