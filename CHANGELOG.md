@@ -21,6 +21,10 @@ Rename actor input and output for clearer distinction from robot's own input/out
 - `stepName = () => {}` ➜ `taskName = context => ({ stepName: context => {}, ... })`
   - steps are now optionally (recommended and will become the default) wrapped by their respective tasks in `Robot.Scope/Target` implementations to follow the structure in `Robot.Setup` more closely and provide other additional benefits through this closure, including type hints in step signatures. Updated `context` is passed to both tasks and steps at runtime.
 
+### `Robot.tools.login`
+  - `selectors.loggedIn` ➜ `selectors.verify`
+  - throw if none of either `predicate` or `selectors.verify` is present for login status verification
+
 ## Updates
 Bindings between children classes inheriting from `Robot.Scope/Target` and contents of `context` are automatically initialized through the `Robot.Scope` base class. Therefore constructor is optional when there is no need to manage **local** state of the scope. The `relay` object hosted by `context` is intended for sharing and managing **global** state across all scopes, steps and tasks at runtime.
 
