@@ -122,7 +122,21 @@ class Errors {
         retry = true;
     }
 
+    RetainSession = class extends RobotError {
+        /** @param {RobotErrorOptions} options */
+        constructor(options) {
+            super(options);
+            this.message = `Retain session: ${options.message}`;
+        }
+    }
+
     RetireSession = class extends RobotError {
+        /** @param {RobotErrorOptions} options */
+        constructor(options) {
+            super(options);
+            this.message = `Retire session: ${options.message}`;
+        }
+
         retireSession = true;
     }
 
