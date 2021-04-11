@@ -58,9 +58,18 @@ class RobotSetup {
         // local: ({input}) => String,
     };
 
-    /* Slack specific options for error alerts */
-    SLACK = {
-        // channel: String,
+    /* notify these channels of errors */
+    NOTIFY = {
+        details: true,
+        filters: {
+            errorNames: [],
+            errorTypes: [],
+        },
+        channels: {
+            slack: {
+                // channel: String,
+            },
+        },
     };
 
     /* robot internal server options */

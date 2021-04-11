@@ -201,6 +201,7 @@ class Robot {
                 return this.retry(this);
             }
 
+            this.probeError(this);
             await this.handleError(this);
         }
     };
@@ -515,20 +516,22 @@ class Robot {
         return output;
     };
 
-    handleError = async ({input, output, error, page, setup} = this) => {
-        if (Object.keys(output).length)
-            await saveOutput({input, output, page});
-
+    probeError = ({error} = this) => {
         const isNetworkError = ['net::', 'NS_BINDING_ABORTED'].some(item => error.message.startsWith(item));
         if (isNetworkError)
             this.error = new errors.Network({error});
 
-        await this.stop();
-        // TODO rename & support other channels
-        const {channel} = setup.SLACK;
+        return this.error;
+    }
 
-        if (!input.silent && setup.SLACK.channel) {
-            await notifyChannel({input, output, channel, error});
+    handleError = async ({input, output, options, error, page, setup} = this) => {
+        if (Object.keys(output).length)
+            await saveOutput({input, output, page});
+
+        await this.stop();
+
+        if (!input.silent) {
+            await notifyChannel({input, output, error, setup});
             console.error('---------------------------------------------------------');
             console.error('Error in robot - support notified to update configuration');
             console.error('---------------------------------------------------------');

@@ -1,6 +1,9 @@
 0.2.0 / 2021-02-XX
 ==================
 ## Breaking
+### Environment
+`process.env.slackToken` ➜ `process.env.SLACK_TOKEN`
+
 <!-- TODO -->
 ### `Robot.Context`
 Rename actor input and output for clearer distinction from robot's own input/output. Consolidate all actor related properties including input and output in a new context property `actor`
@@ -12,6 +15,7 @@ Rename actor input and output for clearer distinction from robot's own input/out
 
 ### `Robot.Setup`
 - `OutputTemplate` ➜ `OutputSchema`
+- `SLACK.channel` ➜ `NOTIFY.channels.slack.channel`
 - `OPTIONS.blockRequests` ➜ `OPTIONS.trafficFilter`
 - `OPTIONS.blockRequests.patterns` ➜ `OPTIONS.trafficFilter.patterns.url`
 - `OPTIONS.blockRequests.analytics` ➜ `OPTIONS.trafficFilter.patterns.host`
@@ -32,6 +36,8 @@ Rename actor input and output for clearer distinction from robot's own input/out
 Bindings between children classes inheriting from `Robot.Scope/Target` and contents of `context` are automatically initialized through the `Robot.Scope` base class. Therefore constructor is optional when there is no need to manage **local** state of the scope. The `relay` object hosted by `context` is intended for sharing and managing **global** state across all scopes, steps and tasks at runtime.
 
 ### `Robot.Setup`
+- `NOTIFY.details` - support extra error details in external notifications
+- `NOTIFY.filters` - support error alert filters based on error name/type
 - `OPTIONS.trafficFilter.resources` - filter out requests by resource type
 
 ### `Robot.Error`
