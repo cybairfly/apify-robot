@@ -22,7 +22,7 @@ module.exports = class RobotError extends Error {
             this.error = options.error;
 
         if (options.retry)
-            this.error = options.retry;
+            this.retry = options.retry;
 
         if (Error.captureStackTrace)
             Error.captureStackTrace(this, this.constructor);
