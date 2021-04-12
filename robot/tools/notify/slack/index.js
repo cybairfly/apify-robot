@@ -1,6 +1,6 @@
 const Slack = require('slack-node');
 
-async function postMessage(slack, channel, text) {
+async function postMessage({slack, channel, message: text}) {
     slack = new Slack(process.env.SLACK_TOKEN);
 
     return new Promise((resolve, reject) => {
