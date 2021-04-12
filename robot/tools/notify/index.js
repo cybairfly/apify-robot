@@ -23,7 +23,7 @@ const notifyChannel = async ({input, setup, error}) => {
         const errorLabel = error.type || error.name || '';
         const errorDetails = details && JSON.stringify(error, null, 4);
         const message = formatMessage(target, errorLabel, errorDetails);
-        await postMessage(channel, message);
+        await postMessage({channel, message});
     }
 };
 
