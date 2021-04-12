@@ -521,6 +521,9 @@ class Robot {
         if (isNetworkError)
             this.error = new errors.Network({error});
 
+        if (error instanceof Robot.Error === false)
+            this.error = new Robot.Error({error});
+
         return this.error;
     }
 
