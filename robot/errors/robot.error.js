@@ -34,7 +34,7 @@ module.exports = class RobotError extends Error {
 
     get name() {
         return this.#name
-        || (this.constructor.name === 'RobotError' && ((this.error && this.error.constructor.name) || 'Robot.Error'))
+        || (this.constructor.name === 'RobotError' && ((this.error && this.error.name) || 'Robot.Error'))
         || (this.constructor.name !== 'RobotError' && this instanceof RobotError && `Robot.Error.${this.constructor.name}`)
         || (this.constructor.name.toLowerCase().includes('error') ? this.constructor.name : `${this.constructor.name}Error`);
     }
@@ -84,11 +84,11 @@ module.exports = class RobotError extends Error {
             output.message = this.message;
 
         if (this.error)
-            output.error = this.error instanceof RobotError ? JSON.stringify(this.error) : this.error.toString();
+            output.error = this.error instanceof RobotError ? JSON.parse(JSON.stringify(this.error)) : this.error.toString();
 
         if (this.retry)
             output.retry = this.retry;
 
-        return output;
+        return Reflect.ownKeys(output).length ? output : null;
     };
 };
