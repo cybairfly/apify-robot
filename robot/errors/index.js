@@ -31,7 +31,6 @@ class Errors {
         MultiFactor: class extends this.Access {
             message = 'Multifactor authentication required';
         },
-
         RateLimit: class extends this.Access {
             message = 'Resource has been rate limited';
         },
@@ -45,11 +44,9 @@ class Errors {
         Authentication: class extends this.Login {
             message = 'Login failed using provided credentials';
         },
-
         InvalidUsername: class extends this.Login {
                 message = 'Login failed using provided username';
         },
-
         InvalidPassword: class extends this.Login {
                 message = 'Login failed using provided password';
         },
@@ -79,7 +76,6 @@ class Errors {
                 this.message = `Retry step ${this.step && ` ${this.step.name}`}`;
             }
         },
-
         Task: class extends this.Retry {
             /** @param {RobotErrorOptions & {task: object, queryInput: boolean}} options */
             constructor(options) {
@@ -101,22 +97,40 @@ class Errors {
         }
     }
 
-    Timeout = class extends RobotError {
-        message = 'Timeout during requested action';
+    session = {
+        Retain: class extends RobotError {
+            /** @param {RobotErrorOptions} options */
+            constructor(options) {
+                super(options);
+                this.message = `Retain session: ${options.message}`;
+            }
+        },
+        Retire: class extends RobotError {
+            /** @param {RobotErrorOptions} options */
+            constructor(options) {
+                super(options);
+                this.message = `Retire session: ${options.message}`;
+            }
+
+            retireSession = true;
+        },
     }
 
-    Verification = class extends RobotError {
-        message = 'Failed to verify result success';
+    Timeout = class extends RobotError {
+        message = 'Timeout during requested action';
     }
 
     timeout = {
         PageLoad: class extends this.Timeout {
             message = 'Page failed to load within timeout';
         },
-
         Request: class extends this.Timeout {
             message = 'Failed to receive response before timeout';
         },
+    }
+
+    Verification = class extends RobotError {
+        message = 'Failed to verify result success';
     }
 
     RetryLogin = class extends RobotError {
@@ -128,24 +142,6 @@ class Errors {
         }
 
         retry = true;
-    }
-
-    RetainSession = class extends RobotError {
-        /** @param {RobotErrorOptions} options */
-        constructor(options) {
-            super(options);
-            this.message = `Retain session: ${options.message}`;
-        }
-    }
-
-    RetireSession = class extends RobotError {
-        /** @param {RobotErrorOptions} options */
-        constructor(options) {
-            super(options);
-            this.message = `Retire session: ${options.message}`;
-        }
-
-        retireSession = true;
     }
 
     ProcessPatterns = class extends RobotError {
