@@ -178,6 +178,7 @@ class Robot {
         try {
             return await retry(this);
         } catch (error) {
+            this.probeError();
             this.error = error;
 
             if (input.retry > this.retryIndex) {
@@ -201,7 +202,6 @@ class Robot {
                 return this.retry(this);
             }
 
-            this.probeError(this);
             await this.handleError(this);
         }
     };
