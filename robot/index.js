@@ -565,10 +565,10 @@ class Robot {
                 session.markGood();
 
             if (error) {
-                if (error instanceof errors.Network || error instanceof errors.RetireSession)
+                if (error.retireSession || error instanceof errors.Network || error instanceof errors.session.Retire)
                     session.retire();
 
-                else if (error.retainSession || error instanceof errors.RetainSession)
+                else if (error.retainSession || error instanceof errors.session.Retain)
                     session.markGood();
 
                 else
