@@ -99,14 +99,14 @@ class Errors {
 
     session = {
         Retain: class extends RobotError {
-            /** @param {RobotErrorOptions} options */
+            /** @param {RobotErrorOptions & {message: string}} options */
             constructor(options) {
                 super(options);
                 this.message = `Retain session: ${options.message}`;
             }
         },
         Retire: class extends RobotError {
-            /** @param {RobotErrorOptions} options */
+            /** @param {RobotErrorOptions & {message: string}} options */
             constructor(options) {
                 super(options);
                 this.message = `Retire session: ${options.message}`;
