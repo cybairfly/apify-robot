@@ -19,6 +19,10 @@ const RobotError = require('./robot.error');
     }
  */
 class Errors {
+    Muted = class extends RobotError {
+        mute = true;
+    }
+
     Access = class extends RobotError {
         message = 'Access issue on requested resource';
     }
@@ -99,6 +103,10 @@ class Errors {
 
     Timeout = class extends RobotError {
         message = 'Timeout during requested action';
+    }
+
+    Verification = class extends RobotError {
+        message = 'Failed to verify result success';
     }
 
     timeout = {
