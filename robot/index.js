@@ -178,8 +178,7 @@ class Robot {
         try {
             return await retry(this);
         } catch (error) {
-            this.probeError();
-            this.error = error;
+            this.error = this.probeError(error);
 
             if (input.retry > this.retryIndex) {
                 if (input.debug) {
@@ -516,15 +515,15 @@ class Robot {
         return output;
     };
 
-    probeError = ({error} = this) => {
+    probeError = error => {
         const isNetworkError = ['net::', 'NS_BINDING_ABORTED'].some(item => error.message.startsWith(item));
         if (isNetworkError)
-            this.error = new errors.Network({error});
+            error = new errors.Network({error});
 
         if (error instanceof Robot.Error === false)
-            this.error = new Robot.Error({error});
+            error = new Robot.Error({error});
 
-        return this.error;
+        return error;
     }
 
     handleError = async ({input, output, options, error, page, setup} = this) => {
