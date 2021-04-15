@@ -230,13 +230,14 @@ class Robot {
                 setup.getProxySessionId.local(this.context);
         }
 
+        // TODO update for standalone usage
         if (!this.options.browserPool.disable) {
             this.sessionPool = await Apify.openSessionPool(this.options.sessionPool);
             this.session = await this.sessionPool.getSession(session && this.sessionId);
             this.session.retireOnBlockedStatusCodes(SESSION.retireStatusCodes);
-            log.debug('sessionPool state', this.sessionPool.getState());
-            log.debug('sessionPool count - usable', this.sessionPool.usableSessionsCount);
-            log.debug('sessionPool count - retired', this.sessionPool.retiredSessionsCount);
+            log.console.debug('Retire session on status codes:', SESSION.retireStatusCodes);
+            log.console.info('Usable proxy sessions:', this.sessionPool.usableSessionsCount);
+            log.console.info('Retired proxy sessions:', this.sessionPool.retiredSessionsCount);
         }
 
         if (!this.isRetry) {
