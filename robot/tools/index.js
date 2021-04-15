@@ -22,7 +22,8 @@ const tryRequire = {
             log.join.debug('PATH:', requirePath);
             return require(requirePath);
         } catch (error) {
-            log.debug(error.message);
+            const [message] = error.message.split('\n', 1);
+            log.debug(message);
 
             if (options.scope)
                 log.debug(error.stack);
