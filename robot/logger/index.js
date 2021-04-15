@@ -7,17 +7,17 @@ const {redactObject} = require('../tools/generic');
 log.default = (...args) => console.log(...args);
 
 log.console = {
-    info: (...args) => log.getLevel() === log.LEVELS.INFO && console.log(...args),
-    debug: (...args) => log.getLevel() === log.LEVELS.DEBUG && console.log(...args),
-    error: (...args) => log.getLevel() === log.LEVELS.ERROR && console.log(...args),
-    warning: (...args) => log.getLevel() === log.LEVELS.WARNING && console.log(...args),
+    info: (...args) => log.getLevel() === log.LEVELS.INFO && console.log('INFO', ...args),
+    debug: (...args) => log.getLevel() === log.LEVELS.DEBUG && console.log('DEBUG', ...args),
+    error: (...args) => log.getLevel() === log.LEVELS.ERROR && console.error('ERROR', ...args),
+    warning: (...args) => log.getLevel() === log.LEVELS.WARNING && console.warn('WARNING', ...args),
 };
 
 log.join = {
-    info: (...args) => log.info(`${args.join(' ')}`),
-    debug: (...args) => log.debug(`${args.join(' ')}`),
-    error: (...args) => log.error(`${args.join(' ')}`),
-    warning: (...args) => log.warning(`${args.join(' ')}`),
+    info: (...args) => log.info(`INFO ${args.join(' ')}`),
+    debug: (...args) => log.debug(`DEBUG ${args.join(' ')}`),
+    error: (...args) => log.error(`ERROR ${args.join(' ')}`),
+    warning: (...args) => log.warning(`WARNING ${args.join(' ')}`),
 };
 
 log.object = {
