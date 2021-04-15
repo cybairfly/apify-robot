@@ -179,8 +179,9 @@ class Robot {
             return await retry(this);
         } catch (error) {
             this.error = this.probeError(error);
+            const doRetry = error.retry && input.retry > this.retryIndex;
 
-            if (input.retry > this.retryIndex) {
+            if (doRetry) {
                 if (input.debug) {
                     const {output, input, page, retryCount} = this;
                     await saveOutput({input, output, page, retryCount});
