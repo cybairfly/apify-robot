@@ -57,7 +57,7 @@ const decoratePage = (page, server, session) => {
             const retireSession = SESSION.retireStatusCodes.some(code => code === statusCode);
 
             if (retireSession)
-                throw new errors.RetireSession({statusCode});
+                throw new errors.session.Retire({statusCode});
 
             else
                 throw new errors.Status({statusCode});
