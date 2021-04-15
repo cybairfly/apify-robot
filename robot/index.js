@@ -56,7 +56,7 @@ class Robot {
         this.server = null;
         this.strategy = null;
 
-        this.Scope = {};
+        this.Scope = null;
         this.scope = {};
         this._step = null;
         this._task = null;
@@ -220,9 +220,9 @@ class Robot {
         this.options = RobotOptions({input, setup});
 
         if (target)
-            this.Scope = tryRequire.global(`./${setup.getPath.targets.target(target)}`) || this.Scope;
+            this.Scope = tryRequire.global(`./${setup.getPath.targets.target(target)}`, {scope: true});
         else
-            this.Scope = tryRequire.global(`./${setup.getPath.generic.scope()}`) || this.Scope;
+            this.Scope = tryRequire.global(`./${setup.getPath.generic.scope()}`, {scope: true});
 
         if (session) {
             this.sessionId = Apify.isAtHome() ?
