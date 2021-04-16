@@ -272,7 +272,7 @@ class Robot {
         return this.tasks;
     };
 
-    initPage = async ({input: {block, debug, target, stream, stealth}, page = null, session, setup, options} = this) => {
+    initPage = async ({input: {block, debug, target, stream, stealth}, page = null, session, setup, options, proxyConfig} = this) => {
         const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
         const url = source.TARGET && source.TARGET.url;
         const domain = parseDomain(url, target);
@@ -281,7 +281,7 @@ class Robot {
 
         if (!page) {
             if (!this.options.browserPool.disable) {
-                this.browserPool = await getBrowserPool(this.options.browserPool, this.proxyConfig, this.session, this.stealth);
+                this.browserPool = await getBrowserPool(options.browserPool, proxyConfig, session, stealth);
                 this.page = page = await this.browserPool.newPage();
 
                 if (block)
@@ -583,8 +583,10 @@ class Robot {
                 else if (error.retainSession || error instanceof errors.session.Retain)
                     session.markGood();
 
-                else
+                else {
                     session.markBad();
+                    session.userData.fingerprint = null;
+                }
             }
 
             sessionPool.persistState();

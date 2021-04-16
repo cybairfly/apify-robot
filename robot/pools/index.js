@@ -67,7 +67,7 @@ const getBrowserPool = async (browserPoolOptions, proxyConfiguration, session, s
     }
 
     if (stealth) {
-        options.postLaunchHooks = [...options.postLaunchHooks, addFingerprintToBrowserController];
+        options.postLaunchHooks = [...options.postLaunchHooks, addFingerprintToBrowserController(session)];
         options.prePageCreateHooks = [...options.prePageCreateHooks, addContextOptionsToPageOptions];
         options.postPageCreateHooks = [...options.postPageCreateHooks, overrideTheRestOfFingerprint];
     }
