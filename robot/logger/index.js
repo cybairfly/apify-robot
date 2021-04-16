@@ -4,13 +4,15 @@ const {log} = Apify.utils;
 
 const {redactObject} = require('../tools/generic');
 
+const {DEBUG, INFO, WARNING, ERROR} = log.LEVELS;
+
 log.default = (...args) => console.log(...args);
 
 log.console = {
-    info: (...args) => log.getLevel() === log.LEVELS.INFO && console.log('INFO', ...args),
-    debug: (...args) => log.getLevel() === log.LEVELS.DEBUG && console.log('DEBUG', ...args),
-    error: (...args) => log.getLevel() === log.LEVELS.ERROR && console.error('ERROR', ...args),
-    warning: (...args) => log.getLevel() === log.LEVELS.WARNING && console.warn('WARNING', ...args),
+    info: (...args) => [DEBUG, INFO].includes(log.getLevel()) && console.log('INFO', ...args),
+    debug: (...args) => log.getLevel() === DEBUG && console.log('DEBUG', ...args),
+    error: (...args) => [DEBUG, INFO, WARNING, ERROR].includes(log.getLevel()) && console.error('ERROR', ...args),
+    warning: (...args) => [DEBUG, INFO, WARNING].includes(log.getLevel()) && console.warn('WARNING', ...args),
 };
 
 log.join = {
