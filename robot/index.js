@@ -585,6 +585,7 @@ class Robot {
 
                 else {
                     session.markBad();
+                    log.debug('Removing fingerprint');
                     session.userData.fingerprint = null;
                 }
             }
