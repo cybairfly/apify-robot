@@ -191,9 +191,8 @@ class Robot {
                 this.retryIndex++;
                 await this.stop();
 
-                log.error(error.message);
-                log.error(error.stack);
-
+                log.error(this.error.message);
+                log.error(this.error.stack);
                 log.default('◄'.repeat(100));
                 log.info(`RETRY [R-${this.retryCount}]`);
                 log.default('◄'.repeat(100));
@@ -521,7 +520,7 @@ class Robot {
             error = new errors.Network({error});
 
         if (error instanceof Robot.Error === false)
-            error = new Robot.Error({error});
+            error = new Robot.Error({error, name: 'dasda'});
 
         return error;
     }
