@@ -14,10 +14,10 @@ log.console = {
 };
 
 log.join = {
-    info: (...args) => log.info(`INFO ${args.join(' ')}`),
-    debug: (...args) => log.debug(`DEBUG ${args.join(' ')}`),
-    error: (...args) => log.error(`ERROR ${args.join(' ')}`),
-    warning: (...args) => log.warning(`WARNING ${args.join(' ')}`),
+    info: (...args) => log.info(`${args.join(' ')}`),
+    debug: (...args) => log.debug(`${args.join(' ')}`),
+    error: (...args) => log.error(`${args.join(' ')}`),
+    warning: (...args) => log.warning(`${args.join(' ')}`),
 };
 
 log.object = {
