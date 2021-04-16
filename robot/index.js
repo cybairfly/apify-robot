@@ -486,6 +486,11 @@ class Robot {
                 this.step.done = !step.done || step.done(context);
                 this.step.stop = step.stop && step.stop(context);
 
+                if (this.step.abort(context)) {
+                    log.join.warning(`Aborting on step [${step.name}] on test ${step.abort}`);
+                    break;
+                }
+
                 if (this.step.stop) {
                     log.join.warning(`Breaking on step [${step.name}] of task [${task.name}] on test ${step.stop}`);
                     break;
@@ -500,6 +505,11 @@ class Robot {
 
             this.task.done = !task.done || task.done(context);
             this.task.stop = task.stop && task.stop(context);
+
+            if (this.step.abort(context)) {
+                log.join.warning(`Aborting on task [${task.name}] on test ${this.step.abort}`);
+                break;
+            }
 
             if (this.task.stop) {
                 log.join.warning(`Breaking on task [${task.name}] on test ${task.stop}`);
