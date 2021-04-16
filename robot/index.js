@@ -589,7 +589,7 @@ class Robot {
                 }
             }
 
-            sessionPool.persistState();
+            await sessionPool.persistState();
         }
 
         if (server) {
