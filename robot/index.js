@@ -192,8 +192,9 @@ class Robot {
                 this.retryIndex++;
                 await this.stop();
 
-                log.error(error.message);
-                log.error(error.stack);
+                // log.error(error.message);
+                // log.error(error.stack);
+                log.error(error);
 
                 log.default('◄'.repeat(100));
                 log.info(`RETRY [R-${this.retryCount}]`);
@@ -382,6 +383,11 @@ class Robot {
                 this.step.init = !step.init || step.init(context);
                 this.step.skip = step.skip && step.skip(context);
 
+                if (this.step.abort && this.step.abort(context)) {
+                    log.join.warning(`Aborting on step [${step.name}] on test ${step.abort}`);
+                    break;
+                }
+
                 if (!this.step.init) {
                     log.join.info(`Skipping step [${step.name}] of task [${task.name}] on test ${step.init}`);
                     continue;
@@ -485,11 +491,6 @@ class Robot {
 
                 this.step.done = !step.done || step.done(context);
                 this.step.stop = step.stop && step.stop(context);
-
-                if (this.step.abort && this.step.abort(context)) {
-                    log.join.warning(`Aborting on step [${step.name}] on test ${step.abort}`);
-                    break;
-                }
 
                 if (this.step.stop) {
                     log.join.warning(`Breaking on step [${step.name}] of task [${task.name}] on test ${step.stop}`);
