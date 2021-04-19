@@ -15,15 +15,19 @@ const tryRequire = {
             return false;
         }
     },
-    global: (log, rootPath) => globalPath => {
+    global: (log, rootPath) => (globalPath, options = {scope: false}) => {
         try {
             const requirePath = path.join(rootPath, globalPath);
             log.join.debug('ROOT:', rootPath);
             log.join.debug('PATH:', requirePath);
             return require(requirePath);
         } catch (error) {
-            log.debug(error.message);
-            log.debug(error.stack);
+            const [message] = error.message.split('\n', 1);
+            log.debug(message);
+
+            if (options.scope)
+                log.debug(error.stack);
+
             return false;
         }
     },
@@ -44,6 +48,20 @@ const getUserAgent = () => {
         && !userAgent.includes('OPR/');
 
     return match ? userAgent : getUserAgent();
+};
+
+const parseDomain = (url, target) => {
+    try {
+        const parsedUrl = new URL(url);
+        url = parsedUrl.hostname;
+    } catch (error) {
+        url = target;
+    }
+
+    // TODO improve domain parsing
+    const [fallback, domain] = url.split('.').reverse();
+
+    return domain || fallback;
 };
 
 const saveScreenshot = async ({id, name, page, retryCount, store}) => {
@@ -85,27 +103,28 @@ const savePageContent = async ({id, name, page, retryCount, store}) => {
     }
 };
 
-const saveOutput = async ({page, name, input, retryCount, store, actorOutput: currentOutput}) => {
+const saveOutput = async ({page, name, input, retryCount, store, output: currentOutput}) => {
     const {id} = input;
     const pageContentUrl = await savePageContent({id, name, page, retryCount, store}) || null;
     const screenshotUrl = await saveScreenshot({id, name, page, retryCount, store}) || null;
     const actorRunUrl = `https://my.apify.com/view/runs/${process.env.APIFY_ACTOR_RUN_ID}`;
 
-    const actorOutput = {...currentOutput, actorRunUrl, screenshotUrl, pageContentUrl};
+    const output = {...currentOutput, actorRunUrl, screenshotUrl, pageContentUrl};
 
     if (store)
-        await store.setValue('OUTPUT', JSON.stringify(actorOutput), {contentType: 'application/json'});
+        await store.setValue('OUTPUT', JSON.stringify(output), {contentType: 'application/json'});
 
     else
-        await Apify.setValue('OUTPUT', JSON.stringify(actorOutput), {contentType: 'application/json'});
+        await Apify.setValue('OUTPUT', JSON.stringify(output), {contentType: 'application/json'});
 
-    return actorOutput;
+    return output;
 };
 
 module.exports = {
     tryRequire,
     getUserAgent,
     getPage,
+    parseDomain,
     saveOutput,
     savePageContent,
     saveScreenshot,

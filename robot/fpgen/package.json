@@ -1,11 +1,13 @@
 {
-	"name": "browser-pool-fingerprint-gen",
+	"name": "bp-fp-skip-the-games",
 	"version": "0.0.1",
 	"description": "This is a boilerplate of an Apify actor.",
 	"dependencies": {
-		"apify": "^0.21.0",
-		"browser-pool": "0.0.3",
-		"playwright": "^1.5.1",
+		"apify": "^1.0.0",
+		"browser-pool": "^1.1.0",
+		"nanoid": "^3.1.16",
+		"node-wit": "^6.0.0",
+		"playwright": "^1.7.1",
 		"shortid": "^2.2.16"
 	},
 	"devDependencies": {

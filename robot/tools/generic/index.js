@@ -38,7 +38,7 @@ const deepTransform = (object, transformer, ...args) => {
     Object.keys(object).forEach(key => {
         transformer(object, key, ...args);
 
-        if (typeof object[key] === 'object')
+        if (object[key] && typeof object[key] === 'object')
             return deepTransform(object[key], transformer, ...args);
     });
 
@@ -53,9 +53,15 @@ const redactor = (object, key, redactKeys) => {
 const redactObject = (object, transformer = redactor, redactKeys = ['proxyUrl', 'proxyUrls']) =>
     deepTransform(object, transformer, redactKeys);
 
+const urlParamsToEllipsis = url => {
+    const urlCutOffIndex = url.indexOf('?') + 1;
+    return urlCutOffIndex ? `${url.slice(0, urlCutOffIndex)}...` : url;
+};
+
 module.exports = {
     decorators,
     decorate,
     deepTransform,
     redactObject,
+    urlParamsToEllipsis,
 };

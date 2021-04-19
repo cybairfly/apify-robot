@@ -1,15 +1,26 @@
 0.2.0 / 2021-02-XX
 ==================
 ## Breaking
+### Environment
+`process.env.slackToken` ➜ `process.env.SLACK_TOKEN`
+
+<!-- TODO -->
 ### `Robot.Context`
 Rename actor input and output for clearer distinction from robot's own input/output. Consolidate all actor related properties including input and output in a new context property `actor`
 - `INPUT` ➜ `actor.actorInput`
 - `OUTPUT` ➜ `actor.actorOutput`
 
+### `Robot.consts`
+- `PUPPETEER.events` ➜ `EVENTS`
+
 ### `Robot.Setup`
 - `OutputTemplate` ➜ `OutputSchema`
+- `SLACK.channel` ➜ `NOTIFY.channels.slack.channel`
+- `OPTIONS.blockRequests` ➜ `OPTIONS.trafficFilter`
+- `OPTIONS.blockRequests.patterns` ➜ `OPTIONS.trafficFilter.patterns.url`
+- `OPTIONS.blockRequests.analytics` ➜ `OPTIONS.trafficFilter.patterns.host`
 
-### `Robot.Scope(Target)`
+### `Robot.Scope/Target`
 - `constructor(setup, target, robot)` ➜ `constructor(context)`
   - simplify optional scope/target constructors
 - `super(setup, target)` ➜ `super(...arguments)`
@@ -17,13 +28,32 @@ Rename actor input and output for clearer distinction from robot's own input/out
 - `stepName = () => {}` ➜ `taskName = context => ({ stepName: context => {}, ... })`
   - steps are now optionally (recommended and will become the default) wrapped by their respective tasks in `Robot.Scope/Target` implementations to follow the structure in `Robot.Setup` more closely and provide other additional benefits through this closure, including type hints in step signatures. Updated `context` is passed to both tasks and steps at runtime.
 
+### `Robot.tools.login`
+  - `selectors.loggedIn` ➜ `selectors.verify`
+  - throw if none of either `predicate` or `selectors.verify` is present for login status verification
+
 ## Updates
 Bindings between children classes inheriting from `Robot.Scope/Target` and contents of `context` are automatically initialized through the `Robot.Scope` base class. Therefore constructor is optional when there is no need to manage **local** state of the scope. The `relay` object hosted by `context` is intended for sharing and managing **global** state across all scopes, steps and tasks at runtime.
 
-- `Robot.Target` extends `Robot.Scope`
-  - support for generic scope class for larger target independent automations 
+### `Robot.Setup`
+- `NOTIFY.details` - support extra error details in external notifications
+- `NOTIFY.filters` - support error alert filters based on error name/type
+- `OPTIONS.trafficFilter.resources` - filter out requests by resource type
 
-### `Robot.Scope(Target)`
+### `Robot.Error`
+Native support for custom errors with special flags reserved for use by the robot.
+Usage example: `throw new Robot.Error(options = {name, type, retry, message})`
+
+Reserved properties:
+- `retry: Boolean` - retry of the current actor/robot run
+
+### `Robot.Scope`
+Adding support for generic scope class for larger target independent automations
+
+### `Robot.Target`
+Extends `Robot.Scope`
+
+### `Robot.Scope/Target`
 Properties available directly on the scope instance, outside of the context:
 - `this.task` - currently processed task as defined in `Robot.Setup`
   - `this.task.output` - output of current task

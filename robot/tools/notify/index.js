@@ -1,21 +1,29 @@
 const Apify = require('apify');
 
-const { postError } = require('./slack');
+const { postMessage } = require('./slack');
 
-const notifyChannel = async ({actorInput, channel, error}) => {
-    const {debug, target} = actorInput;
+const formatMessage = (target, errorLabel, errorDetails) => `
+Error: ${target} \`${errorLabel}\`
+https://my.apify.com/view/runs/${process.env.APIFY_ACTOR_RUN_ID}${(errorDetails && `
+\`\`\`${errorDetails}\`\`\``) || ''}`.trim();
 
-    const notStatusError = !error.name || error.name !== 'StatusError';
-    const notNetworkError = !error.message.startsWith('net::');
+const notifyChannel = async ({input, setup, error}) => {
+    const {filters, channels, details} = setup.NOTIFY;
+    const {channel} = channels.slack;
+    const {debug, target} = input;
 
-    const shouldSendNotification = !debug
-        && notNetworkError
-        && notStatusError
-        && Apify.isAtHome();
+    const exclude = Object
+        .values(filters)
+        .flatMap(filter => filter)
+        .some(pattern => error.name === pattern || error.type === pattern);
 
-    if (shouldSendNotification) {
-        const {slackToken} = process.env;
-        await postError({slackToken, target, channel});
+    const doNotify = !debug && !exclude && Apify.isAtHome();
+
+    if (doNotify) {
+        const errorLabel = error.type || error.name || '';
+        const errorDetails = details && JSON.stringify(error, null, 4);
+        const message = formatMessage(target, errorLabel, errorDetails);
+        await postMessage({channel, message});
     }
 };
 

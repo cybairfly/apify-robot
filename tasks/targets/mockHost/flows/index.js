@@ -5,6 +5,7 @@ const Apify = require('apify');
 const {sleep} = Apify.utils;
 
 const {
+    EVENTS,
     PUPPETEER,
     TIMEOUTS,
 } = require('apify-robot/robot/consts');

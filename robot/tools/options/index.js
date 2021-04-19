@@ -14,18 +14,49 @@ const redactOptions = options => ({
 });
 
 const transformOptions = {
-    blockRequests: patterns =>
-        Array.isArray(patterns) ?
-            patterns : {
+    trafficFilter: options =>
+        Array.isArray(options) ?
+            options : {
+                resourceTypes: options.resources,
                 urlPatterns: Object
-                    .keys(patterns)
+                    .keys(options.patterns)
                     .reduce((pool, next) => {
                         return pool = [
                             ...pool,
-                            ...patterns[next],
+                            ...options.patterns[next],
                         ];
                     }, []),
             },
+};
+
+const getDefaultOptions = ({ input: { target }, input, setup}) => {
+    const defaultOptions = {
+        launchPuppeteer: {
+            // useApifyProxy: proxyConfig ? proxyConfig.useApifyProxy : true,
+            // apifyProxyGroups: proxyConfig ? proxyConfig.apifyProxyGroups : undefined,
+            // apifyProxySession,
+            defaultViewport: {
+                width: 1024 + Math.floor(Math.random() * 900),
+                height: 768 + Math.floor(Math.random() * 300),
+            },
+            headless: Apify.isAtHome() ? setup.OPTIONS.launchPuppeteer.headless : false,
+            devtools: !Apify.isAtHome(),
+            // ignoreHTTPSErrors: true
+            // args: [
+            //     '--remote-debugging-port=9222'
+            // ]
+        },
+        sessionPool: {
+            sessionOptions: {
+                userData: {
+                    target,
+                },
+            },
+            persistStateKeyValueStoreId: `sessions-${target}`,
+        },
+    };
+
+    return R.mergeDeepRight(DEFAULT_OPTIONS, defaultOptions);
 };
 
 // TODO deprecate
@@ -44,26 +75,9 @@ const Options = {
     }),
 };
 
-const RobotOptions = ({ actorInput: { block, stream, proxyConfig }, input, setup}) => {
-    const defaultOptions = {
-        launchPuppeteer: {
-            // useApifyProxy: proxyConfig ? proxyConfig.useApifyProxy : true,
-            // apifyProxyGroups: proxyConfig ? proxyConfig.apifyProxyGroups : undefined,
-            // apifyProxySession,
-            defaultViewport: {
-                width: 1024 + Math.floor(Math.random() * 900),
-                height: 768 + Math.floor(Math.random() * 300),
-            },
-            headless: Apify.isAtHome() ? setup.OPTIONS.launchPuppeteer.headless : false,
-            devtools: !Apify.isAtHome(),
-            // ignoreHTTPSErrors: true
-            // args: [
-            //     '--remote-debugging-port=9222'
-            // ]
-        },
-    };
-
-    const options = R.mergeDeepRight(R.mergeDeepRight(DEFAULT_OPTIONS, defaultOptions), setup.OPTIONS);
+const RobotOptions = ({ input: { block, proxyConfig }, input, setup}) => {
+    const defaultOptions = getDefaultOptions({input, setup});
+    const options = R.mergeDeepRight(defaultOptions, setup.OPTIONS);
 
     if (options.launchPuppeteer.randomUserAgent) {
         options.launchPuppeteer.userAgent = proxyConfig && proxyConfig.userAgent
@@ -72,7 +86,7 @@ const RobotOptions = ({ actorInput: { block, stream, proxyConfig }, input, setup
     }
 
     if (block)
-        options.blockRequests = transformOptions.blockRequests(options.blockRequests);
+        options.trafficFilter = transformOptions.trafficFilter(options.trafficFilter);
 
     return options;
 };

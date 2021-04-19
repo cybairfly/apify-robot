@@ -47,7 +47,7 @@ const syncContext = robot => ({
                 try {
                     Object.entries(output).map(entry => {
                         const [key, value] = entry;
-                        robot._output[key] = value;
+                        this._output[key] = value;
                     });
                 } catch (error) {
                     log.error(`Failed to set step output: ${output}`);
@@ -68,14 +68,37 @@ const syncContext = robot => ({
         };
 
         stepCopy.attachOutput = function (output) {
-            robot.output = output;
-            return robot.output;
+            this.output = output;
+            return this.output;
         };
 
         robot.context.step = stepCopy;
 
         if (robot.scope)
             robot.scope.step = stepCopy;
+    },
+    output: output => {
+        if (!output) return;
+
+        try {
+            Object.entries(output).map(entry => {
+                const [key, value] = entry;
+                robot._output[key] = value;
+            });
+
+            // TODO remove legacy support
+            robot.context.OUTPUT = robot.output;
+            robot.context.output = robot.output;
+
+            if (robot.scope) {
+                robot.scope.output = robot.output;
+
+                if (robot.scope.task)
+                    robot.scope.task.output = robot.output;
+            }
+        } catch (error) {
+            log.error(`Failed to set robot output: ${output}`);
+        }
     },
 });
 

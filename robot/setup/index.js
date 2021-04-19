@@ -1,33 +1,33 @@
 class RobotSetup {
     /* definition of automation tasks */
-    // tasks = {
-    //     taskName: {
-    //         /* control flow predicates */
-    //         init: (context) => Boolean,
-    //         skip: (context) => Boolean,
-    //         stop: (context) => Boolean,
-    //         done: (context) => Boolean,
+    tasks = {
+        // taskName: {
+        //     /* control flow predicates */
+        //     init: context => Boolean,
+        //     skip: context => Boolean,
+        //     stop: context => Boolean,
+        //     done: context => Boolean,
 
-    //         /* task dependencies used to build dependency tree before launch */
-    //         merge: [
-    //             string
-    //         ],
+        //     /* task dependencies used to build dependency tree before launch */
+        //     merge: [
+        //         string,
+        //     ],
 
-    //         steps: [
-    //             {
-    //                 name: string,
-    //                 /* control flow predicates */
-    //                 init: (context) => Boolean,
-    //                 skip: (context) => Boolean,
-    //                 stop: (context) => Boolean,
-    //                 done: (context) => Boolean
-    //             },
-    //         ],
-    //     }
-    // };
+        //     steps: [
+        //         {
+        //             name: string,
+        //             /* control flow predicates */
+        //             init: context => Boolean,
+        //             skip: context => Boolean,
+        //             stop: context => Boolean,
+        //             done: context => Boolean,
+        //         },
+        //     ],
+        // },
+    };
 
     /* default output generator */
-    // OutputSchema = ({actorInput, input}) => Object
+    // OutputSchema = ({input}) => Object
 
     /* TODO */
     // getTasks = target => ({});
@@ -37,67 +37,125 @@ class RobotSetup {
 
     /* define custom project specific paths */
     /* base path = this.rootPath */
-    // getPath = {
-    //     generic: {
-    //         scope: (task) => `tasks/generic/index`,
-    //         flows: (task) => `tasks/generic/flows`,
-    //         steps: (task) => `tasks/generic/steps`,
-    //     },
-    //     targets: {
-    //         target: (target) => `tasks/targets/${target}`,
-    //         config: (target) => `tasks/targets/${target}/config`,
-    //         flows: (target) => `tasks/targets/${target}/flows`,
-    //         steps: (target) => `tasks/targets/${target}/steps`,
-    //         setup: (target) => `tasks/targets/${target}/setup`,
-    //     }
-    // };
+    getPath = {
+        generic: {
+            // scope: task => 'tasks/generic/index',
+            // flows: task => 'tasks/generic/flows',
+            // steps: task => 'tasks/generic/steps',
+        },
+        targets: {
+            // target: target => `tasks/targets/${target}`,
+            // config: target => `tasks/targets/${target}/config`,
+            // flows: target => `tasks/targets/${target}/flows`,
+            // steps: target => `tasks/targets/${target}/steps`,
+            // setup: target => `tasks/targets/${target}/setup`,
+        },
+    };
 
     /* generate unique proxy session string for local and remote runs (@Apify) */
-    // getApifyProxySession = {
-    //     apify: ({input}) => String,
-    //     local: ({input}) => String,
-    // };
+    getApifyProxySession = {
+        // apify: ({input}) => String,
+        // local: ({input}) => String,
+    };
 
-    /* Slack specific options for error alerts */
-    // SLACK = {
-    //     channel: String
-    // };
+    /* notify these channels of errors */
+    NOTIFY = {
+        details: true,
+        filters: {
+            errorNames: [],
+            errorTypes: [],
+        },
+        channels: {
+            slack: {
+                // channel: String,
+            },
+        },
+    };
 
     /* robot internal server options */
-    // SERVER = {
-    //     liveView: {
-    //         events: Object
-    //     },
-    //     webSocket: {
-    //         events: Object
-    //     }
-    // };
+    SERVER = {
+        liveView: {
+            // events: Object,
+        },
+        webSocket: {
+            // events: Object,
+        },
+    };
 
     /* robot options (global setup) */
     /* runtime priority: target setup > global setup > default options */
-    // OPTIONS = {
-    //     browserPool: {
-    //         pluginOptions: {
-    //             launchOptions: {}
-    //         }
-    //     },
-    //     blockRequests: {
-    //         https://sdk.apify.com/docs/api/puppeteer#puppeteerblockrequestspage-options
-    //     },
-    //     launchPuppeteer: {
-    //         https://sdk.apify.com/docs/api/apify#launchpuppeteer
-    //     },
-    //     liveViewServer: {
-    //         https://sdk.apify.com/docs/api/live-view-server
-    //     },
-    // };
+    OPTIONS = {
+        browserPool: {
+            disable: false,
+            browser: {
+                // firefox: true,
+                // chrome: true,
+                // webkit: true,
+            },
+            library: {
+                // playwright: true,
+                // puppeteer: true,
+            },
+            options: {
+                // launchOptions: {},
+            },
+            hooks: {
+                // preLaunchHooks: () => {},
+                // postLaunchHooks: () => {},
+                // prePageCreateHooks: () => {},
+                // postPageCreateHooks: () => {},
+                // prePageCloseHooks: () => {},
+                // postPageCloseHooks: () => {},
+
+                browser: {
+                    // before: () => {},
+                    // after: () => {},
+                },
+                page: {
+                    before: {
+                        // open: () => {},
+                        // close: () => {},
+                    },
+                    after: {
+                        // open: () => {},
+                        // close: () => {},
+                    },
+                },
+            },
+        },
+
+        /* https://sdk.apify.com/docs/typedefs/session-pool-options */
+        sessionPool: {},
+
+        /* https://playwright.dev/docs/network/#abort-requests */
+        /* https://sdk.apify.com/docs/api/puppeteer#puppeteerblockrequestspage-options */
+        trafficFilter: {
+            /* https://playwright.dev/docs/api/class-request#requestresourcetype */
+            resources: [],
+
+            /* https://playwright.dev/docs/api/class-request#requesturl */
+            patterns: {
+                /* resource extension or arbitrary pattern in url */
+                url: [],
+
+                /* host domain pattern black-list for urls (ads) */
+                host: [],
+            },
+        },
+
+        /* https://sdk.apify.com/docs/api/apify#launchpuppeteer */
+        launchPuppeteer: {},
+
+        /* https://sdk.apify.com/docs/api/live-view-server */
+        liveViewServer: {},
+    };
 
     /* output presets to be used by task steps */
-    // OUTPUTS = {
-    //     sampleOutputName: {
-    //         sampleOutputProperty: sampleOutputValue
+    OUTPUTS = {
+    //     outputTemplate: {
+    //         outputProperty: outputValue
     //     }
-    // };
+    };
 
     /* support instance import */
     constructor(rootPath) {
