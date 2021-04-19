@@ -19,11 +19,11 @@ const initTrafficFilter = async (page, domain, options = {trafficFilter: {resour
         const resourceMatch = resourceTypes.some(resource => route.request().resourceType().includes(resource));
 
         return (resourceMatch || patternMatch) ?
-            abortRoute(route, domain) :
+            abortRoute(route, domain, options) :
             route.continue();
     });
 
-const initEventLogger = (page, domain, options = {debug: false, trimUrls: true, hostOnly: false}) => {
+const initEventLogger = (page, domain, options = {}) => {
     const urlLoggerBound = urlLogger.bind(null, page);
     const responseErrorLoggerBound = responseErrorLogger.bind(null, domain);
     page.on(EVENTS.domcontentloaded, urlLoggerBound);
@@ -31,6 +31,9 @@ const initEventLogger = (page, domain, options = {debug: false, trimUrls: true, 
 
     // TODO expose debug options on input
     if (options.debug) {
+        if (options.hostOnly)
+            options.hostOnlyRegex = new RegExp(`//[^/]*${domain}.*/`, 'i');
+
         page.on(EVENTS.request, handlers.request(domain, options));
         page.on(EVENTS.response, handlers.response(domain, options));
     }
