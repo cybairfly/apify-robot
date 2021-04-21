@@ -2,7 +2,7 @@ const log = require('../../logger');
 const {urlParamsToEllipsis} = require('../generic');
 
 module.exports = {
-    request: (domain, {trimUrls = true, hostOnly = false}) => async request => {
+    request: (domain, {fullUrls = false, hostOnly = false}) => async request => {
         const url = request.url();
 
         const drop = hostOnly
@@ -21,14 +21,14 @@ module.exports = {
             method: method.padEnd(7, '-'),
             type: type.padEnd(11, '-'),
             domain: (url.includes(domain) && domain) || '-'.repeat(domain.length),
-            url: trimUrls ? urlParamsToEllipsis(url) : url,
+            url: fullUrls ? url : urlParamsToEllipsis(url),
             // headers,
             // text,
         };
 
         log.debug(`► TX | ${cols.status} | ${cols.method} | ${cols.type} | ${cols.domain} | ${cols.url}`);
     },
-    response: (domain, {trimUrls = true, hostOnly = false}) => async response => {
+    response: (domain, {fullUrls = false, hostOnly = false}) => async response => {
         const ok = response.ok();
         const url = response.url();
 
@@ -43,14 +43,13 @@ module.exports = {
         const type = response.request().resourceType();
         // const headers = response.headers();
         // const text = await response.text().catch(() => null);
-        const urlCutOffIndex = trimUrls && url.indexOf('?') + 1;
 
         const cols = {
             status: (ok && '√OK') || status.toString(),
             method: method.padEnd(7, '-'),
             type: type.padEnd(11, '-'),
             domain: (url.includes(domain) && domain) || '-'.repeat(domain.length),
-            url: trimUrls ? urlParamsToEllipsis(url) : url,
+            url: fullUrls ? url : urlParamsToEllipsis(url),
             // headers,
             // text,
         };
