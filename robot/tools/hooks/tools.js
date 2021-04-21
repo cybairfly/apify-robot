@@ -1,7 +1,7 @@
 const log = require('../../logger');
 const {urlParamsToEllipsis} = require('../generic');
 
-const abortRoute = (route, domain, options = {trimUrls: true, hostOnly: false}) => {
+const abortRoute = (route, domain, options = {fullUrls: true, hostOnly: false}) => {
     const request = route.request();
     const url = request.url();
     const method = request.method();
@@ -12,7 +12,7 @@ const abortRoute = (route, domain, options = {trimUrls: true, hostOnly: false}) 
         method: method.padEnd(7, '-'),
         type: type.padEnd(11, '-'),
         domain: (url.includes(domain) && domain) || '-'.repeat(domain.length),
-        url: options.trimUrls ? urlParamsToEllipsis(url) : url,
+        url: !options.fullUrls ? urlParamsToEllipsis(url) : url,
     };
 
     log.debug(`█ TX | ${cols.status} | ${cols.method} | ${cols.type} | ${cols.domain} | ${cols.url}`);
