@@ -23,14 +23,14 @@ const initTrafficFilter = async (page, domain, options = {trafficFilter: {resour
             route.continue();
     });
 
-const initEventLogger = (page, domain, options = {debug: false, trimUrls: true, hostOnly: false}) => {
+const initEventLogger = (page, domain, debug, options) => {
     const urlLoggerBound = urlLogger.bind(null, page);
     const responseErrorLoggerBound = responseErrorLogger.bind(null, domain);
     page.on(EVENTS.domcontentloaded, urlLoggerBound);
     page.on(EVENTS.response, responseErrorLoggerBound);
 
     // TODO expose debug options on input
-    if (options.debug) {
+    if (debug) {
         page.on(EVENTS.request, handlers.request(domain, options));
         page.on(EVENTS.response, handlers.response(domain, options));
     }
