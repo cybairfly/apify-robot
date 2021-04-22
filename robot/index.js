@@ -1,7 +1,7 @@
 /**
- * @typedef {import('./index').input} input
- * @typedef {import('./index').setup} setup
- * @typedef {import('./index').options} options
+ * @typedef {import('./types').input} input
+ * @typedef {import('./types').setup} setup
+ * @typedef {import('./types').options} options
  */
 
 const Apify = require('apify');
