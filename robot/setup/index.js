@@ -26,65 +26,33 @@ class RobotSetup {
         // },
     };
 
-    /* default output generator */
-    // OutputSchema = ({input}) => Object
-
-    /* TODO */
-    // getTasks = target => ({});
-
-    /* generate unique input ID */
-    // getInputId = input => String;
-
-    /* define custom project specific paths */
-    /* base path = this.rootPath */
-    getPath = {
-        generic: {
-            // scope: task => 'tasks/generic/index',
-            // flows: task => 'tasks/generic/flows',
-            // steps: task => 'tasks/generic/steps',
-        },
-        targets: {
-            // target: target => `tasks/targets/${target}`,
-            // config: target => `tasks/targets/${target}/config`,
-            // flows: target => `tasks/targets/${target}/flows`,
-            // steps: target => `tasks/targets/${target}/steps`,
-            // setup: target => `tasks/targets/${target}/setup`,
-        },
-    };
-
-    /* generate unique proxy session string for local and remote runs (@Apify) */
-    getApifyProxySession = {
-        // apify: ({input}) => String,
-        // local: ({input}) => String,
-    };
-
-    /* notify these channels of errors */
-    NOTIFY = {
-        details: true,
-        filters: {
-            errorNames: [],
-            errorTypes: [],
-        },
-        channels: {
-            slack: {
-                // channel: String,
-            },
-        },
-    };
-
-    /* robot internal server options */
-    SERVER = {
-        liveView: {
-            // events: Object,
-        },
-        webSocket: {
-            // events: Object,
-        },
-    };
-
     /* robot options (global setup) */
     /* runtime priority: target setup > global setup > default options */
-    OPTIONS = {
+    options = {
+        /* notify these channels of errors */
+        notify: {
+            details: true,
+            filters: {
+                errorNames: [],
+                errorTypes: [],
+            },
+            channels: {
+                slack: {
+                // channel: String,
+                },
+            },
+        },
+
+        /* robot internal server options */
+        server: {
+            liveView: {
+            // events: Object,
+            },
+            webSocket: {
+            // events: Object,
+            },
+        },
+
         browserPool: {
             disable: false,
             browser: {
@@ -148,6 +116,38 @@ class RobotSetup {
 
         /* https://sdk.apify.com/docs/api/live-view-server */
         liveViewServer: {},
+    };
+
+    /* default output generator */
+    // OutputSchema = ({input}) => Object
+
+    /* TODO */
+    // getTasks = target => ({});
+
+    /* generate unique input ID */
+    // getInputId = input => String;
+
+    /* define custom project specific paths */
+    /* base path = this.rootPath */
+    getPath = {
+        generic: {
+            // scope: task => 'tasks/generic/index',
+            // flows: task => 'tasks/generic/flows',
+            // steps: task => 'tasks/generic/steps',
+        },
+        targets: {
+            // target: target => `tasks/targets/${target}`,
+            // config: target => `tasks/targets/${target}/config`,
+            // flows: target => `tasks/targets/${target}/flows`,
+            // steps: target => `tasks/targets/${target}/steps`,
+            // setup: target => `tasks/targets/${target}/setup`,
+        },
+    };
+
+    /* generate unique proxy session string for local and remote runs (@Apify) */
+    getApifyProxySession = {
+        // apify: ({input}) => String,
+        // local: ({input}) => String,
     };
 
     /* output presets to be used by task steps */
