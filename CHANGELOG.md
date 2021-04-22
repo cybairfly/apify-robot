@@ -16,9 +16,9 @@ Rename actor input and output for clearer distinction from robot's own input/out
 ### `Robot.Setup`
 - `OutputTemplate` ➜ `OutputSchema`
 - `SLACK.channel` ➜ `NOTIFY.channels.slack.channel`
-- `OPTIONS.blockRequests` ➜ `OPTIONS.trafficFilter`
-- `OPTIONS.blockRequests.patterns` ➜ `OPTIONS.trafficFilter.patterns.url`
-- `OPTIONS.blockRequests.analytics` ➜ `OPTIONS.trafficFilter.patterns.host`
+- `OPTIONS.blockRequests` ➜ `options.trafficFilter`
+- `OPTIONS.blockRequests.patterns` ➜ `options.trafficFilter.patterns.url`
+- `OPTIONS.blockRequests.analytics` ➜ `options.trafficFilter.patterns.host`
 
 ### `Robot.Scope/Target`
 - `constructor(setup, target, robot)` ➜ `constructor(context)`
@@ -36,9 +36,9 @@ Rename actor input and output for clearer distinction from robot's own input/out
 Bindings between children classes inheriting from `Robot.Scope/Target` and contents of `context` are automatically initialized through the `Robot.Scope` base class. Therefore constructor is optional when there is no need to manage **local** state of the scope. The `relay` object hosted by `context` is intended for sharing and managing **global** state across all scopes, steps and tasks at runtime.
 
 ### `Robot.Setup`
-- `NOTIFY.details` - support extra error details in external notifications
-- `NOTIFY.filters` - support error alert filters based on error name/type
-- `OPTIONS.trafficFilter.resources` - filter out requests by resource type
+- `options.notify.details` - support extra error details in external notifications
+- `options.notify.filters` - support error alert filters based on error name/type
+- `options.trafficFilter.resources` - filter out requests by resource type
 
 ### `Robot.Error`
 Native support for custom errors with special flags reserved for use by the robot.

@@ -51,7 +51,7 @@ const getDefaultOptions = ({ input: { target }, input, setup}) => {
                 width: 1024 + Math.floor(Math.random() * 900),
                 height: 768 + Math.floor(Math.random() * 300),
             },
-            headless: Apify.isAtHome() ? setup.OPTIONS.launchPuppeteer.headless : false,
+            headless: Apify.isAtHome() ? setup.options.launchPuppeteer.headless : false,
             devtools: !Apify.isAtHome(),
             // ignoreHTTPSErrors: true
             // args: [
@@ -92,7 +92,7 @@ const InputOptions = input => parseInputOptions(input);
 const RobotOptions = ({ input: {browser, block, proxyConfig }, input, setup}) => {
     const inputOptions = parseInputOptions(input);
     const defaultOptions = getDefaultOptions({input, setup});
-    const options = R.mergeDeepRight(R.mergeDeepRight(defaultOptions, setup.OPTIONS), inputOptions);
+    const options = R.mergeDeepRight(R.mergeDeepRight(defaultOptions, setup.options), inputOptions);
 
     input.options = inputOptions;
 
