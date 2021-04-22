@@ -12,18 +12,18 @@ const {
 
 // TODO merge with debug mode
 // PW @ 1.9.0 - The handler will only be called for the first url if the response is a redirect.
-const initTrafficFilter = async (page, domain, options = {trafficFilter: {resourceTypes: [], urlPatterns: []}}) =>
+const initTrafficFilter = async (page, domain, options) =>
     page.route('**/*', route => {
         const {resourceTypes, urlPatterns} = options.trafficFilter;
         const patternMatch = urlPatterns.some(pattern => route.request().url().includes(pattern));
         const resourceMatch = resourceTypes.some(resource => route.request().resourceType().includes(resource));
 
         return (resourceMatch || patternMatch) ?
-            abortRoute(route, domain) :
+            abortRoute(route, domain, options.debug) :
             route.continue();
     });
 
-const initEventLogger = (page, domain, debug, options) => {
+const initEventLogger = (page, domain, debug, options = {}) => {
     const urlLoggerBound = urlLogger.bind(null, page);
     const responseErrorLoggerBound = responseErrorLogger.bind(null, domain);
     page.on(EVENTS.domcontentloaded, urlLoggerBound);
@@ -31,6 +31,9 @@ const initEventLogger = (page, domain, debug, options) => {
 
     // TODO expose debug options on input
     if (debug) {
+        if (options.hostOnly)
+            options.hostOnlyRegex = new RegExp(`//[^/]*${domain}.*/`, 'i');
+
         page.on(EVENTS.request, handlers.request(domain, options));
         page.on(EVENTS.response, handlers.response(domain, options));
     }

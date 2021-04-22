@@ -1,21 +1,23 @@
 const log = require('../../logger');
 const {urlParamsToEllipsis} = require('../generic');
 
-const abortRoute = (route, domain, options = {fullUrls: false, hostOnly: false}) => {
+const abortRoute = (route, domain, {fullUrls = false, hostOnly = false, hideBlocks = false}) => {
     const request = route.request();
     const url = request.url();
     const method = request.method();
     const type = request.resourceType();
 
-    const cols = {
-        status: '-'.repeat(3),
-        method: method.padEnd(7, '-'),
-        type: type.padEnd(11, '-'),
-        domain: (url.includes(domain) && domain) || '-'.repeat(domain.length),
-        url: !options.fullUrls ? urlParamsToEllipsis(url) : url,
-    };
+    if (!hideBlocks) {
+        const cols = {
+            status: '-'.repeat(3),
+            method: method.padEnd(7, '-'),
+            type: type.padEnd(11, '-'),
+            domain: (url.includes(domain) && domain) || '-'.repeat(domain.length),
+            url: !fullUrls ? urlParamsToEllipsis(url) : url,
+        };
 
-    log.debug(`█ TX | ${cols.status} | ${cols.method} | ${cols.type} | ${cols.domain} | ${cols.url}`);
+        log.debug(`█ TX | ${cols.status} | ${cols.method} | ${cols.type} | ${cols.domain} | ${cols.url}`);
+    }
 
     return route.abort();
 };

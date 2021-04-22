@@ -2,13 +2,9 @@ const log = require('../../logger');
 const {urlParamsToEllipsis} = require('../generic');
 
 module.exports = {
-    request: (domain, {fullUrls = false, hostOnly = false}) => async request => {
+    request: (domain, {fullUrls = false, hostOnly = false, hostOnlyRegex}) => async request => {
         const url = request.url();
-
-        const drop = hostOnly
-            && (url.startsWith('data:')
-            || (hostOnly && !url.includes(domain)));
-
+        const drop = hostOnly && (!hostOnlyRegex.test(url) || url.startsWith('data:'));
         if (drop) return;
 
         const method = request.method();
@@ -28,14 +24,10 @@ module.exports = {
 
         log.debug(`► TX | ${cols.status} | ${cols.method} | ${cols.type} | ${cols.domain} | ${cols.url}`);
     },
-    response: (domain, {fullUrls = false, hostOnly = false}) => async response => {
+    response: (domain, {fullUrls = false, hostOnly = false, hostOnlyRegex}) => async response => {
         const ok = response.ok();
         const url = response.url();
-
-        const drop = hostOnly
-            && (url.startsWith('data:')
-            || (hostOnly && !url.includes(domain)));
-
+        const drop = hostOnly && (!hostOnlyRegex.test(url) || url.startsWith('data:'));
         if (drop) return;
 
         const status = response.status();
