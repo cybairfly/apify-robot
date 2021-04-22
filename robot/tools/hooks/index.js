@@ -36,7 +36,7 @@ const initEventLogger = (page, domain, debug, options) => {
     }
 };
 
-const decoratePage = (page, server, session) => {
+const decoratePage = ({page, server}) => {
     page.gotoDom = async (url, options = {}) => page.goto(url, {
         waitUntil: EVENTS.domcontentloaded,
         ...options,

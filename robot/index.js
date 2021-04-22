@@ -1,3 +1,9 @@
+/**
+ * @typedef {import('./index').input} input
+ * @typedef {import('./index').setup} setup
+ * @typedef {import('./index').options} options
+ */
+
 const Apify = require('apify');
 const R = require('ramda');
 const path = require('path');
@@ -13,6 +19,7 @@ const ScopeConfig = Scope.Config;
 const TargetConfig = Target.Config;
 
 const { SESSION } = require('./consts');
+const { parseInput } = require('./tools/input');
 const { RobotOptions } = require('./tools/options');
 const { notifyChannel } = require('./tools/notify');
 const { transformTasks, resolveTaskTree } = require('./tools/tasks');
@@ -28,6 +35,10 @@ const consts = require('./public/consts');
 const tools = require('./public/tools');
 
 class Robot {
+    /**
+     * @param {input} input
+     * @param {setup} setup
+     */
     constructor(input, setup) {
         this.log = log;
         this.input = input;
@@ -48,6 +59,7 @@ class Robot {
         this.page = null;
         this.browser = null;
         this.browserPool = null;
+        /** @type options | null */
         this.options = null;
         this.stealth = null;
         this.session = null;
@@ -217,6 +229,7 @@ class Robot {
     };
 
     start = async ({input, input: {tasks: taskNames, target, session, stealth}, setup} = this) => {
+        input = parseInput(input);
         input.id = await setup.getInputId(input);
         this.context = await this.createContext(this);
         this.options = RobotOptions({input, setup});
@@ -273,7 +286,7 @@ class Robot {
         return this.tasks;
     };
 
-    initPage = async ({input: {block, debug, target, stream, stealth}, page = null, session, setup, options, proxyConfig} = this) => {
+    initPage = async ({input: {block, debug, target, server, stealth}, page = null, session, setup, options, proxyConfig} = this) => {
         const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
         const url = source.TARGET && source.TARGET.url;
         const domain = parseDomain(url, target);
@@ -300,22 +313,22 @@ class Robot {
             await Apify.utils.puppeteer.blockRequests(page, this.options.trafficFilter);
 
         // const singleThread = setup.maxConcurrency === 1;
-        const shouldStartServer = !this.server && stream;
-        const server = this.server = this.server || (shouldStartServer && startServer(page, setup, this.options.liveViewServer));
+        const shouldStartServer = !this.server && server && options.server.livecast;
+        this.server = this.server || (shouldStartServer && startServer(page, setup, this.options.liveViewServer));
 
-        decoratePage(page, server, session);
-        initEventLogger(page, domain, {debug});
+        decoratePage(this);
+        initEventLogger(page, domain, debug, options.debug);
 
         return page;
     };
 
-    createContext = async ({input, output, page, relay, server} = this) => {
+    createContext = async ({input, output, options, page, relay, server} = this) => {
         this.context = {
             // TODO remove legacy support
             INPUT: Object.freeze(input),
             OUTPUT: output,
 
-            input: Object.freeze(input),
+            input: {...input},
             output,
             page,
             pools: {
@@ -539,13 +552,14 @@ class Robot {
         return error;
     }
 
-    handleError = async ({input, output, options, error, page, setup} = this) => {
+    handleError = async ({input, input: {notify, silent}, output, options, error, page, setup} = this) => {
         if (Object.keys(output).length)
             await saveOutput({input, output, page});
 
         await this.stop();
 
-        if (!input.silent) {
+        // TODO support other channels
+        if (notify && options.notify.slack && !silent) {
             await notifyChannel({input, output, error, setup});
             console.error('---------------------------------------------------------');
             console.error('Error in robot - support notified to update configuration');
