@@ -16,7 +16,6 @@ const log = require('../logger');
         * stealth: Boolean
     * },
     * output: Object,
-    * options: Object,
     * page: page,
     * relay: Object,
     * pools: {
@@ -58,7 +57,6 @@ class Scope {
         this.context = context;
         this.input = context.input;
         this.output = context.output;
-        this.options = context.options;
         this.page = context.page;
         this.relay = context.relay;
         this.pools = context.pools;
