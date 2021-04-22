@@ -30,6 +30,18 @@
                 "target3"
             ]
         },
+        "browser": {
+            "title": "Browser",
+            "type": "string",
+            "editor": "select",
+            "default": "firefox",
+            "description": "Choose browser for the selected tasks",
+            "enum": [
+                "chromium",
+                "firefox",
+                "webkit"
+            ]
+        },
         "username": {
             "sectionCaption": "Inputs",
             "title": "Username",
@@ -81,16 +93,9 @@
         "block": {
             "title": "Block?",
             "type": "boolean",
-            "description": "Block needless requests to save computing and network resources",
+            "description": "Filter traffic excluded by project setup",
             "editor": "checkbox",
-            "default": false
-        },
-        "debug": {
-            "title": "Debug?",
-            "type": "boolean",
-            "description": "Run actor in verbose debug mode",
-            "editor": "checkbox",
-            "default": false
+            "default": true
         },
         "silent": {
             "title": "Silent?",
@@ -99,10 +104,10 @@
             "editor": "checkbox",
             "default": false
         },
-        "stream": {
-            "title": "Stream?",
+        "stealth": {
+            "title": "Stealth?",
             "type": "boolean",
-            "description": "Live view from the actor to watch tasks performed in near real time",
+            "description": "Enable stealth mode to evade bot detection",
             "editor": "checkbox",
             "default": false
         },
@@ -113,16 +118,39 @@
             "editor": "checkbox",
             "default": false
         },
-        "stealth": {
-            "title": "Stealth?",
+        "debug": {
+            "sectionCaption": "Debug",
+            "title": "Debug?",
             "type": "boolean",
-            "description": "Enable stealth mode",
+            "description": "Run actor in verbose debug mode",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.debug.fullUrls": {
+            "groupCaption": "Options:",
+            "title": "Full URLs",
+            "type": "boolean",
+            "description": "Display URL params while logging traffic",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.debug.hostOnly": {
+            "title": "Host only",
+            "type": "boolean",
+            "description": "Only log traffic within the target domain",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.debug.hideFilter": {
+            "title": "Hide filter",
+            "type": "boolean",
+            "description": "Hide requests blocked by traffic filters",
             "editor": "checkbox",
             "default": false
         },
         "coder": {
             "sectionCaption": "Coder",
-            "title": "Coder",
+            "title": "Coder? - placeholder",
             "type": "boolean",
             "description": "Enables visual task creator utility",
             "editor": "checkbox",
@@ -130,69 +158,64 @@
         },
         "human": {
             "sectionCaption": "Human",
-            "title": "Human",
+            "title": "Human? - placeholder",
             "type": "boolean",
             "description": "Enable human-like behavior patterns",
             "editor": "checkbox",
             "default": false
         },
-        "chromium": {
-            "sectionCaption": "Browsers",
-            "title": "Chromium",
+        "server": {
+            "sectionCaption": "Server",
+            "title": "Server?",
             "type": "boolean",
-            "description": "Launch Chromium",
+            "description": "Enable hypertext server",
             "editor": "checkbox",
             "default": false
         },
-        "firefox": {
-            "title": "Firefox",
+        "options.server.livecast": {
+            "groupCaption": "Options:",
+            "title": "Livecast",
             "type": "boolean",
-            "description": "Launch Firefox",
+            "description": "Live-cast of actor run",
             "editor": "checkbox",
             "default": false
         },
-        "webkit": {
-            "title": "Webkit",
+        "options.server.websocket": {
+            "title": "Websocket - placeholder",
             "type": "boolean",
-            "description": "Launch Webkit",
+            "description": "Enable websocket server",
             "editor": "checkbox",
             "default": false
         },
-        "report": {
-            "sectionCaption": "Reports",
+        "notify": {
+            "sectionCaption": "Notify",
+            "title": "Notify?",
+            "type": "boolean",
+            "description": "Enable error notifications",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.notify.slack": {
+            "groupCaption": "Options:",
             "title": "Slack",
             "type": "boolean",
             "description": "Enables communication channel",
             "editor": "checkbox",
             "default": false
         },
-        "server": {
-            "sectionCaption": "Servers",
-            "title": "Server",
-            "type": "boolean",
-            "description": "Enable hypertext server",
-            "editor": "checkbox",
-            "default": false
-        },
-        "websocket": {
-            "title": "Websocket",
-            "type": "boolean",
-            "description": "Enable websocket server",
-            "editor": "checkbox",
-            "default": false
-        },
-        "livecast": {
-            "title": "Livecast",
-            "type": "boolean",
-            "description": "Enable livecast server",
-            "editor": "checkbox",
-            "default": false
-        },
         "proxy": {
             "sectionCaption": "Proxy",
-            "title": "Proxy",
+            "title": "Proxy? - placeholder",
             "type": "boolean",
-            "description": "Enables proxy",
+            "description": "Enable proxy",
+            "editor": "checkbox",
+            "default": true
+        },
+        "options.proxy.session": {
+            "groupCaption": "Options:",
+            "title": "Session? - placeholder",
+            "type": "boolean",
+            "description": "Keep proxy session across runs",
             "editor": "checkbox",
             "default": false
         },
