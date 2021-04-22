@@ -33,8 +33,8 @@ class RobotSetup {
         notify: {
             details: true,
             filters: {
-                errorNames: [],
-                errorTypes: [],
+                // errorNames: [],
+                // errorTypes: [],
             },
             channels: {
                 slack: {
@@ -54,7 +54,7 @@ class RobotSetup {
         },
 
         browserPool: {
-            disable: false,
+            // disable: false,
             browser: {
                 // firefox: true,
                 // chrome: true,
@@ -99,15 +99,15 @@ class RobotSetup {
         /* https://sdk.apify.com/docs/api/puppeteer#puppeteerblockrequestspage-options */
         trafficFilter: {
             /* https://playwright.dev/docs/api/class-request#requestresourcetype */
-            resources: [],
+            // resources: [],
 
             /* https://playwright.dev/docs/api/class-request#requesturl */
             patterns: {
                 /* resource extension or arbitrary pattern in url */
-                url: [],
+                // url: [],
 
                 /* host domain pattern black-list for urls (ads) */
-                host: [],
+                // host: [],
             },
         },
 
