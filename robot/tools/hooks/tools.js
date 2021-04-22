@@ -1,7 +1,7 @@
 const log = require('../../logger');
 const {urlParamsToEllipsis} = require('../generic');
 
-const abortRoute = (route, domain, options = {fullUrls: true, hostOnly: false}) => {
+const abortRoute = (route, domain, options = {fullUrls: false, hostOnly: false}) => {
     const request = route.request();
     const url = request.url();
     const method = request.method();
