@@ -8,7 +8,7 @@ https://my.apify.com/view/runs/${process.env.APIFY_ACTOR_RUN_ID}${(errorDetails 
 \`\`\`${errorDetails}\`\`\``) || ''}`.trim();
 
 const notifyChannel = async ({input, setup, error}) => {
-    const {filters, channels, details} = setup.NOTIFY;
+    const {filters, channels, details} = setup.options.notify;
     const {channel} = channels.slack;
     const {debug, target} = input;
 
