@@ -313,8 +313,12 @@ class Robot {
             await Apify.utils.puppeteer.blockRequests(page, this.options.trafficFilter);
 
         // const singleThread = setup.maxConcurrency === 1;
-        const shouldStartServer = !this.server && server && options.server.livecast;
-        this.server = this.server || (shouldStartServer && startServer(page, setup, this.options.liveViewServer));
+        const shouldStartServer = !this.server && server && options.server.livecast.enable;
+        this.server = this.server || (shouldStartServer && startServer(page, setup, {
+            // TODO remove legacy
+            ...this.options.liveViewServer,
+            ...this.options.server.livecast,
+        }));
 
         decoratePage(this);
         initEventLogger(page, domain, debug, options.debug);
