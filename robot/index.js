@@ -51,6 +51,7 @@ class Robot {
         this.OUTPUTS = this.setup.OUTPUTS;
 
         this.relay = {};
+        this.state = {};
         this.context = {};
         this._error = {};
         this._output = {};
@@ -326,11 +327,12 @@ class Robot {
         return page;
     };
 
-    createContext = async ({input, output, options, page, relay, server} = this) => {
+    createContext = async ({input, output, page, relay, state, server} = this) => {
         this.context = {
             // TODO remove legacy support
             INPUT: Object.freeze(input),
             OUTPUT: output,
+            relay,
 
             input: {...input},
             output,
@@ -353,7 +355,7 @@ class Robot {
                 verifyResult: 'placeholder',
             },
             server,
-            relay,
+            state,
             step: null,
             task: null,
         };

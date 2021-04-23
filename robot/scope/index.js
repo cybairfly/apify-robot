@@ -19,15 +19,16 @@ class Scope {
         // TODO remove - legacy support
         this.INPUT = context.input;
         this.OUTPUT = context.output;
+        this.relay = context.relay;
 
         this.context = context;
         this.input = context.input;
         this.output = context.output;
         this.page = context.page;
-        this.relay = context.relay;
         this.pools = context.pools;
         this.events = context.events;
         this.server = context.server;
+        this.state = context.state;
         this.tools = context.tools;
 
         this._task = {};

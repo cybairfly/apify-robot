@@ -9,6 +9,7 @@
 Rename actor input and output for clearer distinction from robot's own input/output. Consolidate all actor related properties including input and output in a new context property `actor`
 - `INPUT` ➜ `actor.actorInput`
 - `OUTPUT` ➜ `actor.actorOutput`
+- `relay` ➜ `state`
 
 ### `Robot.consts`
 - `PUPPETEER.events` ➜ `EVENTS`

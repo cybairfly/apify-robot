@@ -16,7 +16,6 @@ export interface RobotContext {
     },
     output: Object,
     page: Page,
-    relay: Object,
     pools: {
         browserPool: BrowserPool,
         sessionPool: SessionPool,
@@ -33,5 +32,6 @@ export interface RobotContext {
             cast: (message: String) => String
         },
     },
+    state: Object,
     tools: Object
 }
