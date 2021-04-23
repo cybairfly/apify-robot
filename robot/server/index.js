@@ -33,7 +33,7 @@ class Server extends LiveViewServer {
         this.log = log.child({prefix: 'LiveViewServer'});
         this._resolveMessagePromise = null;
 
-        const {events} = setup.options.server.liveView;
+        const {events} = setup.options.server.livecast;
         this.promptHandlers = {
             [events.abort]: () => {
                 throw CustomError({

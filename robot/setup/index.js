@@ -45,11 +45,15 @@ class RobotSetup {
 
         /* robot internal server options */
         server: {
-            liveView: {
-            // events: Object,
+            livecast: {
+                // events: Object,
+                // useScreenshots: Boolean,
+                // maxScreenshotFiles: Number,
+                // snapshotTimeoutSecs: Number,
+                // maxSnapshotFrequencySecs: Number,
             },
-            webSocket: {
-            // events: Object,
+            websocket: {
+                // events: Object,
             },
         },
 
