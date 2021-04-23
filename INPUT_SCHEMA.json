@@ -172,7 +172,7 @@
             "editor": "checkbox",
             "default": false
         },
-        "options.server.livecast": {
+        "options.server.livecast.enable": {
             "groupCaption": "Options:",
             "title": "Livecast",
             "type": "boolean",
@@ -180,7 +180,7 @@
             "editor": "checkbox",
             "default": false
         },
-        "options.server.websocket": {
+        "options.server.websocket.enable": {
             "title": "Websocket - placeholder",
             "type": "boolean",
             "description": "Enable websocket server",
