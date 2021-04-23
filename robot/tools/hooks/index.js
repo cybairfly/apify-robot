@@ -12,31 +12,34 @@ const {
 
 // TODO merge with debug mode
 // PW @ 1.9.0 - The handler will only be called for the first url if the response is a redirect.
-const initTrafficFilter = async (page, domain, options = {trafficFilter: {resourceTypes: [], urlPatterns: []}}) =>
+const initTrafficFilter = async (page, domain, options) =>
     page.route('**/*', route => {
         const {resourceTypes, urlPatterns} = options.trafficFilter;
         const patternMatch = urlPatterns.some(pattern => route.request().url().includes(pattern));
         const resourceMatch = resourceTypes.some(resource => route.request().resourceType().includes(resource));
 
         return (resourceMatch || patternMatch) ?
-            abortRoute(route, domain) :
+            abortRoute(route, domain, options.debug) :
             route.continue();
     });
 
-const initEventLogger = (page, domain, options = {debug: false, trimUrls: true, hostOnly: false}) => {
+const initEventLogger = (page, domain, debug, options = {}) => {
     const urlLoggerBound = urlLogger.bind(null, page);
     const responseErrorLoggerBound = responseErrorLogger.bind(null, domain);
     page.on(EVENTS.domcontentloaded, urlLoggerBound);
     page.on(EVENTS.response, responseErrorLoggerBound);
 
     // TODO expose debug options on input
-    if (options.debug) {
+    if (debug) {
+        if (options.hostOnly)
+            options.hostOnlyRegex = new RegExp(`//[^/]*${domain}.*/`, 'i');
+
         page.on(EVENTS.request, handlers.request(domain, options));
         page.on(EVENTS.response, handlers.response(domain, options));
     }
 };
 
-const decoratePage = (page, server, session) => {
+const decoratePage = ({page, server}) => {
     page.gotoDom = async (url, options = {}) => page.goto(url, {
         waitUntil: EVENTS.domcontentloaded,
         ...options,
@@ -57,7 +60,7 @@ const decoratePage = (page, server, session) => {
             const retireSession = SESSION.retireStatusCodes.some(code => code === statusCode);
 
             if (retireSession)
-                throw new errors.RetireSession({statusCode});
+                throw new errors.session.Retire({statusCode});
 
             else
                 throw new errors.Status({statusCode});

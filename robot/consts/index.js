@@ -158,6 +158,7 @@ const DEFAULT_OPTIONS = {
 };
 
 const EVENTS = {
+    console: 'console',
     dialog: 'dialog',
     domcontentloaded: 'domcontentloaded',
     error: 'error',

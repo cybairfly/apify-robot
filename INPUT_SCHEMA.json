@@ -1,46 +1,89 @@
 {
     "title": "Input schema for actor-robot",
     "type": "object",
+    "description": "Robot can act upon received input and automate arbitrary tasks using headless browser with various presets, tools and features available in the options below",
     "schemaVersion": 1,
     "properties": {
-        "input": {
-            "title": "Input",
-            "type": "object",
-            "description": "Object with input data for the robot",
-            "prefill": { "data": "actionable automation data item" },
-            "editor": "json"
+        "tasks": {
+            "title": "Tasks",
+            "type": "string",
+            "editor": "select",
+            "default": "task1",
+            "prefill": "task1",
+            "description": "Choose tasks for the robot to perform",
+            "enum": [
+                "task1",
+                "task2",
+                "task3"
+            ]
         },
         "target": {
             "title": "Target",
             "type": "string",
             "editor": "select",
-            "default": "domain",
+            "default": "",
             "description": "Choose target to perform selected tasks",
             "enum": [
-                "domain"
+                "",
+                "target1",
+                "target2",
+                "target3"
             ]
         },
-        "tasks": {
-            "title": "Tasks",
+        "browser": {
+            "title": "Browser",
             "type": "string",
             "editor": "select",
-            "default": "login",
-            "description": "Choose tasks for the robot to perform",
+            "default": "firefox",
+            "description": "Choose browser for the selected tasks",
             "enum": [
-                "task2",
-                "task2",
-                "task3"
+                "chromium",
+                "firefox",
+                "webkit"
             ]
         },
-        "retry": {
-            "title": "Retry",
+        "username": {
+            "sectionCaption": "Inputs",
+            "title": "Username",
+            "type": "string",
+            "editor": "textfield",
+            "description": "Encrypted username"
+        },
+        "password": {
+            "title": "Password", 
+            "type": "string",
+            "editor": "textfield",
+            "description": "Encrypted password"
+        },
+        "daysBack": {
+            "title": "Days back",
             "type": "integer",
-            "description": "Number of retries",
             "default": 0,
             "maximum": 9,
-            "unit": "retries"
+            "unit": "days",
+            "description": "Refund days back"
+        },
+        "ticketId": {
+            "title": "TicketID",
+            "type": "string",
+            "editor": "textfield",
+            "default": "ID123",
+            "description": "Paired ticket ID"
+        },
+        "runType": {
+            "title": "Run type",
+            "type": "string",
+            "editor": "select",
+            "default": "sync",
+            "prefill": "sync",
+            "description": "Async or sync run",
+            "enum": [
+                "async",
+                "sync"
+            ]
         },
         "abort": {
+            "sectionCaption": "Options",
             "title": "Abort?",
             "type": "boolean",
             "description": "Aborts task before final step - useful for testing and debugging.",
@@ -50,16 +93,9 @@
         "block": {
             "title": "Block?",
             "type": "boolean",
-            "description": "Block needless requests to save computing and network resources",
+            "description": "Filter traffic excluded by project setup",
             "editor": "checkbox",
-            "default": false
-        },
-        "debug": {
-            "title": "Debug?",
-            "type": "boolean",
-            "description": "Run actor in verbose debug mode",
-            "editor": "checkbox",
-            "default": false
+            "default": true
         },
         "silent": {
             "title": "Silent?",
@@ -68,10 +104,10 @@
             "editor": "checkbox",
             "default": false
         },
-        "stream": {
-            "title": "Stream?",
+        "stealth": {
+            "title": "Stealth?",
             "type": "boolean",
-            "description": "Live view from the actor to watch tasks performed in near real time",
+            "description": "Enable stealth mode to evade bot detection",
             "editor": "checkbox",
             "default": false
         },
@@ -82,17 +118,111 @@
             "editor": "checkbox",
             "default": false
         },
-        "stealth": {
-            "title": "Stealth?",
+        "debug": {
+            "sectionCaption": "Debug",
+            "title": "Debug?",
             "type": "boolean",
-            "description": "Enable detection evasion mode",
+            "description": "Run actor in verbose debug mode",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.debug.fullUrls": {
+            "groupCaption": "Options:",
+            "title": "Full URLs",
+            "type": "boolean",
+            "description": "Display URL params while logging traffic",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.debug.hostOnly": {
+            "title": "Host only",
+            "type": "boolean",
+            "description": "Only log traffic within the target domain",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.debug.hideFilter": {
+            "title": "Hide filter",
+            "type": "boolean",
+            "description": "Hide requests blocked by traffic filters",
+            "editor": "checkbox",
+            "default": false
+        },
+        "coder": {
+            "sectionCaption": "Coder",
+            "title": "Coder? - placeholder",
+            "type": "boolean",
+            "description": "Enables visual task creator utility",
+            "editor": "checkbox",
+            "default": false
+        },
+        "human": {
+            "sectionCaption": "Human",
+            "title": "Human? - placeholder",
+            "type": "boolean",
+            "description": "Enable human-like behavior patterns",
+            "editor": "checkbox",
+            "default": false
+        },
+        "server": {
+            "sectionCaption": "Server",
+            "title": "Server?",
+            "type": "boolean",
+            "description": "Enable hypertext server",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.server.livecast.enable": {
+            "groupCaption": "Options:",
+            "title": "Livecast",
+            "type": "boolean",
+            "description": "Live-cast of actor run",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.server.websocket.enable": {
+            "title": "Websocket - placeholder",
+            "type": "boolean",
+            "description": "Enable websocket server",
+            "editor": "checkbox",
+            "default": false
+        },
+        "notify": {
+            "sectionCaption": "Notify",
+            "title": "Notify?",
+            "type": "boolean",
+            "description": "Enable error notifications",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.notify.slack": {
+            "groupCaption": "Options:",
+            "title": "Slack",
+            "type": "boolean",
+            "description": "Enables communication channel",
+            "editor": "checkbox",
+            "default": false
+        },
+        "proxy": {
+            "sectionCaption": "Proxy",
+            "title": "Proxy? - placeholder",
+            "type": "boolean",
+            "description": "Enable proxy",
+            "editor": "checkbox",
+            "default": true
+        },
+        "options.proxy.session": {
+            "groupCaption": "Options:",
+            "title": "Session? - placeholder",
+            "type": "boolean",
+            "description": "Keep proxy session across runs",
             "editor": "checkbox",
             "default": false
         },
         "proxyConfig": {
-            "title": "Proxy",
+            "title": "Proxy Config",
             "type": "object",
-            "description": "Optionaly use Apify Proxy",
+            "description": "Define proxy to pass data through",
             "prefill": {
                 "useApifyProxy": true
             },
@@ -103,7 +233,6 @@
         }
     },
     "required": [
-        "input",
         "tasks"
     ]
 }

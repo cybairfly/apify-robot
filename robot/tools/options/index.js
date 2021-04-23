@@ -1,5 +1,6 @@
 const Apify = require('apify');
 const R = require('ramda');
+const dot = require('dot-object');
 
 const { DEFAULT_OPTIONS } = require('../../consts');
 const { getUserAgent } = require('..');
@@ -29,6 +30,17 @@ const transformOptions = {
             },
 };
 
+const parseInputOptions = input => {
+    const inputOptions = Object.entries(input)
+        .filter(([key]) => key.includes('options.'))
+        .reduce((pool, [key, value]) => ({
+            ...pool,
+            [key]: value,
+        }), {}) || {};
+
+    return dot.object(inputOptions).options || {};
+};
+
 const getDefaultOptions = ({ input: { target }, input, setup}) => {
     const defaultOptions = {
         launchPuppeteer: {
@@ -39,7 +51,7 @@ const getDefaultOptions = ({ input: { target }, input, setup}) => {
                 width: 1024 + Math.floor(Math.random() * 900),
                 height: 768 + Math.floor(Math.random() * 300),
             },
-            headless: Apify.isAtHome() ? setup.OPTIONS.launchPuppeteer.headless : false,
+            headless: Apify.isAtHome() ? setup.options.launchPuppeteer.headless : false,
             devtools: !Apify.isAtHome(),
             // ignoreHTTPSErrors: true
             // args: [
@@ -75,14 +87,24 @@ const Options = {
     }),
 };
 
-const RobotOptions = ({ input: { block, proxyConfig }, input, setup}) => {
+const InputOptions = input => parseInputOptions(input);
+
+const RobotOptions = ({ input: {browser, block, proxyConfig }, input, setup}) => {
+    const inputOptions = parseInputOptions(input);
     const defaultOptions = getDefaultOptions({input, setup});
-    const options = R.mergeDeepRight(defaultOptions, setup.OPTIONS);
+    const options = R.mergeDeepRight(R.mergeDeepRight(defaultOptions, setup.options), inputOptions);
+
+    input.options = inputOptions;
 
     if (options.launchPuppeteer.randomUserAgent) {
         options.launchPuppeteer.userAgent = proxyConfig && proxyConfig.userAgent
             ? proxyConfig.userAgent
             : getUserAgent();
+    }
+
+    if (browser) {
+        options.browserPool.browser = {};
+        options.browserPool.browser[browser] = true;
     }
 
     if (block)
@@ -93,6 +115,7 @@ const RobotOptions = ({ input: { block, proxyConfig }, input, setup}) => {
 
 module.exports = {
     redactOptions,
+    InputOptions,
     RobotOptions,
     Options,
 };

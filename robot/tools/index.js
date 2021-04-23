@@ -15,15 +15,19 @@ const tryRequire = {
             return false;
         }
     },
-    global: (log, rootPath) => globalPath => {
+    global: (log, rootPath) => (globalPath, options = {scope: false}) => {
         try {
             const requirePath = path.join(rootPath, globalPath);
             log.join.debug('ROOT:', rootPath);
             log.join.debug('PATH:', requirePath);
             return require(requirePath);
         } catch (error) {
-            log.debug(error.message);
-            log.debug(error.stack);
+            const [message] = error.message.split('\n', 1);
+            log.debug(message);
+
+            if (options.scope)
+                log.debug(error.stack);
+
             return false;
         }
     },

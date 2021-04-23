@@ -1,3 +1,9 @@
+/**
+ * @typedef {import('./types.d').input} input
+ * @typedef {import('./types.d').setup} setup
+ * @typedef {import('./types.d').options} options
+ */
+
 const Apify = require('apify');
 const R = require('ramda');
 const path = require('path');
@@ -13,6 +19,7 @@ const ScopeConfig = Scope.Config;
 const TargetConfig = Target.Config;
 
 const { SESSION } = require('./consts');
+const { parseInput } = require('./tools/input');
 const { RobotOptions } = require('./tools/options');
 const { notifyChannel } = require('./tools/notify');
 const { transformTasks, resolveTaskTree } = require('./tools/tasks');
@@ -28,6 +35,10 @@ const consts = require('./public/consts');
 const tools = require('./public/tools');
 
 class Robot {
+    /**
+     * @param {input} input
+     * @param {setup} setup
+     */
     constructor(input, setup) {
         this.log = log;
         this.input = input;
@@ -40,6 +51,7 @@ class Robot {
         this.OUTPUTS = this.setup.OUTPUTS;
 
         this.relay = {};
+        this.state = {};
         this.context = {};
         this._error = {};
         this._output = {};
@@ -48,6 +60,7 @@ class Robot {
         this.page = null;
         this.browser = null;
         this.browserPool = null;
+        /** @type options | null */
         this.options = null;
         this.stealth = null;
         this.session = null;
@@ -56,7 +69,7 @@ class Robot {
         this.server = null;
         this.strategy = null;
 
-        this.Scope = {};
+        this.Scope = null;
         this.scope = {};
         this._step = null;
         this._task = null;
@@ -179,8 +192,9 @@ class Robot {
             return await retry(this);
         } catch (error) {
             this.error = this.probeError(error);
+            const doRetry = error.retry && input.retry > this.retryIndex;
 
-            if (input.retry > this.retryIndex) {
+            if (doRetry) {
                 if (input.debug) {
                     const {output, input, page, retryCount} = this;
                     await saveOutput({input, output, page, retryCount});
@@ -191,8 +205,10 @@ class Robot {
                 this.retryIndex++;
                 await this.stop();
 
-                log.error(this.error.message);
-                log.error(this.error.stack);
+                // log.error(error.message);
+                // log.error(error.stack);
+                log.exception(error);
+
                 log.default('◄'.repeat(100));
                 log.info(`RETRY [R-${this.retryCount}]`);
                 log.default('◄'.repeat(100));
@@ -214,14 +230,15 @@ class Robot {
     };
 
     start = async ({input, input: {tasks: taskNames, target, session, stealth}, setup} = this) => {
+        input = parseInput(input);
         input.id = await setup.getInputId(input);
         this.context = await this.createContext(this);
         this.options = RobotOptions({input, setup});
 
         if (target)
-            this.Scope = tryRequire.global(`./${setup.getPath.targets.target(target)}`) || this.Scope;
+            this.Scope = tryRequire.global(`./${setup.getPath.targets.target(target)}`, {scope: true});
         else
-            this.Scope = tryRequire.global(`./${setup.getPath.generic.scope()}`) || this.Scope;
+            this.Scope = tryRequire.global(`./${setup.getPath.generic.scope()}`, {scope: true});
 
         if (session) {
             this.sessionId = Apify.isAtHome() ?
@@ -229,13 +246,14 @@ class Robot {
                 setup.getProxySessionId.local(this.context);
         }
 
+        // TODO update for standalone usage
         if (!this.options.browserPool.disable) {
             this.sessionPool = await Apify.openSessionPool(this.options.sessionPool);
             this.session = await this.sessionPool.getSession(session && this.sessionId);
             this.session.retireOnBlockedStatusCodes(SESSION.retireStatusCodes);
-            log.debug('sessionPool state', this.sessionPool.getState());
-            log.debug('sessionPool count - usable', this.sessionPool.usableSessionsCount);
-            log.debug('sessionPool count - retired', this.sessionPool.retiredSessionsCount);
+            log.console.debug('Retire session on status codes:', SESSION.retireStatusCodes);
+            log.console.info('Usable proxy sessions:', this.sessionPool.usableSessionsCount);
+            log.console.info('Retired proxy sessions:', this.sessionPool.retiredSessionsCount);
         }
 
         if (!this.isRetry) {
@@ -269,7 +287,7 @@ class Robot {
         return this.tasks;
     };
 
-    initPage = async ({input: {block, debug, target, stream, stealth}, page = null, session, setup, options} = this) => {
+    initPage = async ({input: {block, debug, target, server, stealth}, page = null, session, setup, options, proxyConfig} = this) => {
         const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
         const url = source.TARGET && source.TARGET.url;
         const domain = parseDomain(url, target);
@@ -278,7 +296,7 @@ class Robot {
 
         if (!page) {
             if (!this.options.browserPool.disable) {
-                this.browserPool = await getBrowserPool(this.options.browserPool, this.proxyConfig, this.session, this.stealth);
+                this.browserPool = await getBrowserPool(options.browserPool, proxyConfig, session, stealth);
                 this.page = page = await this.browserPool.newPage();
 
                 if (block)
@@ -296,22 +314,27 @@ class Robot {
             await Apify.utils.puppeteer.blockRequests(page, this.options.trafficFilter);
 
         // const singleThread = setup.maxConcurrency === 1;
-        const shouldStartServer = !this.server && stream;
-        const server = this.server = this.server || (shouldStartServer && startServer(page, setup, this.options.liveViewServer));
+        const shouldStartServer = !this.server && server && options.server.livecast.enable;
+        this.server = this.server || (shouldStartServer && startServer(page, setup, {
+            // TODO remove legacy
+            ...this.options.liveViewServer,
+            ...this.options.server.livecast,
+        }));
 
-        decoratePage(page, server, session);
-        initEventLogger(page, domain, {debug});
+        decoratePage(this);
+        initEventLogger(page, domain, debug, options.debug);
 
         return page;
     };
 
-    createContext = async ({input, output, page, relay, server} = this) => {
+    createContext = async ({input, output, page, relay, state, server} = this) => {
         this.context = {
             // TODO remove legacy support
             INPUT: Object.freeze(input),
             OUTPUT: output,
+            relay,
 
-            input: Object.freeze(input),
+            input: {...input},
             output,
             page,
             pools: {
@@ -332,7 +355,7 @@ class Robot {
                 verifyResult: 'placeholder',
             },
             server,
-            relay,
+            state,
             step: null,
             task: null,
         };
@@ -378,6 +401,11 @@ class Robot {
 
                 this.step.init = !step.init || step.init(context);
                 this.step.skip = step.skip && step.skip(context);
+
+                if (this.step.abort && this.step.abort(context)) {
+                    log.join.warning(`Aborting on step [${step.name}] on test ${step.abort}`);
+                    break;
+                }
 
                 if (!this.step.init) {
                     log.join.info(`Skipping step [${step.name}] of task [${task.name}] on test ${step.init}`);
@@ -498,6 +526,11 @@ class Robot {
             this.task.done = !task.done || task.done(context);
             this.task.stop = task.stop && task.stop(context);
 
+            if (this.step.abort && this.step.abort(context)) {
+                log.join.warning(`Aborting on task [${task.name}] on test ${this.step.abort}`);
+                break;
+            }
+
             if (this.task.stop) {
                 log.join.warning(`Breaking on task [${task.name}] on test ${task.stop}`);
                 break;
@@ -525,13 +558,14 @@ class Robot {
         return error;
     }
 
-    handleError = async ({input, output, options, error, page, setup} = this) => {
+    handleError = async ({input, input: {notify, silent}, output, options, error, page, setup} = this) => {
         if (Object.keys(output).length)
             await saveOutput({input, output, page});
 
         await this.stop();
 
-        if (!input.silent) {
+        // TODO support other channels
+        if (notify && options.notify.slack && !silent) {
             await notifyChannel({input, output, error, setup});
             console.error('---------------------------------------------------------');
             console.error('Error in robot - support notified to update configuration');
@@ -570,11 +604,14 @@ class Robot {
                 else if (error.retainSession || error instanceof errors.session.Retain)
                     session.markGood();
 
-                else
+                else {
                     session.markBad();
+                    log.debug('Removing fingerprint');
+                    session.userData.fingerprint = null;
+                }
             }
 
-            sessionPool.persistState();
+            await sessionPool.persistState();
         }
 
         if (server) {
