@@ -1,42 +1,8 @@
+/**
+ * @typedef {import('./scope').RobotContext} RobotContext
+ */
 const Config = require('./config');
 const log = require('../logger');
-
-/**
-* @typedef {import('@types/puppeteer').Page} page
-* @typedef {{
-    * input: {
-        * target: String,
-        * tasks: Array,
-        * retry: Number,
-        * abort: Boolean,
-        * block: Boolean,
-        * debug: Boolean,
-        * stream: Boolean,
-        * session: Boolean,
-        * stealth: Boolean
-    * },
-    * output: Object,
-    * page: page,
-    * relay: Object,
-    * pools: {
-        * browserPool: Object,
-        * sessionPool: Object,
-    * },
-    * events: {
-        * emit: Function,
-        * listen: Function
-    * }
-    * server: {
-        * ws: {
-            * send: (message: String) => message: String,
-            * cast: (message: String) => message: String
-        * },
-        * http: {},
-        * live: {}
-    * },
-    * tools: Object
-    * }} RobotContext
-*/
 
 class Scope {
     /**
