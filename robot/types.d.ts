@@ -34,7 +34,11 @@ export interface options {
         slack: boolean,
     },
     server: {
-        livecast: boolean,
-        websocket: boolean
+        livecast: {
+            enable: boolean
+        },
+        websocket: {
+            enable: boolean
+        }
     }
 }

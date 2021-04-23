@@ -1,7 +1,7 @@
 /**
- * @typedef {import('./types').input} input
- * @typedef {import('./types').setup} setup
- * @typedef {import('./types').options} options
+ * @typedef {import('./types.d').input} input
+ * @typedef {import('./types.d').setup} setup
+ * @typedef {import('./types.d').options} options
  */
 
 const Apify = require('apify');
