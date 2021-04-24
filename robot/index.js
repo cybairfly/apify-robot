@@ -553,7 +553,7 @@ class Robot {
             error = new errors.Network({error});
 
         if (error instanceof Robot.Error === false)
-            error = new Robot.Error({error, name: 'dasda'});
+            error = new Robot.Error({error, stack: error.stack});
 
         return error;
     }
@@ -564,10 +564,8 @@ class Robot {
 
         await this.stop();
 
-        // TODO support other channels
-        if (notify && options.notify.slack && !silent) {
-            await notifyChannel({input, output, error, setup});
-            console.error('---------------------------------------------------------');
+        if (log.getLevel() === log.LEVELS.DEBUG)
+            log.object.debug(error);
             console.error('Error in robot - support notified to update configuration');
             console.error('---------------------------------------------------------');
         } else {
