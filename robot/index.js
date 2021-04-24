@@ -566,12 +566,16 @@ class Robot {
 
         if (log.getLevel() === log.LEVELS.DEBUG)
             log.object.debug(error);
+
+        if (shouldNotify({input, error, setup, options})) {
+            await notifyChannel({input, output, error, options});
+            console.error('■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■');
             console.error('Error in robot - support notified to update configuration');
-            console.error('---------------------------------------------------------');
+            console.error('■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■');
         } else {
-            console.error('---------------------------------------------------------------');
+            console.error('■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■');
             console.error('Error in robot - please contact support to update configuration');
-            console.error('---------------------------------------------------------------');
+            console.error('■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■');
         }
 
         throw error;
