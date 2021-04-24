@@ -21,7 +21,7 @@ const TargetConfig = Target.Config;
 const { SESSION } = require('./consts');
 const { parseInput } = require('./tools/input');
 const { RobotOptions } = require('./tools/options');
-const { notifyChannel } = require('./tools/notify');
+const { notifyChannel, shouldNotify } = require('./tools/notify');
 const { transformTasks, resolveTaskTree } = require('./tools/tasks');
 const { decoratePage, initEventLogger, initTrafficFilter } = require('./tools/hooks');
 const { getProxyConfig } = require('./tools/proxy');
@@ -205,10 +205,7 @@ class Robot {
                 this.retryIndex++;
                 await this.stop();
 
-                // log.error(error.message);
-                // log.error(error.stack);
                 log.exception(error);
-
                 log.default('◄'.repeat(100));
                 log.info(`RETRY [R-${this.retryCount}]`);
                 log.default('◄'.repeat(100));

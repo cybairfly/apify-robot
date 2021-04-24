@@ -1,32 +1,39 @@
 const Apify = require('apify');
 
+// TODO generalize for other channels
 const { postMessage } = require('./slack');
 
-const formatMessage = (target, errorLabel, errorDetails) => `
-Error: ${target} \`${errorLabel}\`
-https://my.apify.com/view/runs/${process.env.APIFY_ACTOR_RUN_ID}${(errorDetails && `
-\`\`\`${errorDetails}\`\`\``) || ''}`.trim();
-
-const notifyChannel = async ({input, setup, error}) => {
-    const {filters, channels, details} = setup.options.notify;
+const notifyChannel = async ({input, error, options}) => {
+    const {channels, details} = options.notify;
     const {channel} = channels.slack;
     const {debug, target} = input;
 
-    const exclude = Object
-        .values(filters)
-        .flatMap(filter => filter)
-        .some(pattern => error.name === pattern || error.type === pattern);
+    const errorLabel = error.type || error.name || '';
+    const errorDetails = (debug || details) && JSON.stringify(error, null, 4);
+    const message = formatMessage(target, errorLabel, errorDetails);
 
-    const doNotify = !debug && !exclude && Apify.isAtHome();
-
-    if (doNotify) {
-        const errorLabel = error.type || error.name || '';
-        const errorDetails = details && JSON.stringify(error, null, 4);
-        const message = formatMessage(target, errorLabel, errorDetails);
-        await postMessage({channel, message});
-    }
+    await postMessage({channel, message});
 };
 
+const shouldNotify = ({input, error, setup, options}) =>
+    input.notify
+    && options.notify.slack
+    && !input.silent
+    && !error.silent
+    && !shouldExclude(error, setup.options.notify.filters)
+    && Apify.isAtHome();
+
+const shouldExclude = (error, filters = {}) => Object
+    .values(filters)
+    .flatMap(filter => filter)
+    .some(pattern => error.name === pattern || error.type === pattern);
+
+const formatMessage = (target, errorLabel, errorDetails) => `
+    Error: ${target} \`${errorLabel}\`
+    https://my.apify.com/view/runs/${process.env.APIFY_ACTOR_RUN_ID}${(errorDetails && `
+    \`\`\`${errorDetails}\`\`\``) || ''}`.trim();
+
 module.exports = {
+    shouldNotify,
     notifyChannel,
 };

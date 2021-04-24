@@ -195,13 +195,21 @@
             "editor": "checkbox",
             "default": false
         },
-        "options.notify.slack": {
+        "options.notify.details": {
             "groupCaption": "Options:",
+            "title": "Details",
+            "type": "boolean",
+            "description": "Include details in reports",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.notify.slack": {
+            "groupCaption": "Channels:",
             "title": "Slack",
             "type": "boolean",
             "description": "Enables communication channel",
             "editor": "checkbox",
-            "default": false
+            "default": true
         },
         "proxy": {
             "sectionCaption": "Proxy",
