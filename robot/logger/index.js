@@ -23,10 +23,10 @@ log.join = {
 };
 
 log.object = {
-    info: object => log.info(`${JSON.stringify(object, null, 2)}`),
-    debug: object => log.debug(`${JSON.stringify(object, null, 2)}`),
-    error: object => log.error(`${JSON.stringify(object, null, 2)}`),
-    warning: object => log.warning(`${JSON.stringify(object, null, 2)}`),
+    info: object => log.info(`${JSON.stringify(object, null, 4)}`),
+    debug: object => log.debug(`${JSON.stringify(object, null, 4)}`),
+    error: object => log.error(`${JSON.stringify(object, null, 4)}`),
+    warning: object => log.warning(`${JSON.stringify(object, null, 4)}`),
 };
 
 log.redact = {
