@@ -19,10 +19,6 @@ const RobotError = require('./robot.error');
     }
  */
 class Errors {
-    Muted = class extends RobotError {
-        mute = true;
-    }
-
     Access = class extends RobotError {
         message = 'Access issue on requested resource';
     }
@@ -85,6 +81,10 @@ class Errors {
                 this.message = `Retry task ${this.task && ` ${this.task.name}`}`;
             }
         },
+    }
+
+    Silent = class extends RobotError {
+        silent = true;
     }
 
     Status = class extends RobotError {
