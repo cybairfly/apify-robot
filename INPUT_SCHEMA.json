@@ -42,7 +42,7 @@
             "title": "Browser",
             "type": "string",
             "editor": "select",
-            "default": "firefox",
+            "default": "",
             "description": "Choose browser for the selected tasks",
             "enum": [
                 "",
