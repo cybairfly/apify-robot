@@ -326,7 +326,7 @@ class Robot {
         return page;
     };
 
-    createContext = async ({input, output, page, relay, state, server} = this) => {
+    createContext = async ({input, output, page, relay, state, server, browserPool, sessionPool} = this) => {
         this.context = {
             // TODO remove legacy support
             INPUT: Object.freeze(input),
@@ -337,19 +337,14 @@ class Robot {
             output,
             page,
             pools: {
-                browserPool: 'placeholder',
-                sessionPool: 'placeholder',
+                browserPool,
+                sessionPool,
             },
             events: {
                 emit: 'placeholder',
                 listen: 'placeholder',
             },
             tools: {
-                slack: {
-                    post: 'placeholder',
-                },
-                // tools pre-initialized with page and other internals
-                typeHuman: 'placeholder',
                 matchPattern: 'placeholder',
                 verifyResult: 'placeholder',
             },
