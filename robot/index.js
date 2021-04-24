@@ -8,9 +8,8 @@ const Apify = require('apify');
 const R = require('ramda');
 const path = require('path');
 
-const {sleep} = Apify.utils;
-
 const log = require('./logger');
+const Human = require('./human');
 const Setup = require('./setup');
 const Scope = require('./scope');
 const Target = require('./target');
@@ -18,6 +17,7 @@ const Target = require('./target');
 const ScopeConfig = Scope.Config;
 const TargetConfig = Target.Config;
 
+const { sleep } = Apify.utils;
 const { SESSION } = require('./consts');
 const { parseInput } = require('./tools/input');
 const { RobotOptions } = require('./tools/options');
@@ -115,6 +115,8 @@ class Robot {
     }
 
     static Error = RobotError;
+
+    static Human = Human;
 
     static Setup = Setup;
 
@@ -356,6 +358,9 @@ class Robot {
             step: null,
             task: null,
         };
+
+        if (input.human)
+            this.context.human = new Human(page);
 
         return this.context;
     }

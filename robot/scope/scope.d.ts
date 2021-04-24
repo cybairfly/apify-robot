@@ -1,6 +1,7 @@
 import {SessionPool} from 'apify';
 import {BrowserPool} from 'browser-pool';
 import {Page} from 'playwright';
+import Human from '../human';
 
 export interface RobotContext {
     input: {
@@ -10,12 +11,14 @@ export interface RobotContext {
         abort: Boolean,
         block: Boolean,
         debug: Boolean,
+        human: Boolean,
         stream: Boolean,
         session: Boolean,
         stealth: Boolean
     },
     output: Object,
     page: Page,
+    human: Human | undefined,
     pools: {
         browserPool: BrowserPool,
         sessionPool: SessionPool,
