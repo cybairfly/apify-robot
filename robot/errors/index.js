@@ -138,7 +138,7 @@ class Errors {
         constructor(options) {
             super(options);
             this.requestSecrets = options.requestSecrets;
-            this.message = `Retry login${options.requestSecrets && ' with new credentials'}`;
+            this.message = `Retry login ${(options.requestSecrets && 'with new credentials') || ''}`;
         }
 
         retry = true;
