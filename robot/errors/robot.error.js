@@ -74,7 +74,7 @@ module.exports = class RobotError extends Error {
         if (options.retry !== undefined)
             this.#retry = options.retry;
 
-        this.name = this.name || `Robot.Error${this.constructor.name !== 'RobotError' && `.${this.constructor.name}`}`;
+        this.name = this.name || this.#getName();
     }
 
     set data(data = {}) {
@@ -100,6 +100,13 @@ module.exports = class RobotError extends Error {
         this.#retry = this.#retry || retry;
     } get retry() {
         return this.#retry || false;
+    }
+
+    #getName = (chain = [], child = this.constructor) => {
+        if (child.name === 'RobotError')
+            return chain.length ? `Robot.Error.${chain.join('.')}` : 'Robot.Error';
+
+        return this.#getName([child.name, ...chain], Object.getPrototypeOf(child));
     }
 
     toJSON() {
