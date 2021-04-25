@@ -92,7 +92,7 @@
             ]
         },
         "abort": {
-            "sectionCaption": "Options",
+            "sectionCaption": "Config",
             "title": "Abort?",
             "type": "boolean",
             "description": "Aborts task before final step - useful for testing and debugging.",
@@ -167,7 +167,7 @@
         },
         "human": {
             "sectionCaption": "Human",
-            "title": "Human? - placeholder",
+            "title": "Human?",
             "type": "boolean",
             "description": "Enable human-like behavior patterns",
             "editor": "checkbox",

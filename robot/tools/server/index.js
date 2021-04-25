@@ -9,7 +9,7 @@ const {Server} = require('../../server/index');
 const startServer = (page, setup, options) => {
     const server = new Server(page, setup, options);
     // page.on(EVENTS.domcontentloaded, async () => await server.serve(page));
-    page.on(EVENTS.load, async () => await server.serve(page));
+    page.on(EVENTS.load, async () => server.serve(page));
 
     server.start();
     return server;

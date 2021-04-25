@@ -1,25 +1,29 @@
 0.2.0 / 2021-02-XX
 ==================
 ## Breaking
-### Environment
+### *Environment*
 `process.env.slackToken` ➜ `process.env.SLACK_TOKEN`
 
-<!-- TODO -->
-### `Robot.Context`
-Rename actor input and output for clearer distinction from robot's own input/output. Consolidate all actor related properties including input and output in a new context property `actor`
-- `INPUT` ➜ `actor.actorInput`
-- `OUTPUT` ➜ `actor.actorOutput`
-- `relay` ➜ `state`
+### Input
+- `retry` - retry will now trigger only on custom errors with the retry flag set to `true`
+
+### `Robot`
+Renamed variables for more clarity, merged actor and robot input and output. Input for the robot is no longer clearly separated from actor input and instead merged and flattened with the rest of input due to input schema constraints and considerations. Workaround for this if it should ever become an issue is pre-processing of the input before passing it to the robot for processing and accessing nested properties during automation as pre-defined. This change also rules out the potential for processing multiple inputs within a single run without the need for a higher order management actor but since the use case is unlikely and would introduce significant overhead with less clarity in terms of managing and matching inputs and outputs, drawbacks seem to far outweight the potential benefits and thus this kind of usage will not be supported in the future.
+  - `INPUT` + `input` ➜ `input`
+  - `OUTPUT` + `output` ➜ `output`
 
 ### `Robot.consts`
 - `PUPPETEER.events` ➜ `EVENTS`
 
 ### `Robot.Setup`
 - `OutputTemplate` ➜ `OutputSchema`
-- `SLACK.channel` ➜ `NOTIFY.channels.slack.channel`
+- `OPTIONS` ➜ `options`
 - `OPTIONS.blockRequests` ➜ `options.trafficFilter`
 - `OPTIONS.blockRequests.patterns` ➜ `options.trafficFilter.patterns.url`
 - `OPTIONS.blockRequests.analytics` ➜ `options.trafficFilter.patterns.host`
+- `SERVER` ➜ `options.server`
+- `SERVER.liveView` ➜ `options.server.livecast`
+- `SLACK.channel` ➜ `options.notify.channels.slack.channel`
 
 ### `Robot.Scope/Target`
 - `constructor(setup, target, robot)` ➜ `constructor(context)`
@@ -29,24 +33,56 @@ Rename actor input and output for clearer distinction from robot's own input/out
 - `stepName = () => {}` ➜ `taskName = context => ({ stepName: context => {}, ... })`
   - steps are now optionally (recommended and will become the default) wrapped by their respective tasks in `Robot.Scope/Target` implementations to follow the structure in `Robot.Setup` more closely and provide other additional benefits through this closure, including type hints in step signatures. Updated `context` is passed to both tasks and steps at runtime.
 
+- `context`
+  - `relay` ➜ `state`
+  - `INPUT` + `input` ➜ `input`
+  - `OUTPUT` + `output` ➜ `output`
+
 ### `Robot.tools.login`
   - `selectors.loggedIn` ➜ `selectors.verify`
   - throw if none of either `predicate` or `selectors.verify` is present for login status verification
 
 ## Updates
-Bindings between children classes inheriting from `Robot.Scope/Target` and contents of `context` are automatically initialized through the `Robot.Scope` base class. Therefore constructor is optional when there is no need to manage **local** state of the scope. The `relay` object hosted by `context` is intended for sharing and managing **global** state across all scopes, steps and tasks at runtime.
+- [Browser pool](https://github.com/apify/browser-pool) - support for all its features and browsers
+- [Session pool](https://sdk.apify.com/docs/api/session-pool) - support for target-specific proxy management
+
+### `Input`
+- `notify` - enable error notifications to external channel(s, future)
+- `browser` - select from available browsers to perform the automation
+- `options.debug.fullUrls` - log full URLs including complete parameters
+- `options.debug.hostOnly` - only log traffic with the target host domain
+- `options.debug.hideFilter` - hide traffic blocked by filter in the logs
+- `options.notify.details` - include complete error in error notification
+- `options.notify.slack` - enable channel for error notifications
+- `options.server.livecast.enable` - enable live visual stream of actions
+- `options.server.websocket.enable` - enable real-time communication server
+
+### `Robot.Error`
+Native support for custom errors with special flags reserved for use by the robot and support for `JSON.stringify` 
+Non-custom native errors are wrapped automatically, though only shortly before error alert and exit of the actor.
+
+**Usage examples**
+Exhaust options `throw new Robot.Error({name, type, data, error, retry, message})`
+Rethrow wrapped error: 
+- custom error merged with the re-thrown error `throw new Robot.Error({error})`
+- custom error with `cause` of re-thrown error `throw new Robot.errors.Example({error})`
+
+Reserved properties:
+- `data: Object` - container for arbitrary data properties
+- `type: String` - constructor name of the custom error
+- `cause: Error` - optional cause of the custom error
+- `retry: Boolean` - retry current run till retry limit
+
+### `Robot.Human`
+Initialize page with human behavior options on demand - to be extended with more functionality.
 
 ### `Robot.Setup`
+- `step.abort(context)` - support centralized abort trigger across all targets
+- `options.browserPool` - browser pool options with extra options and mappings
+- `options.sessionPool` - session pool options
 - `options.notify.details` - support extra error details in external notifications
 - `options.notify.filters` - support error alert filters based on error name/type
 - `options.trafficFilter.resources` - filter out requests by resource type
-
-### `Robot.Error`
-Native support for custom errors with special flags reserved for use by the robot.
-Usage example: `throw new Robot.Error(options = {name, type, retry, message})`
-
-Reserved properties:
-- `retry: Boolean` - retry of the current actor/robot run
 
 ### `Robot.Scope`
 Adding support for generic scope class for larger target independent automations
@@ -55,7 +91,18 @@ Adding support for generic scope class for larger target independent automations
 Extends `Robot.Scope`
 
 ### `Robot.Scope/Target`
-Properties available directly on the scope instance, outside of the context:
+- `context`
+  - `input.options` - input options for various robot features transformed into an object at runtime from the flat input schema using dot notation
+  - `page.gotoDom` - utility method for navigation with `waitUntil` option enabled and set to `EVENTS.domcontentloaded`
+  - `human` - human behavior simulation tool to replace native methods where needed
+      - `human.type`
+      - `human.click`
+      - `human.sleep`
+  - `pools` 
+    - `BrowserPool` - exposed browser pool instance if applicable
+    - `SessionPool` - exposed session pool instance if applicable
+
+Properties available directly on the scope instance, outside of context:
 - `this.task` - currently processed task as defined in `Robot.Setup`
   - `this.task.output` - output of current task
 - `this.step` - currently processed step as defined in `Robot.Setup`
@@ -63,7 +110,7 @@ Properties available directly on the scope instance, outside of the context:
   - `this.step.attachOutput(output: object)` - attach output to current step (object merge)
   - `this.step.output.attach(output: object)` - same as above
 - `this.step` - current global output is available outside of the context, directly on the scope instance
-- `this.will(text: string)` - trigger a virtual **inline step** without requiring a separate step function pre-defined for and shared by all targets in `Robot.Setup`
+- `this.will(text: string)` - trigger a virtual **inline step** without requiring a pre-defined step function
 - `step.will(text: string)` - same as above for generic or loose steps without binding to `Robot.Scope/Target`
   - Objective
     - improve readability for long automation logs through clearly separated segments of runtime information
@@ -73,6 +120,8 @@ Properties available directly on the scope instance, outside of the context:
     - [ ] fire a custom internal event with the step description (future)
     - [ ] dispatch a custom event via built-in websocket server (future)
     - [ ] support optional automatic screenshot for inline steps (future)
+
+Bindings between children extending from this class and contents of `context` are automatically initialized through the `Robot.Scope` base class. Therefore constructor is optional if there is no need to manage properties or **local** state of the scope. The `state` object hosted by `context` is intended for sharing and managing **global** state across all scopes, steps and tasks at runtime.
 
 0.1.0 / 2021-01-14
 0.1.18 / 2021-01-13
