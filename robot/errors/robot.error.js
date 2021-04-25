@@ -50,13 +50,13 @@ module.exports = class RobotError extends Error {
                 this.#cause = options.error;
             else {
                 this.#cause = options.error.cause;
-                this.name = options.name ?
+                this.name = options.name && options.error.name ?
                     `${options.name} ◄ ${options.error.name}` :
-                    options.error.name;
+                    (options.name || options.error.name);
 
-                this.message = options.message ?
+                this.message = options.message && options.error.message ?
                     `${options.message} ◄ ${options.error.message.split('\n', 1)[0]}` :
-                    options.error.message;
+                    (options.message || options.error.message);
 
                 if (options.stack)
                     this.stack = options.error.stack;
