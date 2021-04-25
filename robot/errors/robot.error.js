@@ -66,11 +66,9 @@ module.exports = class RobotError extends Error {
             }
         }
 
-        // extend or overwrite cause error data maybe
         if (options.data)
             this.data = options.data;
 
-        // overwrite cause error retry flag maybe
         if (options.retry !== undefined)
             this.#retry = options.retry;
 
