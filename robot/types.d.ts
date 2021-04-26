@@ -6,22 +6,12 @@ export interface input {
     abort: boolean,
     block: boolean,
     debug: boolean,
+    human: boolean,
     notify: boolean,
     silent: boolean,
     server: boolean,
     session: boolean,
     stealth: boolean
-}
-
-export interface setup {
-    server: {
-        livecast: {
-            events: Object
-        },
-        websocket: {
-            events: Object,
-        },
-    },
 }
 
 export interface options {
@@ -31,6 +21,7 @@ export interface options {
         hideFilter: boolean,
     },
     notify: {
+        details: boolean,
         slack: boolean,
     },
     server: {

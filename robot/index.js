@@ -1,7 +1,7 @@
 /**
  * @typedef {import('./types.d').input} input
- * @typedef {import('./types.d').setup} setup
  * @typedef {import('./types.d').options} options
+ * @typedef {import('./setup')} setup
  */
 
 const Apify = require('apify');
@@ -43,6 +43,7 @@ class Robot {
         this.log = log;
         this.input = input;
         this.target = input.target;
+        /** @type setup */
         this.setup = setup;
         this.isRetry = false;
         this.retryIndex = 0;
@@ -60,7 +61,7 @@ class Robot {
         this.page = null;
         this.browser = null;
         this.browserPool = null;
-        /** @type options | null */
+        /** @type options */
         this.options = null;
         this.stealth = null;
         this.session = null;
