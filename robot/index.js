@@ -546,7 +546,7 @@ class Robot {
     };
 
     probeError = error => {
-        const isNetworkError = ['net::', 'NS_BINDING_ABORTED'].some(item => error.message.includes(item));
+        const isNetworkError = ['net::', 'NS_BINDING_ABORTED', 'NS_ERROR_NET_INTERRUPT'].some(item => error.message.includes(item));
         if (isNetworkError)
             error = new errors.Network({error});
 
