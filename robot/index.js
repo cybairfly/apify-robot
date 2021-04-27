@@ -1,3 +1,4 @@
+/* eslint-disable lines-between-class-members */
 /**
  * @typedef {import('./types.d').input} input
  * @typedef {import('./types.d').options} options
@@ -81,61 +82,42 @@ class Robot {
         this.syncContext = syncContext(this);
     }
 
-    get task() {
-        return this._task;
-    }
-
-    get step() {
-        return this._step;
-    }
-
-    get error() {
-        return this._error;
-    }
-
-    get output() {
-        return this._output;
-    }
-
     set task(task) {
         this._task = task;
+    } get task() {
+        return this._task;
     }
 
     set step(step) {
         this._step = step;
+    } get step() {
+        return this._step;
     }
 
     set error(error) {
         this._error = error;
         this.errors.unshift(error);
+    } get error() {
+        return this._error;
     }
 
     set output(output) {
         this.syncContext.output(output);
+    } get output() {
+        return this._output;
     }
 
     static Error = RobotError;
-
     static Human = Human;
-
     static Setup = Setup;
-
     static Scope = Scope;
-
     static Target = Target;
-
     static RobotError = RobotError;
-
     static ScopeConfig = ScopeConfig;
-
     static TargetConfig = TargetConfig;
-
     static consts = consts;
-
     static errors = errors;
-
     static tools = tools;
-
     static transformTasks = transformTasks;
 
     static route = rootPath => {
