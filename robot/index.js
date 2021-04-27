@@ -78,7 +78,6 @@ class Robot {
         this.steps = {};
         this.errors = [];
 
-        this.retry = this.catch(this.retry);
         this.syncContext = syncContext(this);
     }
 
@@ -190,9 +189,18 @@ class Robot {
         return new Robot(this.input, this.setup);
     };
 
-    catch = retry => async ({input} = this) => {
+    retry = async () => {
+        this.tasks = await this.initTasks(this);
+        this.page = await this.initPage(this);
+        this.context = await this.createContext(this);
+        this.output = await this.handleTasks(this);
+
+        return this.output;
+    };
+
+    catch = step => async ({input, context} = this) => {
         try {
-            return await retry(this);
+            return await step.code(context, this);
         } catch (error) {
             this.error = this.probeError(error);
             const doRetry = error.retry && input.retry > this.retryIndex;
@@ -218,15 +226,6 @@ class Robot {
 
             await this.handleError(this);
         }
-    };
-
-    retry = async () => {
-        this.tasks = await this.initTasks(this);
-        this.page = await this.initPage(this);
-        this.context = await this.createContext(this);
-        this.output = await this.handleTasks(this);
-
-        return this.output;
     };
 
     start = async ({input, input: {tasks: taskNames, target, session, stealth}, setup} = this) => {
@@ -429,7 +428,7 @@ class Robot {
                 }
 
                 if (this.step.code)
-                    this.step.output = await this.step.code(this.context, this);
+                    this.step.output = await this.catch(this.step)(this);
 
                 else {
                     this.step.code = this.scope[task.name] && this.scope[task.name].constructor.name !== 'AsyncFunction' ?
@@ -474,7 +473,7 @@ class Robot {
                         `STEP Generic handler found for step [${step.name}] of task [${task.name}]`;
 
                     log.join.info(message);
-                    this.step.output = await this.step.code(this.context, this);
+                    this.step.output = await this.catch(this.step)(this);
                 }
 
                 if (this.step.output && typeof this.step.output !== 'object') {
