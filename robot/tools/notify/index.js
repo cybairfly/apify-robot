@@ -18,6 +18,7 @@ const notifyChannel = async ({input, error, options}) => {
 const shouldNotify = ({input, error, setup, options}) =>
     input.notify
     && options.notify.slack
+    && !options.debug.muteErrors
     && !input.silent
     && !error.silent
     && !shouldExclude(error, setup.options.notify.filters)

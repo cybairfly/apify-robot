@@ -106,10 +106,10 @@
             "editor": "checkbox",
             "default": true
         },
-        "silent": {
-            "title": "Silent?",
+        "prompt": {
+            "title": "Prompt?",
             "type": "boolean",
-            "description": "Mute error alerts to external channels",
+            "description": "Await action approval via livecast interface",
             "editor": "checkbox",
             "default": false
         },
@@ -154,6 +154,13 @@
             "title": "Hide filter",
             "type": "boolean",
             "description": "Hide requests blocked by traffic filters",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.debug.muteErrors": {
+            "title": "Mute errors",
+            "type": "boolean",
+            "description": "Mute error alerts to external channels",
             "editor": "checkbox",
             "default": false
         },

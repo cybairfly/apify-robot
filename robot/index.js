@@ -269,7 +269,7 @@ class Robot {
         return this.tasks;
     };
 
-    initPage = async ({input: {block, debug, target, server, stealth}, page = null, session, setup, options, proxyConfig} = this) => {
+    initPage = async ({input: {block, debug, prompt, target, server, stealth}, page = null, session, setup, options, proxyConfig} = this) => {
         const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
         const url = source.TARGET && source.TARGET.url;
         const domain = parseDomain(url, target);
@@ -296,7 +296,7 @@ class Robot {
             await Apify.utils.puppeteer.blockRequests(page, this.options.trafficFilter);
 
         // const singleThread = setup.maxConcurrency === 1;
-        const shouldStartServer = !this.server && server && options.server.livecast.enable;
+        const shouldStartServer = !this.server && (prompt || (server && options.server.livecast.enable));
         this.server = this.server || (shouldStartServer && startServer(page, setup, options.server.livecast));
 
         decoratePage(this);
