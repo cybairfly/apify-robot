@@ -79,6 +79,7 @@ class Robot {
         this.steps = {};
         this.errors = [];
 
+        this.retry = this.catch(this.retry);
         this.syncContext = syncContext(this);
     }
 
@@ -172,6 +173,7 @@ class Robot {
     };
 
     retry = async () => {
+        this.error = null;
         this.tasks = await this.initTasks(this);
         this.page = await this.initPage(this);
         this.context = await this.createContext(this);
@@ -180,11 +182,10 @@ class Robot {
         return this.output;
     };
 
-    catch = step => async ({input, context} = this) => {
+    catch = retry => async ({input} = this) => {
         try {
-            return await step.code(context, this);
+            return await retry(this);
         } catch (error) {
-            this.error = this.probeError(error);
             const doRetry = error.retry && input.retry > this.retryIndex;
 
             if (doRetry) {
@@ -409,10 +410,13 @@ class Robot {
                         log.join.debug(`STEP Target handler not found for step [${step.name}] of task [${task.name}] in ${target ? 'target' : 'scope'} [${target}]`);
                 }
 
-                if (this.step.code)
-                    this.step.output = await this.catch(this.step)(this);
-
-                else {
+                if (this.step.code) {
+                    this.step.output = await this.step.code(context, this)
+                        .catch(error => {
+                            this.error = this.probeError(error);
+                            throw this.error;
+                        });
+                } else {
                     this.step.code = this.scope[task.name] && this.scope[task.name].constructor.name !== 'AsyncFunction' ?
                         this.scope[task.name](this.context, this)[step.name] :
                         this.scope[step.name];
@@ -455,7 +459,11 @@ class Robot {
                         `STEP Generic handler found for step [${step.name}] of task [${task.name}]`;
 
                     log.join.info(message);
-                    this.step.output = await this.catch(this.step)(this);
+                    this.step.output = await this.step.code(context, this)
+                        .catch(error => {
+                            this.error = this.probeError(error);
+                            throw this.error;
+                        });
                 }
 
                 if (this.step.output && typeof this.step.output !== 'object') {
@@ -560,7 +568,7 @@ class Robot {
         throw error;
     };
 
-    stop = async ({browserPool, sessionPool, browser, options, session, server, page, errors: [error]} = this) => {
+    stop = async ({browserPool, sessionPool, browser, options, session, server, page, error} = this) => {
         this.syncContext.page(null);
 
         if (browser) {
