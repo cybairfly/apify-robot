@@ -15,9 +15,7 @@ const writeFile = promisify(fs.writeFile);
 const Snapshot = require('./snapshot');
 const log = require('../logger');
 
-const {
-    CustomError,
-} = require('../errors');
+const {CustomError} = require('../errors/legacy');
 
 const {
     APIFY_CONTAINER_PORT,
@@ -45,7 +43,7 @@ class Server extends LiveViewServer {
             [events.cancel]: () => {
                 throw CustomError({
                     data: {
-                        abortPayment: true,
+                        abortAction: true,
                     },
                 });
             },
