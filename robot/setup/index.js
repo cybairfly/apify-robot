@@ -117,9 +117,6 @@ class RobotSetup {
 
         /* https://sdk.apify.com/docs/api/apify#launchpuppeteer */
         launchPuppeteer: {},
-
-        /* https://sdk.apify.com/docs/api/live-view-server */
-        liveViewServer: {},
     };
 
     /* default output generator */

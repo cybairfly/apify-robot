@@ -40,6 +40,18 @@ const DEFAULT_OPTIONS = {
             padding: crypto.constants.RSA_PKCS1_PADDING,
         },
     },
+    server: {
+        livecast: {
+            useScreenshots: false,
+            maxScreenshotFiles: 20,
+            snapshotTimeoutSecs: 2,
+            maxSnapshotFrequencySecs: 1,
+            // screenshotDirectoryPath: 'key_value_stores/default',
+        },
+        websocket: {
+            // events: Object,
+        },
+    },
     browserPool: {
         disable: false,
         browser: {
@@ -147,13 +159,6 @@ const DEFAULT_OPTIONS = {
             mockChromeInIframe: false,
             // mockDeviceMemory: false
         },
-    },
-    liveViewServer: {
-        useScreenshots: false,
-        maxScreenshotFiles: 20,
-        snapshotTimeoutSecs: 2,
-        maxSnapshotFrequencySecs: 1,
-        // screenshotDirectoryPath: 'key_value_stores/default'
     },
 };
 

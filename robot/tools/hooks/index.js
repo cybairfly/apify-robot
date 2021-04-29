@@ -72,7 +72,7 @@ const decoratePage = ({page, server}) => {
     LOGGER.triggerMethods.map(methodName => {
         const originalMethod = page[methodName];
 
-        if (server && SERVER.livecast.triggerMethods.some(liveViewMethodName => methodName.includes(liveViewMethodName))) {
+        if (server && SERVER.livecast.triggerMethods.some(livecastTrigger => methodName.includes(livecastTrigger))) {
             page[methodName] = async (...args) => {
                 const argsForLog = args => args.map(arg => typeof arg === 'function' ? arg.toString().replace(/\s+/g, ' ') : arg);
                 console.log({[methodName]: argsForLog(args)});

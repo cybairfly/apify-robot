@@ -297,11 +297,7 @@ class Robot {
 
         // const singleThread = setup.maxConcurrency === 1;
         const shouldStartServer = !this.server && server && options.server.livecast.enable;
-        this.server = this.server || (shouldStartServer && startServer(page, setup, {
-            // TODO remove legacy
-            ...this.options.liveViewServer,
-            ...this.options.server.livecast,
-        }));
+        this.server = this.server || (shouldStartServer && startServer(page, setup, options.server.livecast));
 
         decoratePage(this);
         initEventLogger(page, domain, debug, options.debug);
@@ -604,7 +600,7 @@ class Robot {
         }
 
         if (server) {
-            await sleep(options.liveViewServer.snapshotTimeoutSecs || 3 * 1000);
+            await sleep(options.server.livecast.snapshotTimeoutSecs);
             await server.serve(page);
             await sleep(5 * 1000);
         }
