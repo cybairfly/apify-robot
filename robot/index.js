@@ -20,7 +20,7 @@ const TargetConfig = Target.Config;
 
 const { sleep } = Apify.utils;
 const { SESSION } = require('./consts');
-const { parseInput } = require('./tools/input');
+const { extendInput } = require('./tools/input');
 const { RobotOptions } = require('./tools/options');
 const { notifyChannel, shouldNotify } = require('./tools/notify');
 const { transformTasks, resolveTaskTree } = require('./tools/tasks');
@@ -169,6 +169,7 @@ class Robot {
             this.setup = R.mergeDeepRight(setup, targetSetup);
         }
 
+        extendInput(this.input);
         return new Robot(this.input, this.setup);
     };
 
@@ -186,6 +187,7 @@ class Robot {
         try {
             return await retry(this);
         } catch (error) {
+            this.error = this.error || error;
             const doRetry = error.retry && input.retry > this.retryIndex;
 
             if (doRetry) {
@@ -212,7 +214,6 @@ class Robot {
     };
 
     start = async ({input, input: {tasks: taskNames, target, session, stealth}, setup} = this) => {
-        input = parseInput(input);
         input.id = await setup.getInputId(input);
         this.context = await this.createContext(this);
         this.options = RobotOptions({input, setup});
