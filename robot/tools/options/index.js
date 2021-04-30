@@ -94,8 +94,6 @@ const RobotOptions = ({ input: {browser, block, proxyConfig }, input, setup}) =>
     const defaultOptions = getDefaultOptions({input, setup});
     const options = R.mergeDeepRight(R.mergeDeepRight(defaultOptions, setup.options), inputOptions);
 
-    input.options = inputOptions;
-
     if (options.launchPuppeteer.randomUserAgent) {
         options.launchPuppeteer.userAgent = proxyConfig && proxyConfig.userAgent
             ? proxyConfig.userAgent
