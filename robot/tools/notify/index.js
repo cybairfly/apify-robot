@@ -30,7 +30,7 @@ const shouldExclude = (error, filters = {}) => Object
     .some(pattern => error.name === pattern || error.type === pattern);
 
 const formatMessage = ({input: {target, debug, session, stealth}, error, errorLabel, errorDetails}) => `
-Error: ${target} \`${errorLabel}\` ${stealth && ':ninja:'} ${debug && ':ladybug:'} ${session && ':cookie:'} ${error.retry && ':recycle:'}
+Error: ${target} \`${errorLabel}\` ${stealth ? ':ninja:' : ''} ${debug ? ':ladybug:' : ''} ${session ? ':cookie:' : ''} ${error.retry ? ':recycle:' : ''}
 https://my.apify.com/view/runs/${process.env.APIFY_ACTOR_RUN_ID}${(errorDetails && `
 \`\`\`${errorDetails}\`\`\``) || ''}`.trim();
 
