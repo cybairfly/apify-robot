@@ -1,11 +1,15 @@
-0.2.0 / 2021-02-XX
+0.2.0 / 2021-05-XX
 ==================
+## Overview
+Internals are currently backward compatible to enable a smooth transition from older versions, the upgrade will however require at least an update of a project's `Robot.Setup` and any tools updated in the "breaking" section. Ideally, input schema and API of the implementations should also be updated. Legacy functionality and backward compatibility will be completely removed in upcoming versions in the future.
+
 ## Breaking
 ### *Environment*
 `process.env.slackToken` ➜ `process.env.SLACK_TOKEN`
 
 ### Input
 - `retry` - retry will now trigger only on custom errors with the retry flag set to `true`
+- `silent` - removed in favor of replacement options below (`notify`, `options.debug.muteErrors`)
 
 ### `Robot`
 Renamed variables for more clarity, merged actor and robot input and output. Input for the robot is no longer clearly separated from actor input and instead merged and flattened with the rest of input due to input schema constraints and considerations. Workaround for this if it should ever become an issue is pre-processing of the input before passing it to the robot for processing and accessing nested properties during automation as pre-defined. This change also rules out the potential for processing multiple inputs within a single run without the need for a higher order management actor but since the use case is unlikely and would introduce significant overhead with less clarity in terms of managing and matching inputs and outputs, drawbacks seem to far outweight the potential benefits and thus this kind of usage will not be supported in the future.
@@ -47,13 +51,16 @@ Renamed variables for more clarity, merged actor and robot input and output. Inp
 - [Session pool](https://sdk.apify.com/docs/api/session-pool) - support for target-specific proxy management
 
 ### `Input`
-- `notify` - enable error notifications to external channel(s, future)
 - `browser` - select from available browsers to perform the automation
+- `human` - enables optional human behavior simulation tools in context
+- `notify` - enable error notifications to external channel(s, future)
+- `prompt` - enable user prompt and require manual intervention before proceeding with the automation (currently must be implemented in scope/target)
 - `options.debug.fullUrls` - log full URLs including complete parameters
 - `options.debug.hostOnly` - only log traffic with the target host domain
 - `options.debug.hideFilter` - hide traffic blocked by filter in the logs
+- `options.debug.muteErrors` - mute error notifications to external channels
 - `options.notify.details` - include complete error in error notification
-- `options.notify.slack` - enable channel for error notifications
+- `options.notify.slack` - enable channel for error notifications (Slack)
 - `options.server.livecast.enable` - enable live visual stream of actions
 - `options.server.websocket.enable` - enable real-time communication server
 
@@ -94,7 +101,7 @@ Extends `Robot.Scope`
 - `context`
   - `input.options` - input options for various robot features transformed into an object at runtime from the flat input schema using dot notation
   - `page.gotoDom` - utility method for navigation with `waitUntil` option enabled and set to `EVENTS.domcontentloaded`
-  - `human` - human behavior simulation tool to replace native methods where needed
+  - `human` - optional human behavior simulation tool to replace native methods where needed (must be enabled on input)
       - `human.type`
       - `human.click`
       - `human.sleep`
