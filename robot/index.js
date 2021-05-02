@@ -2,7 +2,7 @@
 /**
  * @typedef {import('./types.d').input} input
  * @typedef {import('./types.d').options} options
- * @typedef {import('./setup')} setup
+ * @typedef {import('./setup/index')} setup
  */
 
 const Apify = require('apify');

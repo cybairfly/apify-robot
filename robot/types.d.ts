@@ -19,6 +19,7 @@ export interface options {
         fullUrls: boolean,
         hostOnly: boolean,
         hideFilter: boolean,
+        muteErrors: boolean
     },
     notify: {
         details: boolean,
