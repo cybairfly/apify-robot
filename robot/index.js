@@ -174,7 +174,6 @@ class Robot {
     };
 
     retry = async () => {
-        this.error = null;
         this.tasks = await this.initTasks(this);
         this.page = await this.initPage(this);
         this.context = await this.createContext(this);
@@ -187,7 +186,7 @@ class Robot {
         try {
             return await retry(this);
         } catch (error) {
-            this.error = this.error || error;
+            this.error = error;
             const doRetry = error.retry && input.retry > this.retryIndex;
 
             if (doRetry) {
@@ -206,6 +205,10 @@ class Robot {
                 log.info(`RETRY [R-${this.retryCount}]`);
                 log.default('◄'.repeat(100));
 
+                this.error = null;
+                if (!this.session)
+                    this.assignSession();
+
                 return this.retry(this);
             }
 
@@ -213,31 +216,11 @@ class Robot {
         }
     };
 
-    start = async ({input, input: {tasks: taskNames, target, session, stealth}, setup} = this) => {
+    start = async ({input, setup} = this) => {
         input.id = await setup.getInputId(input);
         this.context = await this.createContext(this);
         this.options = RobotOptions({input, setup});
-
-        if (target)
-            this.Scope = tryRequire.global(`./${setup.getPath.targets.target(target)}`, {scope: true});
-        else
-            this.Scope = tryRequire.global(`./${setup.getPath.generic.scope()}`, {scope: true});
-
-        if (session) {
-            this.sessionId = Apify.isAtHome() ?
-                setup.getProxySessionId.apify(this.context) :
-                setup.getProxySessionId.local(this.context);
-        }
-
-        // TODO update for standalone usage
-        if (!this.options.browserPool.disable) {
-            this.sessionPool = await Apify.openSessionPool(this.options.sessionPool);
-            this.session = await this.sessionPool.getSession(session && this.sessionId);
-            this.session.retireOnBlockedStatusCodes(SESSION.retireStatusCodes);
-            log.console.debug('Retire session on status codes:', SESSION.retireStatusCodes);
-            log.console.info('Usable proxy sessions:', this.sessionPool.usableSessionsCount);
-            log.console.info('Retired proxy sessions:', this.sessionPool.retiredSessionsCount);
-        }
+        this.assignSession();
 
         if (!this.isRetry) {
             log.redact.object(input);
@@ -253,8 +236,56 @@ class Robot {
         await this.stop();
     }
 
+    assignSession = async ({input: {session}} = this) => {
+        this.sessionId = this.getSessionId();
+        // TODO update for standalone usage
+        if (!this.options.browserPool.disable) {
+            this.sessionPool = await Apify.openSessionPool(this.options.sessionPool);
+            this.session = await this.sessionPool.getSession(session && this.sessionId);
+            this.session.retireOnBlockedStatusCodes(SESSION.retireStatusCodes);
+            log.console.debug('Retire session on status codes:', SESSION.retireStatusCodes);
+            log.console.info('Usable proxy sessions:', this.sessionPool.usableSessionsCount);
+            log.console.info('Retired proxy sessions:', this.sessionPool.retiredSessionsCount);
+        }
+
+        log.console.debug({
+            sessionId: this.sessionId,
+            'session.id': this.session.id,
+        });
+    }
+
+    getSessionId = ({input: {session}, setup, retryIndex} = this) => {
+        if (this.sessionId)
+            return this.sessionId;
+
+        if (session) {
+            return Apify.isAtHome() ?
+                setup.getProxySessionId.apify(this.context) :
+                setup.getProxySessionId.local(this.context);
+        }
+
+        return Apify.isAtHome() ?
+            `${setup.getProxySessionId.apify(this.context)}_${Date.now()}` :
+            `${setup.getProxySessionId.local(this.context)}_${Date.now()}`;
+    }
+
+    retireSession = ({input: {session: useSession}, session} = this) => {
+        log.debug('Retiring session');
+        session.retire();
+        // TODO update after upgrade to SDK 1
+        if (!useSession) {
+            this.session = null;
+            this.sessionId = null;
+        }
+    }
+
+    initScope = ({input: {target}, setup} = this) => target ?
+        tryRequire.global(`./${setup.getPath.targets.target(target)}`, {scope: true}) :
+        tryRequire.global(`./${setup.getPath.generic.scope()}`, {scope: true});
+
     initTasks = async ({input: {target, tasks: taskNames}, setup} = this) => {
         const setupTasks = setup.tasks ? setup.tasks : setup.getTasks(target);
+        this.Scope = this.initScope();
 
         if (this.Scope.adaptTasks)
             this.Scope.tasks = setupTasks;
@@ -268,7 +299,7 @@ class Robot {
         }
 
         return this.tasks;
-    };
+    }
 
     initPage = async ({input: {block, debug, prompt, target, server, stealth}, page = null, session, setup, options, proxyConfig} = this) => {
         const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
@@ -279,7 +310,7 @@ class Robot {
 
         if (!page) {
             if (!this.options.browserPool.disable) {
-                this.browserPool = await getBrowserPool(options.browserPool, proxyConfig, session, stealth);
+                this.browserPool = await getBrowserPool(this);
                 this.page = page = await this.browserPool.newPage();
 
                 if (block)
@@ -410,8 +441,8 @@ class Robot {
                 if (this.step.code) {
                     this.step.output = await this.step.code(context, this)
                         .catch(error => {
-                            this.error = this.probeError(error);
-                            throw this.error;
+                            const scopeError = this.probeError(error);
+                            throw scopeError;
                         });
                 } else {
                     this.step.code = this.scope[task.name] && this.scope[task.name].constructor.name !== 'AsyncFunction' ?
@@ -458,8 +489,8 @@ class Robot {
                     log.join.info(message);
                     this.step.output = await this.step.code(context, this)
                         .catch(error => {
-                            this.error = this.probeError(error);
-                            throw this.error;
+                            const scopeError = this.probeError(error);
+                            throw scopeError;
                         });
                 }
 
@@ -569,14 +600,17 @@ class Robot {
         this.syncContext.page(null);
 
         if (browser) {
+            log.debug('Closing the browser');
             await browser.close().catch(error => {
                 log.debug('Failed to close browser');
             });
         }
 
         if (browserPool) {
+            log.debug('Destroying browser pool');
             await browserPool.retireAllBrowsers();
-            await browserPool.destroy();
+            // await stuck if no browser launched
+            browserPool.destroy();
         }
 
         if (sessionPool) {
@@ -585,13 +619,15 @@ class Robot {
 
             if (error) {
                 if (error.retireSession || error instanceof errors.Network || error instanceof errors.session.Retire)
-                    session.retire();
+                    this.retireSession();
 
-                else if (error.retainSession || error instanceof errors.session.Retain)
+                else if (error.retainSession || error instanceof errors.session.Retain) {
+                    log.debug('Marking session good');
                     session.markGood();
-
-                else {
+                } else {
+                    log.debug('Marking session bad');
                     session.markBad();
+
                     log.debug('Removing fingerprint');
                     session.userData.fingerprint = null;
                 }

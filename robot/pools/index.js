@@ -15,7 +15,7 @@ const {
  * @param {object} session
  * @param {object} stealth
  */
-const getBrowserPool = async (browserPoolOptions, proxyConfiguration, session, stealth) => {
+const getBrowserPool = async ({input: {stealth}, options: {browserPool: browserPoolOptions}, proxyConfig: proxyConfiguration, session, sessionId}) => {
     const hooks = initHooks(browserPoolOptions.hooks);
 
     const options = {
@@ -48,23 +48,14 @@ const getBrowserPool = async (browserPoolOptions, proxyConfiguration, session, s
         ],
     };
 
-    if (!session) {
-        options.preLaunchHooks = [
-            ...options.preLaunchHooks,
-            async (pageId, launchContext) => {
-                launchContext.proxyUrl = await proxyConfiguration.newUrl();
-            },
-        ];
-    }
-
-    if (session) {
-        options.preLaunchHooks = [
-            ...options.preLaunchHooks,
-            async (pageId, launchContext) => {
-                launchContext.proxyUrl = await proxyConfiguration.newUrl(session.id);
-            },
-        ];
-    }
+    options.preLaunchHooks = [
+        ...options.preLaunchHooks,
+        async (pageId, launchContext) => {
+            // update after upgrade to SDK 1
+            launchContext.proxyUrl = await proxyConfiguration.newUrl(sessionId);
+            // launchContext.proxyUrl = await proxyConfiguration.newUrl(session.id);
+        },
+    ];
 
     if (stealth) {
         options.postLaunchHooks = [...options.postLaunchHooks, addFingerprintToBrowserController(session)];
