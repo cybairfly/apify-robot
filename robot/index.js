@@ -25,6 +25,7 @@ const { RobotOptions } = require('./tools/options');
 const { notifyChannel, shouldNotify } = require('./tools/notify');
 const { transformTasks, resolveTaskTree } = require('./tools/tasks');
 const { decoratePage, initEventLogger, initTrafficFilter } = require('./tools/hooks');
+const { getSessionId } = require('./tools/session');
 const { getProxyConfig } = require('./tools/proxy');
 const { getBrowserPool } = require('./pools');
 const { startServer } = require('./tools/server');
@@ -173,15 +174,6 @@ class Robot {
         return new Robot(this.input, this.setup);
     };
 
-    retry = async () => {
-        this.tasks = await this.initTasks(this);
-        this.page = await this.initPage(this);
-        this.context = await this.createContext(this);
-        this.output = await this.handleTasks(this);
-
-        return this.output;
-    };
-
     catch = retry => async ({input} = this) => {
         try {
             return await retry(this);
@@ -216,6 +208,15 @@ class Robot {
         }
     };
 
+    retry = async () => {
+        this.tasks = await this.initTasks(this);
+        this.page = await this.initPage(this);
+        this.context = await this.createContext(this);
+        this.output = await this.handleTasks(this);
+
+        return this.output;
+    };
+
     start = async ({input, setup} = this) => {
         input.id = await setup.getInputId(input);
         this.context = await this.createContext(this);
@@ -234,49 +235,6 @@ class Robot {
         await saveOutput(this);
         log.default({OUTPUT: this.output});
         await this.stop();
-    }
-
-    assignSession = async ({input: {session}} = this) => {
-        this.sessionId = this.getSessionId();
-        // TODO update for standalone usage
-        if (!this.options.browserPool.disable) {
-            this.sessionPool = await Apify.openSessionPool(this.options.sessionPool);
-            this.session = await this.sessionPool.getSession(session && this.sessionId);
-            this.session.retireOnBlockedStatusCodes(SESSION.retireStatusCodes);
-            log.console.debug('Retire session on status codes:', SESSION.retireStatusCodes);
-            log.console.info('Usable proxy sessions:', this.sessionPool.usableSessionsCount);
-            log.console.info('Retired proxy sessions:', this.sessionPool.retiredSessionsCount);
-        }
-
-        log.console.debug({
-            sessionId: this.sessionId,
-            'session.id': this.session.id,
-        });
-    }
-
-    getSessionId = ({input: {session}, setup, retryIndex} = this) => {
-        if (this.sessionId)
-            return this.sessionId;
-
-        if (session) {
-            return Apify.isAtHome() ?
-                setup.getProxySessionId.apify(this.context) :
-                setup.getProxySessionId.local(this.context);
-        }
-
-        return Apify.isAtHome() ?
-            `${setup.getProxySessionId.apify(this.context)}_${Date.now()}` :
-            `${setup.getProxySessionId.local(this.context)}_${Date.now()}`;
-    }
-
-    retireSession = ({input: {session: useSession}, session} = this) => {
-        log.debug('Retiring session');
-        session.retire();
-        // TODO update after upgrade to SDK 1
-        if (!useSession) {
-            this.session = null;
-            this.sessionId = null;
-        }
     }
 
     initScope = ({input: {target}, setup} = this) => target ?
@@ -561,6 +519,34 @@ class Robot {
 
         return output;
     };
+
+    assignSession = async ({input: {session}} = this) => {
+        this.sessionId = getSessionId(this);
+        // TODO update for standalone usage
+        if (!this.options.browserPool.disable) {
+            this.sessionPool = await Apify.openSessionPool(this.options.sessionPool);
+            this.session = await this.sessionPool.getSession(session && this.sessionId);
+            this.session.retireOnBlockedStatusCodes(SESSION.retireStatusCodes);
+            log.console.debug('Retire session on status codes:', SESSION.retireStatusCodes);
+            log.console.info('Usable proxy sessions:', this.sessionPool.usableSessionsCount);
+            log.console.info('Retired proxy sessions:', this.sessionPool.retiredSessionsCount);
+        }
+
+        log.console.debug({
+            sessionId: this.sessionId,
+            'session.id': this.session.id,
+        });
+    }
+
+    retireSession = ({input: {session: useSession}, session} = this) => {
+        log.debug('Retiring session');
+        session.retire();
+        // TODO update after upgrade to SDK 1
+        if (!useSession) {
+            this.session = null;
+            this.sessionId = null;
+        }
+    }
 
     probeError = error => {
         const isNetworkError = ['net::', 'NS_BINDING_ABORTED', 'NS_ERROR_NET_INTERRUPT'].some(item => error.message.includes(item));
