@@ -119,15 +119,6 @@ class RobotSetup {
         launchPuppeteer: {},
     };
 
-    /* default output generator */
-    // OutputSchema = ({input}) => Object
-
-    /* TODO */
-    // getTasks = target => ({});
-
-    /* generate unique input ID */
-    // getInputId = input => String;
-
     /* define custom project specific paths */
     /* base path = this.rootPath */
     getPath = {
@@ -146,17 +137,19 @@ class RobotSetup {
     };
 
     /* generate unique proxy session string for local and remote runs (@Apify) */
-    getApifyProxySession = {
+    getProxySessionId = {
         // apify: ({input}) => String,
         // local: ({input}) => String,
     };
 
-    /* output presets to be used by task steps */
-    OUTPUTS = {
-    //     outputTemplate: {
-    //         outputProperty: outputValue
-    //     }
-    };
+    /* TODO construct tasks */
+    // getTasks = target => ({});
+
+    /* generate unique input ID */
+    // getInputId = input => String;
+
+    /* default output generator */
+    // OutputSchema = ({input}) => Object
 
     /* support instance import */
     constructor(rootPath) {
