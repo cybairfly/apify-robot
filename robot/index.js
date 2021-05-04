@@ -56,9 +56,8 @@ class Robot {
         this.relay = {};
         this.state = {};
         this.context = {};
-        this._error = {};
         this._output = {};
-        // this.output = {};
+        this._error = null;
 
         this.page = null;
         this.browser = null;
