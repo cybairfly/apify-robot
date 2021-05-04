@@ -170,7 +170,6 @@ class Robot {
             this.setup = R.mergeDeepRight(setup, targetSetup);
         }
 
-        extendInput(this.input);
         return new Robot(this.input, this.setup);
     };
 
@@ -218,7 +217,7 @@ class Robot {
     };
 
     start = async ({input, setup} = this) => {
-        input.id = await setup.getInputId(input);
+        await extendInput(input, setup);
         this.context = await this.createContext(this);
         this.options = RobotOptions({input, setup});
         this.assignSession();
