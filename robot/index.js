@@ -219,7 +219,7 @@ class Robot {
         await extendInput(input, setup);
         this.context = await this.createContext(this);
         this.options = RobotOptions({input, setup});
-        this.assignSession();
+        await this.assignSession();
 
         if (!this.isRetry) {
             log.redact.object(input);
