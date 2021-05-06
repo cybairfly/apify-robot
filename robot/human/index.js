@@ -21,7 +21,7 @@ class Human {
 
     click = async (selector, options) => {
         await this.#page.mouse.move(Math.round(Math.random() * 800), Math.round(Math.random() * 600));
-        this.#page.click(selector, {
+        return this.#page.click(selector, {
             // position: {},
             delay: Math.random() * 500,
         });
