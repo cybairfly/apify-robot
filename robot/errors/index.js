@@ -24,6 +24,9 @@ class Errors {
     }
 
     access = {
+        Blocked: class extends this.Access {
+            message = 'Access has been blocked';
+        },
         MultiFactor: class extends this.Access {
             message = 'Multifactor authentication required';
         },
