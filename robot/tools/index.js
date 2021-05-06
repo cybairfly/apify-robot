@@ -69,7 +69,7 @@ const saveScreenshot = async ({id, name, page, retryCount, store}) => {
     try {
         await page.waitForFunction(() => document.readyState !== 'loading').catch(() => null);
         const screenshotBuffer = await page.screenshot({type: 'jpeg', quality: 70, fullPage: true});
-        const fileName = `PAGE-SNAP-${name || retryCount ? `RETRY_R-${retryCount}` : 'FINAL'}-${id || Date.now()}`;
+        const fileName = `PAGE-SNAP-${name || (retryCount ? `RETRY_R-${retryCount}` : 'FINAL')}-${id || Date.now()}`;
 
         if (store)
             await store.setValue(fileName, screenshotBuffer, {contentType: 'image/png'});
@@ -87,7 +87,7 @@ const saveScreenshot = async ({id, name, page, retryCount, store}) => {
 
 const savePageContent = async ({id, name, page, retryCount, store}) => {
     try {
-        const fileName = `PAGE-HTML-${name || retryCount ? `RETRY_R-${retryCount}` : 'FINAL'}-${id || Date.now()}`;
+        const fileName = `PAGE-HTML-${name || (retryCount ? `RETRY_R-${retryCount}` : 'FINAL')}-${id || Date.now()}`;
 
         if (store)
             await store.setValue(fileName, await page.content(), {contentType: 'text/html'});
@@ -103,7 +103,7 @@ const savePageContent = async ({id, name, page, retryCount, store}) => {
     }
 };
 
-const saveOutput = async ({page, name, input, retryCount, store, output: currentOutput}) => {
+const saveOutput = async ({page, name, input, output: currentOutput, retryCount, store}) => {
     const {id} = input;
     const pageContentUrl = await savePageContent({id, name, page, retryCount, store}) || null;
     const screenshotUrl = await saveScreenshot({id, name, page, retryCount, store}) || null;
