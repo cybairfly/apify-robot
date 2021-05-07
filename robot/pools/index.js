@@ -52,8 +52,8 @@ const getBrowserPool = async ({input: {stealth}, options: {browserPool: browserP
         ...options.preLaunchHooks,
         async (pageId, launchContext) => {
             // update after upgrade to SDK 1
-            launchContext.proxyUrl = await proxyConfiguration.newUrl(sessionId);
-            // launchContext.proxyUrl = await proxyConfiguration.newUrl(session.id);
+            // launchContext.proxyUrl = await proxyConfiguration.newUrl(sessionId);
+            launchContext.proxyUrl = await proxyConfiguration.newUrl(session.id);
         },
     ];
 
