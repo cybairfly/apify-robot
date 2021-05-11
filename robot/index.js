@@ -32,6 +32,7 @@ const { startServer } = require('./tools/server');
 const { syncContext } = require('./tools/context');
 const { parseDomain, saveOutput } = require('./tools');
 const { errors, RobotError } = require('./errors');
+const { openSessionPool, pingSessionPool } = require('./tools/session/sessionPool');
 
 const consts = require('./public/consts');
 const tools = require('./public/tools');
@@ -522,7 +523,7 @@ class Robot {
         this.sessionId = getSessionId(this);
         // TODO update for standalone usage
         if (!this.options.browserPool.disable) {
-            this.sessionPool = await Apify.openSessionPool(this.options.sessionPool);
+            this.sessionPool = await openSessionPool(this.options.sessionPool);
             this.session = await this.sessionPool.getSession(session && this.sessionId);
             this.session.retireOnBlockedStatusCodes(SESSION.retireStatusCodes);
             log.console.debug('Retire session on status codes:', SESSION.retireStatusCodes);
@@ -580,7 +581,7 @@ class Robot {
         throw error;
     };
 
-    stop = async ({browserPool, sessionPool, browser, options, session, server, page, error} = this) => {
+    stop = async ({browserPool, sessionPool, browser, options, session, server, page, error, input: {debug}} = this) => {
         this.syncContext.page(null);
 
         if (browser) {
@@ -617,7 +618,11 @@ class Robot {
                 }
             }
 
-            await sessionPool.persistState();
+            this.sessionPool = await openSessionPool(this.options.sessionPool);
+            this.sessionPool.sessions = [...this.sessionPool.sessions.filter(originalSession => originalSession.id !== this.session.id), this.session];
+
+            await this.sessionPool.persistState();
+            await pingSessionPool(this);
         }
 
         if (server) {
