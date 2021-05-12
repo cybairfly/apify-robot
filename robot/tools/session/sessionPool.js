@@ -27,30 +27,45 @@ const openSessionPool = async sessionPoolOptions => {
 };
 
 const pingSessionPool = async ({proxyConfig, sessionPool, input: {debug}}) => {
-    const proxyUrls = sessionPool.sessions.map(session => {
+    const sessionsExtended = sessionPool.sessions.map(session => {
+        const {id, userData: {fingerprint}, usageCount, errorScore} = session;
         const {protocol, username, password, hostname, port} = new URL(proxyConfig.newUrl(session.id));
 
         return {
-            host: `${hostname}`,
-            port,
-            proxyAuth: `${username}:${password}`,
+            data: {
+                id,
+                fingerprint: !!fingerprint || null,
+                usageCount,
+                errorScore,
+            },
+            proxy: {
+                host: `${hostname}`,
+                port,
+                proxyAuth: `${username}:${password}`,
+            },
         };
     });
 
-    const asyncResponses = proxyUrls.map(proxy =>
+    const asyncResponses = sessionsExtended.map(sessionExtended =>
         got(debug ?
             'https://api.ipify.org/?format=json' :
             'https://api.apify.com/v2/users/cyberfly', {
             agent: {
-                http: tunnel.httpOverHttp({proxy}),
-                https: tunnel.httpsOverHttp({proxy}),
+                http: tunnel.httpOverHttp({proxy: sessionExtended.proxy}),
+                https: tunnel.httpsOverHttp({proxy: sessionExtended.proxy}),
             },
             timeout: 5 * 1000,
-        }).catch(error => ({body: 'response failure'})));
+        }).json().catch(error => ({ip: null})));
 
     if (debug) {
         const responses = await Promise.all(asyncResponses);
-        log.debug(responses.map(response => response.body));
+        const sessionPoolState = responses.map((response, index) => ({
+            ...sessionsExtended[index].data,
+            ...response,
+        }));
+
+        log.console.debug(sessionPoolState);
+        await Apify.setValue('sessionPoolState', sessionPoolState);
     }
 };
 
