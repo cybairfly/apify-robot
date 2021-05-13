@@ -89,12 +89,14 @@ const Options = {
 
 const InputOptions = input => parseInputOptions(input);
 
-const RobotOptions = ({ input: {browser, block, proxyConfig }, input, setup}) => {
+const RobotOptions = ({ input: {browser, block, session, proxyConfig }, input, setup}) => {
     const inputOptions = parseInputOptions(input);
     const defaultOptions = getDefaultOptions({input, setup});
     const options = R.mergeDeepRight(R.mergeDeepRight(defaultOptions, setup.options), inputOptions);
 
-    const useSessionPool = !options.browserPool.disable && !proxyConfig.groups.includes('RESIDENTIAL');
+    // TODO cleanup after upgrade to SDK 1
+    const useSessionPool = Apify.isAtHome() && !session && !options.browserPool.disable && !proxyConfig.groups.includes('RESIDENTIAL');
+    // const useSessionPool = !options.browserPool.disable && !proxyConfig.groups.includes('RESIDENTIAL');
     if (!useSessionPool)
         options.sessionPool.disable = true;
 
