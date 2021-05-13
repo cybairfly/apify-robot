@@ -94,6 +94,10 @@ const RobotOptions = ({ input: {browser, block, proxyConfig }, input, setup}) =>
     const defaultOptions = getDefaultOptions({input, setup});
     const options = R.mergeDeepRight(R.mergeDeepRight(defaultOptions, setup.options), inputOptions);
 
+    const useSessionPool = !options.browserPool.disable && !proxyConfig.groups.includes('RESIDENTIAL');
+    if (!useSessionPool)
+        options.sessionPool.disable = true;
+
     if (options.launchPuppeteer.randomUserAgent) {
         options.launchPuppeteer.userAgent = proxyConfig && proxyConfig.userAgent
             ? proxyConfig.userAgent
