@@ -519,16 +519,21 @@ class Robot {
         return output;
     };
 
-    assignSession = async ({input: {session}} = this) => {
+    assignSession = async ({input: {session, proxyConfig}, options} = this) => {
         this.sessionId = getSessionId(this);
         // TODO update for standalone usage
-        if (!this.options.browserPool.disable) {
+        if (!options.sessionPool.disable) {
             this.sessionPool = await openSessionPool(this.options.sessionPool);
             this.session = await this.sessionPool.getSession(session && this.sessionId);
             this.session.retireOnBlockedStatusCodes(SESSION.retireStatusCodes);
             log.console.debug('Retire session on status codes:', SESSION.retireStatusCodes);
             log.console.info('Usable proxy sessions:', this.sessionPool.usableSessionsCount);
             log.console.info('Retired proxy sessions:', this.sessionPool.retiredSessionsCount);
+        } else {
+            this.session = {
+                id: this.sessionId,
+                userData: {},
+            };
         }
 
         log.console.debug({
@@ -583,6 +588,15 @@ class Robot {
 
     stop = async ({browserPool, sessionPool, browser, options, session, server, page, error, input: {debug}} = this) => {
         this.syncContext.page(null);
+
+        // TODO merge w/ session pool logic
+        if (error) {
+            if (error.retireSession || error instanceof errors.session.Retire) {
+                this.sessionId = null;
+                this.session = null;
+            } else
+                session.userData.fingerprint = null;
+        }
 
         if (browser) {
             log.debug('Closing the browser');
