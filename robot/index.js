@@ -69,6 +69,7 @@ class Robot {
         this.session = null;
         this.sessionId = null;
         this.sessionPool = null;
+        this.sessionRetired = false;
         this.server = null;
         this.strategy = null;
 
@@ -187,9 +188,9 @@ class Robot {
                 }
 
                 this.isRetry = true;
+                await this.stop();
                 this.retryCount--;
                 this.retryIndex++;
-                await this.stop();
 
                 log.exception(error);
                 log.default('◄'.repeat(100));
@@ -198,7 +199,7 @@ class Robot {
 
                 this.error = null;
                 if (!this.session)
-                    this.assignSession();
+                    await this.assignSession();
 
                 return this.retry(this);
             }
@@ -542,16 +543,6 @@ class Robot {
         });
     }
 
-    retireSession = ({input: {session: useSession}, session} = this) => {
-        log.debug('Retiring session');
-        session.retire();
-        // TODO update after upgrade to SDK 1
-        if (!useSession) {
-            this.session = null;
-            this.sessionId = null;
-        }
-    }
-
     probeError = error => {
         const isNetworkError = ['net::', 'NS_BINDING_ABORTED', 'NS_ERROR_NET_INTERRUPT'].some(item => error.message.includes(item));
         if (isNetworkError)
@@ -586,17 +577,27 @@ class Robot {
         throw error;
     };
 
-    stop = async ({browserPool, sessionPool, browser, options, session, server, page, error, input: {debug}} = this) => {
-        this.syncContext.page(null);
+    persistSessionPoolMaybe = async ({sessionPool, session, options} = this) => {
+        // TODO maybe update in newer version of session pool
+        // const originalSession = sessionPool.sessionMap.get(session.id);
+        const originalSession = sessionPool.sessions.find(originalSession => originalSession.id === session.id);
+        const poolHasVacancy = sessionPool.sessions.length < options.sessionPool.maxPoolSize;
+        const doPersistState = originalSession || poolHasVacancy;
+        if (doPersistState) {
+            sessionPool.sessions = originalSession ? [
+                ...sessionPool.sessions.filter(originalSession => originalSession.id !== session.id),
+                session,
+            ] : [
+                ...sessionPool.sessions,
+                session,
+            ];
 
-        // TODO merge w/ session pool logic
-        if (error) {
-            if (error.retireSession || error instanceof errors.session.Retire) {
-                this.sessionId = null;
-                this.session = null;
-            } else
-                session.userData.fingerprint = null;
+            await sessionPool.persistState();
         }
+    }
+
+    stop = async ({browserPool, sessionPool, browser, options, session, server, page, error, input} = this) => {
+        this.syncContext.page(null);
 
         if (browser) {
             log.debug('Closing the browser');
@@ -617,10 +618,11 @@ class Robot {
                 session.markGood();
 
             if (error) {
-                if (error.retireSession || error instanceof errors.Network || error instanceof errors.session.Retire)
-                    this.retireSession();
-
-                else if (error.retainSession || error instanceof errors.session.Retain) {
+                if (error.retireSession || error instanceof errors.Network || error instanceof errors.session.Retire) {
+                    log.debug('Retiring session');
+                    session.retire();
+                    this.sessionRetired = true;
+                } else if (error.retainSession || error instanceof errors.session.Retain) {
                     log.debug('Marking session good');
                     session.markGood();
                 } else {
@@ -632,11 +634,24 @@ class Robot {
                 }
             }
 
-            this.sessionPool = await openSessionPool(this.options.sessionPool);
-            this.sessionPool.sessions = [...this.sessionPool.sessions.filter(originalSession => originalSession.id !== this.session.id), this.session];
+            this.sessionPool = await openSessionPool(options.sessionPool);
+            await this.persistSessionPoolMaybe(this);
 
-            await this.sessionPool.persistState();
-            await pingSessionPool(this);
+            if (!this.isRetry || !this.retryCount)
+                await pingSessionPool(this);
+        }
+
+        // TODO merge w/ session pool logic
+        if (error) {
+            if (error.retireSession || error instanceof errors.session.Retire) {
+                log.debug('Retiring session');
+                this.sessionRetired = true;
+                this.sessionId = null;
+                this.session = null;
+            } else {
+                log.debug('Removing fingerprint');
+                session.userData.fingerprint = null;
+            }
         }
 
         if (server) {
