@@ -163,8 +163,10 @@ class Robot {
             global: tools.tryRequire.global(log, this.route),
         };
 
-        if (debug)
+        if (debug) {
+            process.env.DEBUG = 'pw:api';
             log.setLevel(log.LEVELS.DEBUG);
+        }
 
         if (target) {
             const targetSetup = global.tryRequire.global(setup.getPath.targets.setup(target)) || {};

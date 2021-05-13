@@ -58,10 +58,14 @@ const urlParamsToEllipsis = url => {
     return urlCutOffIndex ? `${url.slice(0, urlCutOffIndex)}...` : url;
 };
 
+const centerPadding = ({string = 'header', padder = '-', length = 100, upper = true}) =>
+    ` ${upper ? string.toUpperCase() : string} `.padEnd((length / 2) + (string.length / 2), padder).padStart(length, padder);
+
 module.exports = {
     decorators,
     decorate,
     deepTransform,
     redactObject,
+    centerPadding,
     urlParamsToEllipsis,
 };
