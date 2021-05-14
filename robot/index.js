@@ -340,7 +340,8 @@ class Robot {
 
         for (const task of tasks) {
             this.task = {...task};
-            this.syncContext.task(task);
+            this.task.model = Object.freeze(task);
+            this.syncContext.task(this.task);
 
             log.default('■'.repeat(100));
             log.info(`TASK [${task.name}]`);
@@ -361,7 +362,8 @@ class Robot {
 
             for (const step of task.steps) {
                 this.step = {...step};
-                this.syncContext.step(step);
+                this.step.model = Object.freeze(step);
+                this.syncContext.step(this.step);
 
                 log.default('▬'.repeat(100));
                 log.info(`STEP [${step.name}] @ TASK [${task.name}]`);
@@ -448,8 +450,33 @@ class Robot {
 
                     log.join.info(message);
                     this.step.output = await this.step.code(context, this)
-                        .catch(error => {
+                        .catch(async error => {
                             const scopeError = this.probeError(error);
+
+                            if (task.catch) {
+                                this.task.catch = global.tryRequire.global(path.join(setup.getPath.generic.steps(), task.catch.name));
+                                if (this.task.catch)
+                                    log.join.info(`STEP Generic error handler found for task [${task.name}]`);
+                                else {
+                                    this.task.catch = this.scope[task.catch.name] ?
+                                        this.scope[task.catch.name] :
+                                        this.scope[task.name] && this.scope[task.name](this.context, this)[task.catch.name];
+
+                                    if (this.task.catch)
+                                        log.join.info(`SCOPE Scope error handler found for task [${task.name}]`);
+                                }
+
+                                const result = await this.task.catch(context, this).catch(error => {
+                                    log.error(error);
+                                    throw scopeError;
+                                });
+
+                                if (result)
+                                    return result;
+
+                                throw scopeError;
+                            }
+
                             throw scopeError;
                         });
                 }
@@ -546,7 +573,7 @@ class Robot {
     }
 
     probeError = error => {
-        const isNetworkError = ['net::', 'NS_BINDING_ABORTED', 'NS_ERROR_NET_INTERRUPT'].some(item => error.message.includes(item));
+        const isNetworkError = ['net::', 'NS_BINDING_ABORTED', 'NS_ERROR_NET_INTERRUPT'].some(item => error.message && error.message.includes(item));
         if (isNetworkError)
             error = new errors.Network({error});
 
