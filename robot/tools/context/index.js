@@ -8,7 +8,7 @@ const syncContext = robot => ({
         robot.context.page = page;
     },
     task: task => {
-        robot._task = task;
+        // robot._task = task;
         const taskCopy = task;
         robot.context.task = taskCopy;
 
