@@ -360,6 +360,8 @@ class Robot {
                 continue;
             }
 
+            await page.waitForFunction(() => document.readyState !== 'loading');
+
             for (const step of task.steps) {
                 this.step = {...step};
                 this.step.model = Object.freeze(step);
