@@ -455,30 +455,32 @@ class Robot {
                         .catch(async error => {
                             const scopeError = this.probeError(error);
 
-                            if (task.catch) {
-                                this.task.catch = this.scope[task.catch.name] ?
-                                    this.scope[task.catch.name] :
-                                    this.scope[task.name] && this.scope[task.name](this.context, this)[task.catch.name];
+                            if (!task.catch)
+                                throw scopeError;
+
+                            this.task.catch = this.scope[task.catch.name] ?
+                                this.scope[task.catch.name] :
+                                this.scope[task.name] && this.scope[task.name](this.context, this)[task.catch.name];
+
+                            if (this.task.catch)
+                                log.join.info(`SCOPE Scope error handler found for task [${task.name}]`);
+                            else {
+                                this.task.catch = global.tryRequire.global(path.join(setup.getPath.generic.steps(), task.catch.name));
 
                                 if (this.task.catch)
-                                    log.join.info(`SCOPE Scope error handler found for task [${task.name}]`);
-                                else {
-                                    this.task.catch = global.tryRequire.global(path.join(setup.getPath.generic.steps(), task.catch.name));
-
-                                    if (this.task.catch)
-                                        log.join.info(`STEP Generic error handler found for task [${task.name}]`);
-                                }
-
-                                const result = await this.task.catch(context, this).catch(error => {
-                                    log.exception(scopeError);
-                                    throw error;
-                                });
-
-                                if (result)
-                                    return result;
-
-                                throw scopeError;
+                                    log.join.info(`STEP Generic error handler found for task [${task.name}]`);
                             }
+
+                            if (!this.task.catch)
+                                throw scopeError;
+
+                            const result = await this.task.catch(context, this).catch(error => {
+                                log.exception(scopeError);
+                                throw error;
+                            });
+
+                            if (result)
+                                return result;
 
                             throw scopeError;
                         });
@@ -553,26 +555,6 @@ class Robot {
     };
 
     assignSession = async ({input: {session, proxyConfig}, options} = this) => {
-        this.sessionId = getSessionId(this);
-        // TODO update for standalone usage
-        if (!options.sessionPool.disable) {
-            this.sessionPool = await openSessionPool(this.options.sessionPool);
-            this.session = await this.sessionPool.getSession(session && this.sessionId);
-            this.session.retireOnBlockedStatusCodes(SESSION.retireStatusCodes);
-            log.console.debug('Retire session on status codes:', SESSION.retireStatusCodes);
-            log.console.info('Usable proxy sessions:', this.sessionPool.usableSessionsCount);
-            log.console.info('Retired proxy sessions:', this.sessionPool.retiredSessionsCount);
-        } else {
-            this.session = {
-                id: this.sessionId,
-                userData: {},
-            };
-        }
-
-        log.console.debug({
-            sessionId: this.sessionId,
-            'session.id': this.session.id,
-        });
     }
 
     probeError = error => {
