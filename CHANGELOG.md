@@ -68,8 +68,9 @@ Renamed variables for more clarity, merged actor and robot input and output. Inp
 Native support for custom errors with special flags reserved for use by the robot and support for `JSON.stringify` 
 Non-custom native errors are wrapped automatically, though only shortly before error alert and exit of the actor.
 
-**Usage examples**
+#### Usage examples
 Exhaust options `throw new Robot.Error({name, type, data, error, retry, message})`
+
 Rethrow wrapped error: 
 - custom error merged with the re-thrown error `throw new Robot.Error({error})`
 - custom error with `cause` of re-thrown error `throw new Robot.errors.Example({error})`
