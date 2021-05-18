@@ -458,9 +458,9 @@ class Robot {
                             if (!task.catch)
                                 throw scopeError;
 
-                            this.task.catch = this.scope[task.catch.name] ?
-                                this.scope[task.catch.name] :
-                                this.scope[task.name] && this.scope[task.name](this.context, this)[task.catch.name];
+                            this.task.catch = this.scope[task.catch.name] && this.scope[task.catch.name].constructor.name !== 'AsyncFunction' ?
+                                this.scope[task.name] && this.scope[task.name](this.context, this)[task.catch.name] :
+                                this.scope[task.catch.name];
 
                             if (this.task.catch)
                                 log.join.info(`SCOPE Scope error handler found for task [${task.name}]`);
