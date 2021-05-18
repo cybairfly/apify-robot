@@ -3,7 +3,8 @@ interface RobotErrorOptions {
     type?: string,
     error?: Error,
     retry?: boolean,
-    message?: string
+    message?: string,
+    retireSession?: boolean
 }
 
 export {
