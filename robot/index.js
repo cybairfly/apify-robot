@@ -360,7 +360,7 @@ class Robot {
                 continue;
             }
 
-            await page.waitForFunction(() => document.readyState !== 'loading');
+            await page.waitForFunction(() => document.readyState === 'complete');
 
             for (const step of task.steps) {
                 this.step = {...step};
