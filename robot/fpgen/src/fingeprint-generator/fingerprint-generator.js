@@ -16,7 +16,7 @@ class FingerprintGenerator {
         this.platfrom = platform;
         this.device = device;
 
-        this._userAgents = userAgents.filter((parsedUa) => parsedUa.user_agent_meta_data.times_seen >= 70);
+        this._userAgents = userAgents.filter((parsedUa) => parsedUa.user_agent_meta_data.times_seen >= 30);
         this._screenResolutions = [
             // { width: '640', height: '450' },
             // { width: '800', height: '500' },
