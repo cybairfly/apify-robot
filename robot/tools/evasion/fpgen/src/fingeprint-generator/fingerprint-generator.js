@@ -1,4 +1,4 @@
-const userAgents = require('./USER-AGENTS');
+const HeaderGenerator = require('header-generator');
 
 class FingerprintGenerator {
     constructor(options = {}) {
@@ -16,7 +16,17 @@ class FingerprintGenerator {
         this.platfrom = platform;
         this.device = device;
 
-        this._userAgents = userAgents.filter((parsedUa) => parsedUa.user_agent_meta_data.times_seen >= 50);
+        this.headerGenerator = new HeaderGenerator({
+            browsers: [
+                { name: 'firefox', minVersion: 86 },
+            ],
+            devices: [
+                'desktop',
+            ],
+            operatingSystems: [
+                'linux',
+            ],
+        });
         this._screenResolutions = [
             // { width: '640', height: '450' },
             // { width: '800', height: '500' },
@@ -117,9 +127,9 @@ class FingerprintGenerator {
         };
     }
 
-    createNavigatorAttributes(parsedUA, language) {
+    createNavigatorAttributes(userAgent, language) {
         return {
-            userAgent: parsedUA.user_agent,
+            userAgent,
             cookieEnabled: this._pickRandomElementArray([true, false]),
             doNotTrack: this._pickRandomElementArray(['1', '0', 'unspecified']),
             language,
@@ -145,16 +155,17 @@ class FingerprintGenerator {
     }
 
     async createFingerprint() {
-        const userAgentBase = this._pickRandomElementArray(this._userAgents);
+        const headers = this.headerGenerator.getHeaders();
+        const userAgent = headers['user-agent'];
         const language = this._pickRandomElementArray(this._languages);
         const screen = this.createScreenProperties();
-        const navigator = this.createNavigatorAttributes(userAgentBase, language);
+        const navigator = this.createNavigatorAttributes(userAgent, language);
         const webGl = this.createWebgl();
         const batteryInfo = this.createBattery();
         const historyLength = this._pickRandomElementArray([3, 4, 5, 6, 7]);
 
         return {
-            userAgent: userAgentBase.user_agent,
+            userAgent,
             screen,
             navigator,
             webGl,

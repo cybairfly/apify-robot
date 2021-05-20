@@ -5,6 +5,7 @@
 	"dependencies": {
 		"apify": "^0.21.0",
 		"browser-pool": "0.0.3",
+		"header-generator": "0.0.1-beta.2",
 		"playwright": "^1.5.1",
 		"shortid": "^2.2.16"
 	},
