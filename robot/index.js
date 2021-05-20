@@ -656,6 +656,7 @@ class Robot {
                     log.debug('Retiring session');
                     session.retire();
                     this.sessionRetired = true;
+                    session.userData.fingerprint = null;
                 } else if (error.retainSession || error instanceof errors.session.Retain) {
                     log.debug('Marking session good');
                     session.markGood();
