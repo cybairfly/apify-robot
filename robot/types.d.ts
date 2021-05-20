@@ -1,0 +1,36 @@
+export interface input {
+    target: string,
+    tasks: Array<string>,
+    browser: string,
+    retry: number,
+    abort: boolean,
+    block: boolean,
+    debug: boolean,
+    human: boolean,
+    notify: boolean,
+    silent: boolean,
+    server: boolean,
+    session: boolean,
+    stealth: boolean
+}
+
+export interface options {
+    debug: {
+        fullUrls: boolean,
+        hostOnly: boolean,
+        hideFilter: boolean,
+        muteErrors: boolean
+    },
+    notify: {
+        details: boolean,
+        slack: boolean,
+    },
+    server: {
+        livecast: {
+            enable: boolean
+        },
+        websocket: {
+            enable: boolean
+        }
+    }
+}

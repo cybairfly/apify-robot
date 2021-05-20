@@ -1,0 +1,26 @@
+{
+	"name": "bp-fp-skip-the-games",
+	"version": "0.0.1",
+	"description": "This is a boilerplate of an Apify actor.",
+	"dependencies": {
+		"apify": "^1.0.0",
+		"browser-pool": "^1.1.0",
+		"header-generator": "0.0.1-beta.2",
+		"nanoid": "^3.1.16",
+		"node-wit": "^6.0.0",
+		"playwright": "^1.7.1",
+		"shortid": "^2.2.16"
+	},
+	"devDependencies": {
+		"@apify/eslint-config": "^0.1.3",
+		"eslint": "^7.12.0"
+	},
+	"scripts": {
+		"start": "node src/main.js",
+		"lint": "./node_modules/.bin/eslint ./src --ext .js,.jsx",
+		"lint:fix": "./node_modules/.bin/eslint ./src --ext .js,.jsx --fix",
+		"test": "echo \"Error: oops, the actor has no tests yet, sad!\" && exit 1"
+	},
+	"author": "It's not you it's me",
+	"license": "ISC"
+}

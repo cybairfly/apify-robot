@@ -7,10 +7,6 @@ const {
 } = require('../../consts');
 
 const {
-    OUTPUTS,
-} = require('../../setup');
-
-const {
     CustomError,
 } = require('../../errors');
 
@@ -18,10 +14,30 @@ const {
     saveScreenshot,
 } = require('../../tools');
 
-const getPageUrl = async page => await page.evaluate(() => window.location.href);
+const getPageUrl = async page => page.evaluate(() => window.location.href).catch(error => null);
 const sortByList = (list, array) => array.sort((a, b) => list.indexOf(a) - list.indexOf(b));
 
+/**
+ * Attempts login with provided details and inputs.
+ * Either `predicate` or `selectors.verify` is mandatory for checking login result.
+ * @param {Object} options
+ * @param {Object} options.page
+ * @param {Number} [options.timeout = 10 * 1000]
+ * @param {Function} [options.predicate]
+ * @param {Object} options.selectors
+ * @param {String} options.selectors.username
+ * @param {String} options.selectors.password
+ * @param {String} [options.selectors.submit]
+ * @param {String} [options.selectors.verify]
+ * @param {Object} options.credentials
+ * @param {String} options.credentials.username
+ * @param {String} options.credentials.password
+ * @returns {Promise<any[]>} Returns an array with all promises of performed actions and the login response at first index
+ */
 const login = async ({page, timeout, predicate, selectors, credentials: {username, password}}) => {
+    if (!predicate || !selectors.verify)
+        throw Error('Login input missing predicate or selector for login status verification');
+
     await page.waitForSelector(selectors.password);
     await page.type(selectors.username, username);
     await page.type(selectors.password, password);
@@ -33,8 +49,8 @@ const login = async ({page, timeout, predicate, selectors, credentials: {usernam
         }));
     }
 
-    if (selectors.loggedIn) {
-        promises.push(page.waitForSelector(selectors.loggedIn, {
+    if (selectors.verify) {
+        promises.push(page.waitForSelector(selectors.verify, {
             timeout: timeout || TIMEOUTS.ten,
         }));
     }

@@ -1,25 +1,24 @@
 const Apify = require('apify');
+
 const {log} = Apify.utils;
-
-const {
-    PUPPETEER,
-} = require('../robot/consts');
-
-const {
-    CustomError
-} = require('../robot/errors');
+const {EVENTS} = require('../robot/consts');
+const {CustomError} = require('../robot/errors');
 
 const goto = async (page, url, options = {}) => {
-    const response = await page.goto(url, Object.assign({waitUntil: PUPPETEER.events.domcontentloaded}, options));
+    const response = await page.goto(url, {
+        waitUntil: EVENTS.domcontentloaded,
+        ...options,
+    });
+
     const status = response.status();
 
     if (status >= 400) {
         throw CustomError({
             name: 'Status',
             data: {
-                status
+                status,
             },
-            message: `Page failed to load with status ${status}`
+            message: `Page failed to load with status ${status}`,
         });
     }
 

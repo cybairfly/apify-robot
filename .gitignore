@@ -2,6 +2,7 @@
 .bckp
 .npmrc
 .vscode
+.DS_Store
 node_modules
 apify_storage
 INPUT_LOCAL.js
