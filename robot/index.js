@@ -676,7 +676,8 @@ class Robot {
         }
 
         // TODO merge w/ session pool logic
-        if (error && !sessionPool) {
+        // if (error && !sessionPool) { duplicity needed after persisting pool
+        if (error) {
             if (error.retireSession || error instanceof errors.session.Retire) {
                 log.debug('Retiring session');
                 this.sessionRetired = true;
