@@ -6,10 +6,15 @@ const {sleep} = Apify.utils;
 class Human {
     #page;
 
+    #motion
+
     constructor(page, options) {
         this.#page = page;
         this.type = this.#sleepify(this.type);
         this.click = this.#sleepify(this.click);
+
+        if (this.#page)
+            this.startMotion();
     }
 
     type = async (selector, text, options) => {
@@ -20,21 +25,37 @@ class Human {
     };
 
     click = async (selector, options) => {
-        await this.#page.mouse.move(Math.round(Math.random() * 800), Math.round(Math.random() * 600));
         return this.#page.click(selector, {
             // position: {},
             delay: Math.random() * 500,
         });
     }
 
-    sleep = async (limit = 3) => limit > 999 ?
+    point = async (x, y) => this.#page.mouse.move(x || Math.round(Math.random() * 800), y || Math.round(Math.random() * 800));
+
+    sleep = async (limit = 3) => limit > 100 ?
         sleep(Math.random() * limit) :
         sleep(Math.random() * limit * 1000);
 
     #sleepify = action => async (...args) => {
+        await this.point();
         await this.sleep();
+        await this.point();
         await action(...args);
-        await this.sleep();
+    }
+
+    startMotion = async () => {
+        const interval = 1000;
+        this.#motion = setInterval(async () => {
+            await this.sleep(interval);
+            if (Math.round(Math.random()) % 2) {
+                this.point().catch(() => {});
+            }
+        }, interval);
+    }
+
+    stopMotion = async () => {
+        clearInterval(this.#motion);
     }
 }
 
