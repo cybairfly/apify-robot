@@ -455,7 +455,7 @@ class Robot {
                         .catch(async error => {
                             const scopeError = this.probeError(error);
 
-                            if (!task.catch)
+                            if (!task.catch || error instanceof Robot.Error)
                                 throw scopeError;
 
                             this.task.catch = this.scope[task.catch.name] && this.scope[task.catch.name].constructor.name !== 'AsyncFunction' ?
