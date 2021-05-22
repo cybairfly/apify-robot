@@ -221,7 +221,6 @@ class Robot {
 
     start = async ({input, setup} = this) => {
         await extendInput(input, setup);
-        this.context = await this.createContext(this);
         this.options = RobotOptions({input, setup});
         await this.assignSession();
 
