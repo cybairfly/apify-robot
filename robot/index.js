@@ -671,7 +671,7 @@ class Robot {
             this.sessionPool = await openSessionPool(options.sessionPool);
             await this.persistSessionPoolMaybe(this);
 
-            if (!this.isRetry || !this.retryCount)
+            if (!error || !this.isRetry || !this.retryCount)
                 await pingSessionPool(this);
         }
 
