@@ -4,6 +4,7 @@ interface RobotErrorOptions {
     error?: Error,
     retry?: boolean,
     message?: string,
+    rotateSession?: boolean,
     retireSession?: boolean
 }
 

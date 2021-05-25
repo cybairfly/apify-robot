@@ -107,6 +107,8 @@ class Errors {
                 super(options);
                 this.message = `Retain session: ${options.message}`;
             }
+
+            retainSession = true;
         },
         Retire: class extends RobotError {
             /** @param {RobotErrorOptions & {message: string}} options */
@@ -116,6 +118,16 @@ class Errors {
             }
 
             retireSession = true;
+        },
+        Rotate: class extends RobotError {
+            /** @param {RobotErrorOptions & {message: string}} options */
+            constructor(options) {
+                super(options);
+                this.message = `Rotate session: ${options.message}`;
+            }
+
+            retry = true;
+            rotateSession = true;
         },
     }
 
