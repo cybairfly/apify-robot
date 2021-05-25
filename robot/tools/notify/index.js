@@ -29,6 +29,9 @@ const shouldExclude = (error, filters = {}) => Object
 const formatMessage = ({input: {target, debug, session, stealth}, error, details}) => {
   const errorLabel = error.type || error.name || '';
   let message = error.message;
+  if (message.match('=========================== logs') || message.match('to capture Playwright logs')) {
+    message = 'Scraper error message detected. Please visit the Apify run URL for error details.'
+  }
   const errorDetails = (debug || details) && JSON.stringify({...error, message, stealth, debug, session, type: error.type, retry: error.retry}, null, 4);
 
   return `
