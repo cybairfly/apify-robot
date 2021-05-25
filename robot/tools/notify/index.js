@@ -37,4 +37,5 @@ https://my.apify.com/view/runs/${process.env.APIFY_ACTOR_RUN_ID}${(errorDetails 
 module.exports = {
     shouldNotify,
     notifyChannel,
+    formatMessage,
 };
