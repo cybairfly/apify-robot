@@ -26,6 +26,7 @@ https://my.apify.com/view/runs/123
     \\"19\\": \\"g\\",
     \\"20\\": \\"e\\",
     \\"name\\": \\"Robot.Error\\",
+    \\"message\\": \\"generic error message\\",
     \\"stealth\\": true,
     \\"debug\\": true,
     \\"session\\": null,

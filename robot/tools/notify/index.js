@@ -28,7 +28,8 @@ const shouldExclude = (error, filters = {}) => Object
 
 const formatMessage = ({input: {target, debug, session, stealth}, error, details}) => {
   const errorLabel = error.type || error.name || '';
-  const errorDetails = (debug || details) && JSON.stringify({...error, stealth, debug, session, type: error.type, retry: error.retry}, null, 4);
+  let message = error.message;
+  const errorDetails = (debug || details) && JSON.stringify({...error, message, stealth, debug, session, type: error.type, retry: error.retry}, null, 4);
 
   return `
 Error: ${target} \`${errorLabel}\`
