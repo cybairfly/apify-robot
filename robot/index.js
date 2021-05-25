@@ -69,7 +69,7 @@ class Robot {
         this.session = null;
         this.sessionId = null;
         this.sessionPool = null;
-        this.sessionRetired = false;
+        this.rotateSession = false;
         this.server = null;
         this.strategy = null;
 
@@ -654,7 +654,7 @@ class Robot {
                 if (error.retireSession || error instanceof errors.Network || error instanceof errors.session.Retire) {
                     log.debug('Retiring session');
                     session.retire();
-                    this.sessionRetired = true;
+                    this.rotateSession = true;
                     session.userData.fingerprint = null;
                 } else if (error.retainSession || error instanceof errors.session.Retain) {
                     log.debug('Marking session good');
@@ -680,7 +680,12 @@ class Robot {
         if (error) {
             if (error.retireSession || error instanceof errors.session.Retire) {
                 log.debug('Retiring session');
-                this.sessionRetired = true;
+                this.rotateSession = true;
+                this.sessionId = null;
+                this.session = null;
+            } else if (error.rotateSession || error instanceof errors.session.Rotate) {
+                log.debug('Rotating session');
+                this.rotateSession = true;
                 this.sessionId = null;
                 this.session = null;
             } else {

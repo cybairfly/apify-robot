@@ -1,11 +1,11 @@
 const Apify = require('apify');
 
 /** @param {import('../../index')} */
-const getSessionId = ({input, setup, sessionId, sessionRetired}) => {
+const getSessionId = ({input, setup, sessionId, rotateSession}) => {
     if (sessionId)
         return sessionId;
 
-    if (input.session && !sessionRetired) {
+    if (input.session && !rotateSession) {
         sessionId = Apify.isAtHome() ?
             setup.getProxySessionId.apify({input}) :
             setup.getProxySessionId.local({input});
