@@ -31,7 +31,7 @@
 	"scripts": {
 		"start": "node robot/index.js",
 		"keygen": "node robot/crypto/keygen.js",
-		"test": "echo \"No test specified\""
+		"test": "jest"
 	},
 	"repository": {
 		"type": "git",
@@ -46,6 +46,7 @@
 		"@apify/eslint-config": "^0.1.4",
 		"@types/puppeteer": "^5.4.3",
 		"eslint": "^7.26.0",
+		"jest": "^27.0.1",
 		"puppeteer": "^8.0.0"
 	}
 }
