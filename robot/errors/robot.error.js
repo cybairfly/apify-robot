@@ -26,7 +26,7 @@ module.exports = class RobotError extends Error {
      * @param {RobotErrorOptions} options
      */
     constructor(options = {}) {
-        super(options);
+        super(options.message);
         this.name = options.name;
         this.#type = options.type;
 

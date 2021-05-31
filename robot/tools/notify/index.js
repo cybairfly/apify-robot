@@ -27,17 +27,27 @@ const shouldExclude = (error, filters = {}) => Object
     .some(pattern => error.name === pattern || error.type === pattern);
 
 const formatMessage = ({input: {target, debug, session, stealth}, error, details}) => {
-  const errorLabel = error.type || error.name || '';
-  let message = error.message;
-  if (message.match('=========================== logs') || message.match('to capture Playwright logs')) {
-    message = 'Scraper error message detected. Please visit the Apify run URL for error details.'
-  }
-  const errorDetails = (debug || details) && JSON.stringify({...error, message, stealth, debug, session, type: error.type, retry: error.retry}, null, 4);
+    const filterPatterns = [
+        '=========================== logs',
+        'to capture Playwright logs',
+    ];
 
-  return `
+    const errorLabel = error.type || error.name || '';
+    const modifyError = filterPatterns.some(pattern => error.message.includes(pattern));
+    if (modifyError)
+        error.message = 'Playwright error message detected. Please visit the Apify run URL for error details.';
+
+    const errorDetails = (debug || details) && JSON.stringify({
+        input: {stealth, debug, session},
+        error: JSON.parse(JSON.stringify(error)),
+    }, null, 4);
+
+    const message = `
 Error: ${target} \`${errorLabel}\`
 https://my.apify.com/view/runs/${process.env.APIFY_ACTOR_RUN_ID}${(errorDetails && `
 \`\`\`${errorDetails}\`\`\``) || ''}`.trim();
+
+    return message;
 };
 
 module.exports = {
