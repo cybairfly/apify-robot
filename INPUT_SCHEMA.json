@@ -219,6 +219,13 @@
             "editor": "checkbox",
             "default": false
         },
+        "options.notify.verbose": {
+            "title": "Verbose",
+            "type": "boolean",
+            "description": "Include verbose messages from the automation library",
+            "editor": "checkbox",
+            "default": false
+        },
         "options.notify.slack": {
             "groupCaption": "Channels:",
             "title": "Slack",

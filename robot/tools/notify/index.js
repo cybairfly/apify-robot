@@ -4,10 +4,10 @@ const Apify = require('apify');
 const { postMessage } = require('./slack');
 
 const notifyChannel = async ({input, error, options}) => {
-    const {channels, details} = options.notify;
+    const {channels} = options.notify;
     const {channel} = channels.slack;
 
-    const message = formatMessage({input, error, details});
+    const message = formatMessage({input, error, options});
 
     await postMessage({channel, message});
 };
@@ -26,14 +26,15 @@ const shouldExclude = (error, filters = {}) => Object
     .flatMap(filter => filter)
     .some(pattern => error.name === pattern || error.type === pattern);
 
-const formatMessage = ({input: {target, debug, session, stealth}, error, details}) => {
+const formatMessage = ({input: {target, debug, session, stealth}, error, options}) => {
+    const {details, verbose} = options.notify;
     const filterPatterns = [
         '=========================== logs',
         'to capture Playwright logs',
     ];
 
     const errorLabel = error.type || error.name || '';
-    const modifyError = filterPatterns.some(pattern => error.message.includes(pattern));
+    const modifyError = !verbose && filterPatterns.some(pattern => error.message.includes(pattern));
     if (modifyError)
         error.message = 'Playwright error message detected. Please visit the Apify run URL for error details.';
 
