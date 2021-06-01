@@ -213,7 +213,7 @@ const LOGGER = {
         'goto',
         'hover',
         // 'isClosed',
-        'keyboard',
+        // 'keyboard',
         // 'mainFrame',
         // 'metrics',
         // 'mouse',
