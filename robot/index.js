@@ -557,7 +557,11 @@ class Robot {
         this.sessionId = getSessionId(this);
         // TODO update for standalone usage
         if (!options.sessionPool.disable) {
-            this.sessionPool = await openSessionPool(this.options.sessionPool);
+            // ArgumentError: Did not expect property `disable` to exist, got `false` in object `options`
+            this.originalSessionPoolOptions = {...this.options.sessionPool};
+            delete this.originalSessionPoolOptions.disable;
+
+            this.sessionPool = await openSessionPool(this.originalSessionPoolOptions);
             this.session = await this.sessionPool.getSession(session && this.sessionId);
             this.session.retireOnBlockedStatusCodes(SESSION.retireStatusCodes);
             log.console.debug('Retire session on status codes:', SESSION.retireStatusCodes);
@@ -587,7 +591,7 @@ class Robot {
         return error;
     }
 
-    handleError = async ({input, input: {notify, silent}, output, options, error, page, setup} = this) => {
+    handleError = async ({input, output, options, error, page, setup, sessionPool} = this) => {
         if (Object.keys(output).length)
             await saveOutput({input, output, page});
 
@@ -607,6 +611,11 @@ class Robot {
             console.error('■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■');
         }
 
+        if (sessionPool)
+            await pingSessionPool(this);
+
+        // workaround for log cut-off ^
+        await sleep(3 * 1000);
         throw error;
     };
 
@@ -668,11 +677,8 @@ class Robot {
                 }
             }
 
-            this.sessionPool = await openSessionPool(options.sessionPool);
+            this.sessionPool = await openSessionPool(this.originalSessionPoolOptions);
             await this.persistSessionPoolMaybe(this);
-
-            if (!error || !this.isRetry || !this.retryCount)
-                await pingSessionPool(this);
         }
 
         // TODO merge w/ session pool logic
