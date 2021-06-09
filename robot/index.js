@@ -24,13 +24,14 @@ const { extendInput } = require('./tools/input');
 const { RobotOptions } = require('./tools/options');
 const { notifyChannel, shouldNotify } = require('./tools/notify');
 const { transformTasks, resolveTaskTree } = require('./tools/tasks');
+const { getTargetUrl, parseTargetDomain } = require('./tools/target');
 const { decoratePage, initEventLogger, initTrafficFilter } = require('./tools/hooks');
 const { getSessionId } = require('./tools/session');
 const { getProxyConfig } = require('./tools/proxy');
 const { getBrowserPool } = require('./pools');
 const { startServer } = require('./tools/server');
 const { syncContext } = require('./tools/context');
-const { parseDomain, saveOutput } = require('./tools');
+const { saveOutput } = require('./tools');
 const { errors, RobotError } = require('./errors');
 const { openSessionPool, pingSessionPool } = require('./tools/session/sessionPool');
 
@@ -261,10 +262,8 @@ class Robot {
     }
 
     initPage = async ({input: {block, debug, prompt, target, server, stealth}, page = null, session, setup, options, proxyConfig} = this) => {
-        const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
-        const url = source.TARGET && source.TARGET.url;
-        const domain = parseDomain(url, target);
-
+        const url = getTargetUrl(setup, target);
+        const domain = parseTargetDomain(url, target);
         if (!this.isRetry && url) log.default({url});
 
         if (!page) {
