@@ -1,10 +1,10 @@
 const log = require('../../logger');
-const {urlParamsToEllipsis} = require('../generic');
+const {trimUrl} = require('../generic');
 
 module.exports = {
-    request: (domain, {fullUrls = false, hostOnly = false, hostOnlyRegex}) => async request => {
+    request: (domain, domainRegex, {fullUrls = false, hostOnly = false}) => async request => {
         const url = request.url();
-        const drop = hostOnly && (!hostOnlyRegex.test(url) || url.startsWith('data:'));
+        const drop = hostOnly && !domainRegex.test(url);
         if (drop) return;
 
         const method = request.method();
@@ -16,18 +16,18 @@ module.exports = {
             status: '-'.repeat(3),
             method: method.padEnd(7, '-'),
             type: type.padEnd(11, '-'),
-            domain: (url.includes(domain) && domain) || '-'.repeat(domain.length),
-            url: fullUrls ? url : urlParamsToEllipsis(url),
+            domain: domainRegex.test(url) ? domain : '-'.repeat(domain.length),
+            url: fullUrls ? url : trimUrl(url),
             // headers,
             // text,
         };
 
         log.debug(`► TX | ${cols.status} | ${cols.method} | ${cols.type} | ${cols.domain} | ${cols.url}`);
     },
-    response: (domain, {fullUrls = false, hostOnly = false, hostOnlyRegex}) => async response => {
+    response: (domain, domainRegex, {fullUrls = false, hostOnly = false}) => async response => {
         const ok = response.ok();
         const url = response.url();
-        const drop = hostOnly && (!hostOnlyRegex.test(url) || url.startsWith('data:'));
+        const drop = hostOnly && !domainRegex.test(url);
         if (drop) return;
 
         const status = response.status();
@@ -40,8 +40,8 @@ module.exports = {
             status: (ok && '√OK') || status.toString(),
             method: method.padEnd(7, '-'),
             type: type.padEnd(11, '-'),
-            domain: (url.includes(domain) && domain) || '-'.repeat(domain.length),
-            url: fullUrls ? url : urlParamsToEllipsis(url),
+            domain: domainRegex.test(url) ? domain : '-'.repeat(domain.length),
+            url: fullUrls ? url : trimUrl(url),
             // headers,
             // text,
         };

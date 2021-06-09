@@ -33,13 +33,10 @@ const initEventLogger = (page, domain, debug, options = {}) => {
     page.on(EVENTS.domcontentloaded, () => log.default(centerPadding({string: EVENTS.domcontentloaded, padder: '○'})));
     page.on(EVENTS.load, () => log.default(centerPadding({string: EVENTS.load, padder: '●'})));
 
-    // TODO expose debug options on input
     if (debug) {
-        if (options.hostOnly)
-            options.hostOnlyRegex = new RegExp(`//[^/]*${domain}.*/`, 'i');
-
-        page.on(EVENTS.request, handlers.request(domain, options));
-        page.on(EVENTS.response, handlers.response(domain, options));
+        const domainRegex = new RegExp(`//[^/]*${domain}[.].*/`, 'i');
+        page.on(EVENTS.request, handlers.request(domain, domainRegex, options));
+        page.on(EVENTS.response, handlers.response(domain, domainRegex, options));
     }
 };
 
