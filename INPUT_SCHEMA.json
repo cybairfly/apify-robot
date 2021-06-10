@@ -219,6 +219,13 @@
             "editor": "checkbox",
             "default": false
         },
+        "options.notify.visuals": {
+            "title": "Visuals",
+            "type": "boolean",
+            "description": "Visual indicator reflecting input options at a glance",
+            "editor": "checkbox",
+            "default": true
+        },
         "options.notify.verbose": {
             "title": "Verbose",
             "type": "boolean",

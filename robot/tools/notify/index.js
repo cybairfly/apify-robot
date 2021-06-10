@@ -1,4 +1,5 @@
 const Apify = require('apify');
+const { errors, RobotError } = require('../../errors');
 
 // TODO generalize for other channels
 const { postMessage } = require('./slack');
@@ -27,7 +28,7 @@ const shouldExclude = (error, filters = {}) => Object
     .some(pattern => error.name === pattern || error.type === pattern);
 
 const formatMessage = ({input: {target, debug, session, stealth}, error, options}) => {
-    const {details, verbose} = options.notify;
+    const {details, verbose, visuals} = options.notify;
     const filterPatterns = [
         '=========================== logs',
         'to capture Playwright logs',
@@ -38,13 +39,17 @@ const formatMessage = ({input: {target, debug, session, stealth}, error, options
     if (modifyError)
         error.message = 'Playwright error message detected. Please visit the Apify run URL for error details.';
 
+    const unknownError = error.unknown || error instanceof errors.Unknown;
+    if (unknownError)
+        error.unknown = true;
+
     const errorDetails = (debug || details) && JSON.stringify({
-        input: {stealth, debug, session},
+        input: {debug, session, stealth},
         error: JSON.parse(JSON.stringify(error)),
     }, null, 4);
 
     const message = `
-Error: ${target} \`${errorLabel}\`
+Error: ${target} \`${errorLabel}\` ${visuals ? (`${debug ? ':ladybug:' : ''}${stealth ? ':ninja:' : ''}${session ? ':cookie:' : ''}${error.retry ? ':recycle:' : ''}${error.unknown ? ':warning:' : ''}`) : ''}
 https://my.apify.com/view/runs/${process.env.APIFY_ACTOR_RUN_ID}${(errorDetails && `
 \`\`\`${errorDetails}\`\`\``) || ''}`.trim();
 
