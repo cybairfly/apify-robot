@@ -159,6 +159,10 @@ class Errors {
         retry = true;
     }
 
+    Unknown = class extends RobotError {
+        message = 'ATTENTION --- UNKNOWN ERROR DETECTED!';
+    }
+
     ProcessPatterns = class extends RobotError {
         handler = context => {
             // handle patterns
