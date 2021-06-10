@@ -1,7 +1,10 @@
 /**
  * @typedef {import('./d').RobotErrorOptions} RobotErrorOptions
  */
-const SKIP_KEYS = ['name', 'type', 'data', 'error', 'retry'];
+
+const model = require('./robot.error.model');
+
+const modelErrorProps = Object.keys(model);
 
 /* eslint-disable lines-between-class-members */
 module.exports = class RobotError extends Error {
@@ -9,6 +12,8 @@ module.exports = class RobotError extends Error {
     #type = null;
     #cause = null;
     #retry = false;
+    #rotateSession = false;
+    #retireSession = false;
 
     /**
      * Custom robot error with additional properties
@@ -35,7 +40,7 @@ module.exports = class RobotError extends Error {
                 ...options.error,
                 ...options,
             })
-            .filter(([key]) => !SKIP_KEYS
+            .filter(([key]) => !modelErrorProps
                 .some(item => key === item))
             .forEach(([key, value]) => this[key] = value);
 
@@ -72,6 +77,12 @@ module.exports = class RobotError extends Error {
         if (options.retry !== undefined)
             this.#retry = options.retry;
 
+        if (options.rotateSession !== undefined)
+            this.rotateSession = options.rotateSession;
+
+        if (options.retireSession !== undefined)
+            this.retireSession = options.retireSession;
+
         this.name = this.name || this.#getName();
     }
 
@@ -100,6 +111,18 @@ module.exports = class RobotError extends Error {
         return this.#retry || false;
     }
 
+    set rotateSession(rotateSession) {
+        this.#rotateSession = this.#rotateSession || rotateSession;
+    } get rotateSession() {
+        return this.#rotateSession || false;
+    }
+
+    set retireSession(retireSession) {
+        this.#retireSession = this.#retireSession || retireSession;
+    } get retireSession() {
+        return this.#retireSession || false;
+    }
+
     #getName = (chain = [], child = this.constructor) => {
         if (child.name === 'RobotError')
             return chain.length ? `Robot.Error.${chain.join('.')}` : 'Robot.Error';
@@ -108,18 +131,12 @@ module.exports = class RobotError extends Error {
     }
 
     toJSON() {
-        const output = {...this};
-        output.name = this.name;
-        output.type = this.type;
+        const output = modelErrorProps.reduce((pool, next) => {
+            if (this[next])
+                pool[next] = this[next];
 
-        if (this.data)
-            output.data = this.data;
-
-        if (this.retry !== undefined)
-            output.retry = this.retry;
-
-        if (this.message)
-            output.message = this.message;
+            return pool;
+        }, {});
 
         if (this.cause) {
             output.cause = this.cause instanceof RobotError ?
