@@ -451,6 +451,7 @@ class Robot {
                     log.join.info(message);
                     this.step.output = await this.step.code(context, this)
                         .catch(async error => {
+                            this.error = error;
                             const scopeError = this.probeError(error);
 
                             if (!task.catch || error instanceof Robot.Error)
