@@ -135,8 +135,15 @@
             "editor": "checkbox",
             "default": false
         },
-        "options.debug.fullUrls": {
+        "options.debug.pwApi": {
             "groupCaption": "Options:",
+            "title": "PW APIs",
+            "type": "boolean",
+            "description": "Verbose logs of Playwright APIs",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.debug.fullUrls": {
             "title": "Full URLs",
             "type": "boolean",
             "description": "Display URL params while logging traffic",
