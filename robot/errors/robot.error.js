@@ -48,8 +48,9 @@ module.exports = class RobotError extends Error {
             Error.captureStackTrace(this, this.constructor);
 
         if (options.error) {
-            if (options.error.data)
-                this.data = options.error.data;
+            // TODO maybe elevate data
+            // if (options.error.data)
+            //     this.data = options.error.data;
 
             if (this.constructor.name !== 'RobotError')
                 this.#cause = options.error;
@@ -131,6 +132,7 @@ module.exports = class RobotError extends Error {
     }
 
     toJSON() {
+        // TODO include extra props
         const output = modelErrorProps.reduce((pool, next) => {
             if (this[next])
                 pool[next] = this[next];
