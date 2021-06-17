@@ -31,7 +31,7 @@ class Human {
         });
     }
 
-    point = async (x, y) => this.#page.mouse.move(x || Math.round(Math.random() * 800), y || Math.round(Math.random() * 800));
+    point = async (x, y) => this.#page.mouse.move(x || Math.round(Math.random() * 800), y || Math.round(Math.random() * 800)).catch(error => null);
 
     sleep = async (limit = 3) => limit > 100 ?
         sleep(Math.random() * limit) :
@@ -48,9 +48,8 @@ class Human {
         const interval = 1000;
         this.#motion = setInterval(async () => {
             await this.sleep(interval);
-            if (Math.round(Math.random()) % 2) {
+            if (Math.round(Math.random()) % 2)
                 this.point().catch(() => {});
-            }
         }, interval);
     }
 
