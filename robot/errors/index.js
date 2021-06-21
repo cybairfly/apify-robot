@@ -139,8 +139,8 @@ class Errors {
         PageLoad: class extends this.Timeout {
             message = 'Page failed to load within timeout';
         },
-        Request: class extends this.Timeout {
-            message = 'Failed to receive response before timeout';
+        Response: class extends this.Timeout {
+            message = 'Failed to receive expected response before timeout';
         },
     }
 
