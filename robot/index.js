@@ -29,6 +29,7 @@ const { getTargetUrl, parseTargetDomain } = require('./tools/target');
 const { decoratePage, initEventLogger, initTrafficFilter } = require('./tools/hooks');
 const { getSessionId } = require('./tools/session');
 const { getLocation, getProxyConfig } = require('./tools/proxy');
+const { getBrowserPool, getStealthPage } = require('./pools');
 const { startServer } = require('./tools/server');
 const { syncContext } = require('./tools/context');
 const { saveOutput } = require('./tools');
@@ -276,8 +277,14 @@ class Robot {
 
         if (!page) {
             if (!this.options.browserPool.disable) {
-                this.browserPool = await getBrowserPool(this);
-                this.page = page = await this.browserPool.newPage();
+                // TODO unify through browser pool
+                if (stealth) {
+                    this.page = page = await getStealthPage(this);
+                    this.browser = this.page.context().browser();
+                } else {
+                    this.browserPool = await getBrowserPool(this);
+                    this.page = page = await this.browserPool.newPage();
+                }
 
                 if (block)
                     initTrafficFilter(page, domain, options);

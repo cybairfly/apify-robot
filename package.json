@@ -14,10 +14,12 @@
 		"/README.md"
 	],
 	"dependencies": {
+		"@apify-packages/fingerprint-injector": "0.0.4",
 		"@types/puppeteer": "^5.4.3",
 		"apify": "0.22.5",
 		"browser-pool": "1.1.1",
 		"dot-object": "^2.1.4",
+		"fingerprint-generator": "git+https://github.com/apify/fingerprint-generator.git#bayesianGenerator",
 		"got": "^11.8.2",
 		"header-generator": "0.0.1-beta.2",
 		"parse-domain": "^3.0.3",
