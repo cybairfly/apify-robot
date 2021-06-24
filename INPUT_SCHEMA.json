@@ -274,8 +274,9 @@
         "options.proxy.proximity.locationProviderId": {
             "description": "ID of the location provider actor",
             "title": "Location provider ID",
-            "type": "boolean",
-            "editor": "textfield"
+            "type": "string",
+            "editor": "textfield",
+            "nullable": true
         },
         "options.proxy.proximity.locationProviderApi": {
             "title": "Location provider API - placeholder",
