@@ -230,6 +230,7 @@ class Robot {
             log.info('Acquiring proximity data...');
             const locationResult = await (setup.getProxyLocation || getLocation)(this);
             this.location = locationResult.output ? locationResult.output.value : locationResult;
+            log.info('Location traced to', this.location);
         }
 
         await this.assignSession();
