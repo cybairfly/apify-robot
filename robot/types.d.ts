@@ -1,7 +1,18 @@
+export interface Robot {
+    input: input,
+    options: options,
+    location: {
+        city: string,
+        country: string,
+        countryCode: string
+    } | null
+}
+
 export interface input {
     target: string,
     tasks: Array<string>,
     browser: string,
+    ipAddress: string,
     retry: number,
     abort: boolean,
     block: boolean,
@@ -24,6 +35,12 @@ export interface options {
     notify: {
         details: boolean,
         slack: boolean,
+    },
+    proxy: {
+        proximity: {
+            enable: boolean,
+            locationProviderId: string
+        }
     },
     server: {
         livecast: {

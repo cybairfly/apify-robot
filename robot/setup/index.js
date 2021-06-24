@@ -136,6 +136,17 @@ class RobotSetup {
         },
     };
 
+    /* custom location lookup and parsing */
+    /**
+     * @param {import("../types").Robot}
+     * @returns {{
+        * city: string,
+        * country: string,
+        * stateCode: string
+    * }}
+    */
+    // getProxyLocation = async ({input, options}) => {}
+
     /* generate unique proxy session string for local and remote runs (@Apify) */
     getProxySessionId = {
         // apify: ({input}) => String,

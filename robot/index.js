@@ -1,5 +1,6 @@
 /* eslint-disable lines-between-class-members */
 /**
+ * @typedef {import('./types.d').Robot} Robot
  * @typedef {import('./types.d').input} input
  * @typedef {import('./types.d').options} options
  * @typedef {import('./setup/index')} setup
@@ -27,8 +28,7 @@ const { transformTasks, resolveTaskTree } = require('./tools/tasks');
 const { getTargetUrl, parseTargetDomain } = require('./tools/target');
 const { decoratePage, initEventLogger, initTrafficFilter } = require('./tools/hooks');
 const { getSessionId } = require('./tools/session');
-const { getProxyConfig } = require('./tools/proxy');
-const { getBrowserPool } = require('./pools');
+const { getLocation, getProxyConfig } = require('./tools/proxy');
 const { startServer } = require('./tools/server');
 const { syncContext } = require('./tools/context');
 const { saveOutput } = require('./tools');
@@ -64,6 +64,7 @@ class Robot {
         this.page = null;
         this.browser = null;
         this.browserPool = null;
+        this.location = null;
         /** @type options */
         this.options = null;
         this.stealth = null;
@@ -223,6 +224,13 @@ class Robot {
     start = async ({input, setup} = this) => {
         await extendInput(input, setup);
         this.options = RobotOptions({input, setup});
+
+        if (this.options.proxy.proximity.enable) {
+            log.info('Acquiring proximity data...');
+            const locationResult = await (setup.getProxyLocation || getLocation)(this);
+            this.location = locationResult.output ? locationResult.output.value : locationResult;
+        }
+
         await this.assignSession();
 
         if (!this.isRetry) {
@@ -230,7 +238,7 @@ class Robot {
             log.redact.object(this.options);
         }
 
-        this.proxyConfig = await getProxyConfig({input, sessionId: this.sessionId});
+        this.proxyConfig = await getProxyConfig(this);
         this.output = (setup.OutputSchema && setup.OutputSchema({input})) || {};
         this.output = await this.retry(this);
 

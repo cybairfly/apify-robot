@@ -64,13 +64,12 @@
             "editor": "textfield",
             "description": "Encrypted password"
         },
-        "daysBack": {
-            "title": "Days back",
-            "type": "integer",
-            "default": 0,
-            "maximum": 9,
-            "unit": "days",
-            "description": "Refund days back"
+        "ipAddress": {
+            "title": "IP Address",
+            "type": "string",
+            "description": "Last login IP address",
+            "editor": "textfield",
+            "nullable": true
         },
         "ticketId": {
             "title": "TicketID",
@@ -263,6 +262,32 @@
             "description": "Keep proxy session across runs",
             "editor": "checkbox",
             "default": false
+        },
+        "options.proxy.proximity.enable": {
+            "sectionCaption": "Proximity",
+            "sectionDescription": "Approximate and simulate desired location through external actor providing original location details based on input location data (IP)",
+            "title": "Proximity?",
+            "type": "boolean",
+            "description": "Enable location lookup for proxy",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.proxy.proximity.locationProviderId": {
+            "title": "Location provider ID",
+            "type": "boolean",
+            "description": "ID of the location provider actor",
+            "editor": "textfield",
+            "default": false
+        },
+        "options.proxy.proximity.locationProviderApi": {
+            "title": "Location provider API - placeholder",
+            "type": "string",
+            "description": "URL of the location provider API",
+            "editor": "select",
+            "default": "",
+            "enum": [
+                ""
+            ]
         },
         "proxyConfig": {
             "title": "Proxy Config",
