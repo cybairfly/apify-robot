@@ -40,6 +40,7 @@ const initEventLogger = (page, domain, debug, options = {}) => {
     }
 };
 
+// TODO include element handle methods
 const decoratePage = ({page, server}) => {
     page.gotoDom = async (url, options = {}) => page.goto(url, {
         waitUntil: EVENTS.domcontentloaded,
