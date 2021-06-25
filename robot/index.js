@@ -34,6 +34,7 @@ const { startServer } = require('./tools/server');
 const { syncContext } = require('./tools/context');
 const { saveOutput } = require('./tools');
 const { errors, RobotError } = require('./errors');
+const { CaptchaSolver } = require('./tools/captcha');
 const { openSessionPool, pingSessionPool } = require('./tools/session/sessionPool');
 
 const consts = require('./public/consts');
@@ -121,6 +122,7 @@ class Robot {
     static RobotError = RobotError;
     static ScopeConfig = ScopeConfig;
     static TargetConfig = TargetConfig;
+    static CaptchaSolver = CaptchaSolver;
     static consts = consts;
     static errors = errors;
     static tools = tools;
