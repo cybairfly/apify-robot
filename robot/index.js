@@ -164,10 +164,8 @@ class Robot {
             global: tools.tryRequire.global(log, this.route),
         };
 
-        if (debug) {
-            process.env.DEBUG = 'pw:api';
+        if (debug)
             log.setLevel(log.LEVELS.DEBUG);
-        }
 
         if (target) {
             const targetSetup = global.tryRequire.global(setup.getPath.targets.setup(target)) || {};
@@ -261,7 +259,7 @@ class Robot {
         return this.tasks;
     }
 
-    initPage = async ({input: {block, debug, prompt, target, server, stealth}, page = null, session, setup, options, proxyConfig} = this) => {
+    initPage = async ({input, input: {block, prompt, target, server, stealth}, page = null, session, setup, options, proxyConfig} = this) => {
         const url = getTargetUrl(setup, target);
         const domain = parseTargetDomain(url, target);
         if (!this.isRetry && url) log.default({url});
@@ -290,7 +288,7 @@ class Robot {
         this.server = this.server || (shouldStartServer && startServer(page, setup, options.server.livecast));
 
         decoratePage(this);
-        initEventLogger(page, domain, debug, options.debug);
+        initEventLogger(page, domain, input, options);
 
         return page;
     };
