@@ -2,7 +2,9 @@ const log = require('../../logger');
 const {trimUrl} = require('../generic');
 
 module.exports = {
-    request: (domain, domainRegex, {fullUrls = false, hostOnly = false}) => async request => {
+    request: (domain, domainRegex, options) => async request => {
+        const {fullUrls = false, hostOnly = false} = options.debug.traffic;
+
         const url = request.url();
         const drop = hostOnly && !domainRegex.test(url);
         if (drop) return;
@@ -24,7 +26,9 @@ module.exports = {
 
         log.debug(`► TX | ${cols.status} | ${cols.method} | ${cols.type} | ${cols.domain} | ${cols.url}`);
     },
-    response: (domain, domainRegex, {fullUrls = false, hostOnly = false}) => async response => {
+    response: (domain, domainRegex, options) => async response => {
+        const {fullUrls = false, hostOnly = false} = options.debug.traffic;
+
         const ok = response.ok();
         const url = response.url();
         const drop = hostOnly && !domainRegex.test(url);

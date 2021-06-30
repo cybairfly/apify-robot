@@ -127,45 +127,61 @@
         },
         "debug": {
             "sectionCaption": "Debug",
+            "sectionDescription": "Debug options with reasonable verbosity defaults. Careful, some unfiltered options are very verbose *",
             "title": "Debug?",
             "type": "boolean",
             "description": "Run actor in verbose debug mode",
             "editor": "checkbox",
             "default": false
         },
-        "options.debug.pwApi": {
-            "groupCaption": "Options:",
-            "title": "PW APIs",
+        "options.debug.traffic.enable": {
+            "title": "Traffic?",
             "type": "boolean",
-            "description": "Verbose logs of Playwright APIs",
+            "description": "Log request/response browser traffic",
             "editor": "checkbox",
             "default": false
         },
-        "options.debug.fullUrls": {
+        "options.debug.muted": {
+            "description": "Mute error alerts to external channels",
+            "title": "Muted?",
+            "type": "boolean",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.debug.pwApi": {
+            "description": "Playwright - verbose public APIs",
+            "groupCaption": "PW options:",
+            "title": "PW API",
+            "type": "boolean",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.debug.pwAll": {
+            "description": "Playwright - complete protocol dump",
+            "title": "PW All*",
+            "type": "boolean",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.debug.traffic.fullUrls": {
+            "description": "Display URL params while logging traffic",
+            "groupCaption": "Traffic options:",
             "title": "Full URLs",
             "type": "boolean",
-            "description": "Display URL params while logging traffic",
             "editor": "checkbox",
             "default": false
         },
-        "options.debug.hostOnly": {
+        "options.debug.traffic.hostOnly": {
+            "description": "Only log traffic within the target domain",
             "title": "Host only",
             "type": "boolean",
-            "description": "Only log traffic within the target domain",
             "editor": "checkbox",
             "default": false
         },
-        "options.debug.hideFilter": {
+        "options.debug.traffic.hideFilter": {
+            "description": "Hide requests blocked by traffic filters",
             "title": "Hide filter",
             "type": "boolean",
-            "description": "Hide requests blocked by traffic filters",
-            "editor": "checkbox",
-            "default": false
-        },
-        "options.debug.muteErrors": {
-            "title": "Mute errors",
-            "type": "boolean",
-            "description": "Mute error alerts to external channels",
             "editor": "checkbox",
             "default": false
         },

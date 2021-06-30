@@ -1,13 +1,15 @@
 const log = require('../../logger');
 const {urlParamsToEllipsis} = require('../generic');
 
-const abortRoute = (route, domain, {fullUrls = false, hostOnly = false, hideBlocks = false}) => {
+const abortRoute = (route, domain, options) => {
+    const {fullUrls = false, hostOnly = false, hideFilter = false} = options.debug.traffic;
+
     const request = route.request();
     const url = request.url();
     const method = request.method();
     const type = request.resourceType();
 
-    if (!hideBlocks) {
+    if (!hideFilter) {
         const cols = {
             status: '-'.repeat(3),
             method: method.padEnd(7, '-'),

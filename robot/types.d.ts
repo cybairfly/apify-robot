@@ -27,10 +27,13 @@ export interface input {
 
 export interface options {
     debug: {
-        fullUrls: boolean,
-        hostOnly: boolean,
-        hideFilter: boolean,
-        muteErrors: boolean
+        muted: boolean,
+        traffic: {
+            enable: boolean,
+            fullUrls: boolean,
+            hostOnly: boolean,
+            hideFilter: boolean,
+        }
     },
     notify: {
         details: boolean,
