@@ -340,7 +340,7 @@ class Robot {
         };
 
         if (input.human)
-            this.context.human = new Human(page);
+            this.context.human = new Human(page, input);
 
         return this.context;
     }
