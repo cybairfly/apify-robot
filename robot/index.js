@@ -365,12 +365,12 @@ class Robot {
             this.task.skip = task.skip && task.skip(context);
 
             if (!this.task.init) {
-                log.join.info(`Skipping task [${task.name}] on test ${task.init}`);
+                log.join.info(`TASK [${task.name}] skipped on test ${task.init}`);
                 continue;
             }
 
             if (this.task.skip) {
-                log.join.info(`Skipping task [${task.name}] on test ${task.skip}`);
+                log.join.info(`TASK [${task.name}] skipped on test ${task.skip}`);
                 continue;
             }
 
@@ -394,12 +394,12 @@ class Robot {
                 }
 
                 if (!this.step.init) {
-                    log.join.info(`Skipping step [${step.name}] of task [${task.name}] on test ${step.init}`);
+                    log.join.info(`STEP [${step.name}] of task [${task.name}] skipped on test ${step.init}`);
                     continue;
                 }
 
                 if (this.step.skip) {
-                    log.join.info(`Skipping step [${step.name}] of task [${task.name}] on test ${step.skip}`);
+                    log.join.info(`STEP [${step.name}] of task [${task.name}] skipped on test ${step.skip}`);
                     continue;
                 }
 
