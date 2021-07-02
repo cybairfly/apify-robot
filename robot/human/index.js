@@ -24,12 +24,11 @@ class Human {
             await this.#page.type(selector, character, {...options, delay: Math.random() * 250});
     };
 
-    click = async (selector, options) => {
-        return this.#page.click(selector, {
-            // position: {},
-            delay: Math.random() * 500,
-        });
-    }
+    click = async (selector, options) => this.#page.click(selector, {
+        ...options,
+        // position: {},
+        delay: Math.random() * 500,
+    });
 
     point = async (x, y) => this.#page.mouse.move(x || Math.round(Math.random() * 800), y || Math.round(Math.random() * 800)).catch(error => null);
 
