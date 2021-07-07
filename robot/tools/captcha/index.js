@@ -7,6 +7,11 @@ const {
     APIFY_PROXY_PASSWORD,
 } = process.env;
 
+const SELECTORS = {
+    captchaFrame: 'iframe[src^="https://www.google.com/recaptcha"]',
+    captchaResponse: '#g-recaptcha-response',
+};
+
 class CaptchaSolver {
     /**
     *
@@ -19,23 +24,25 @@ class CaptchaSolver {
         this.stats = stats;
     }
 
-    async getSolution(page, userAgent) {
-        try {
-            await page.waitForSelector('#login-recaptcha');
-        } catch (e) {
-            log.error('No #login-recaptcha found');
-            return null;
-        }
+    async getSolution(page, userAgent, getSiteKey, captchaSelector) {
+        await page.waitForSelector(captchaSelector || SELECTORS.captchaFrame)
+            .catch(error => {
+                log.error('No captcha selector found');
+                return null;
+            });
 
-        const siteKey = await page.evaluate(() => {
+        // TODO find out if the selector is universal
+        const getSiteKeyDefault = () => {
             const match = document.querySelector('#login-recaptcha');
             return match ? match.getAttribute('data-sitekey') : null;
-        });
+        };
+
+        const siteKey = await page.evaluate(getSiteKey || getSiteKeyDefault);
 
         if (!siteKey)
             throw new Error('Cannot find site key');
 
-        const ncobj = {
+        const requestOptions = {
             clientKey: this.token,
             task: {
                 type: 'NoCaptchaTaskProxyless',
@@ -51,7 +58,7 @@ class CaptchaSolver {
             url: 'https://api.anti-captcha.com/createTask',
             method: 'POST',
             proxyUrl: `http://groups-SHADER:${APIFY_PROXY_PASSWORD}@proxy.apify.com:8000`,
-            payload: JSON.stringify(ncobj),
+            payload: JSON.stringify(requestOptions),
             json: true,
         });
 
@@ -75,13 +82,13 @@ class CaptchaSolver {
 
         log.debug('Waiting for solution');
 
-        let solution;
+        let solutionResponse;
         do {
             await new Promise(resolve => setTimeout(resolve, 5000));
             try {
                 const response = await getSolution();
-                solution = response.body;
-                if (solution.errorId > 0) throw new Error(`${solution.errorCode}: ${solution.errorDescription}`);
+                solutionResponse = response.body;
+                if (solutionResponse.errorId > 0) throw new Error(`${solutionResponse.errorCode}: ${solutionResponse.errorDescription}`);
             } catch (error) {
                 if (error.message.includes('ERROR_')) {
                     log.error(`AntiCaptcha getSolution error: ${error.message}`);
@@ -89,15 +96,28 @@ class CaptchaSolver {
                     return null;
                 }
             }
-        } while (!solution || solution.status !== 'ready');
+        } while (!solutionResponse || solutionResponse.status !== 'ready');
 
         this.stats.solved++;
-        log.debug('Solution found', { solution });
+        log.debug('Solution found', { solution: solutionResponse });
         this.solved++;
-        const gcr = solution.solution.gRecaptchaResponse;
+        const solution = solutionResponse.solution.gRecaptchaResponse;
 
-        return gcr;
+        await this.injectSolution(page, solution);
+
+        return solution;
     }
+
+    injectSolution = async (page, solution) => page.evaluate(({solution, SELECTORS}) => {
+        const $captchaResponse = document.querySelector(SELECTORS.captchaResponse);
+        if ($captchaResponse)
+            $captchaResponse.innerHTML = solution;
+
+        if (window.grecaptcha.enterprise)
+            window.grecaptcha.enterprise.getResponse = () => solution;
+        else
+            window.grecaptcha.getResponse = () => solution;
+    }, {solution, SELECTORS});
 
     getSolvedCount() {
         return this.solved;
