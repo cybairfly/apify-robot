@@ -24,7 +24,7 @@ class CaptchaSolver {
         this.stats = stats;
     }
 
-    async getSolution(page, userAgent, getSiteKey, captchaSelector) {
+    async getSolution(page, getSiteKey, captchaSelector) {
         await page.waitForSelector(captchaSelector || SELECTORS.captchaFrame)
             .catch(error => {
                 log.error('No captcha selector found');
@@ -38,6 +38,7 @@ class CaptchaSolver {
         };
 
         const siteKey = await page.evaluate(getSiteKey || getSiteKeyDefault);
+        const userAgent = await page.evaluate(() => navigator.userAgent);
 
         if (!siteKey)
             throw new Error('Cannot find site key');
