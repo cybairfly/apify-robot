@@ -25,11 +25,12 @@ class CaptchaSolver {
     }
 
     async getSolution(page, getSiteKey, captchaSelector) {
-        await page.waitForSelector(captchaSelector || SELECTORS.captchaFrame)
-            .catch(error => {
-                log.error('No captcha selector found');
-                return null;
-            });
+        const $captcha = await page.waitForSelector(captchaSelector || SELECTORS.captchaFrame).catch(error => null);
+
+        if (!$captcha) {
+            log.error('No captcha selector found');
+            return;
+        }
 
         // TODO find out if the selector is universal
         const getSiteKeyDefault = () => {
