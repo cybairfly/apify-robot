@@ -32,6 +32,7 @@ class RobotSetup {
         /* notify these channels of errors */
         notify: {
             details: true,
+            visuals: true,
             filters: {
                 // errorNames: [],
                 // errorTypes: [],
