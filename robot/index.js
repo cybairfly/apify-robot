@@ -590,7 +590,7 @@ class Robot {
             };
         }
 
-        log.console.debug({
+        log.console.info({
             sessionId: this.sessionId,
             'session.id': this.session.id,
         });
