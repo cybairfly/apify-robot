@@ -35,6 +35,7 @@ const { syncContext } = require('./tools/context');
 const { saveOutput } = require('./tools');
 const { errors, RobotError } = require('./errors');
 const { CaptchaSolver } = require('./tools/captcha');
+const { centerPadding } = require('./tools/generic');
 const { openSessionPool, pingSessionPool } = require('./tools/session/sessionPool');
 
 const consts = require('./public/consts');
@@ -214,7 +215,6 @@ class Robot {
     };
 
     retry = async () => {
-        this.tasks = await this.initTasks(this);
         this.page = await this.initPage(this);
         this.context = await this.createContext(this);
         this.output = await this.handleTasks(this);
@@ -236,10 +236,16 @@ class Robot {
         await this.assignSession();
 
         if (!this.isRetry) {
+            log.default(centerPadding({string: 'INPUT', padder: '▼'}));
             log.redact.object(input);
+            log.default(centerPadding({string: 'INPUT', padder: '▲'}));
+
+            log.default(centerPadding({string: 'OPTIONS', padder: '▼'}));
             log.redact.object(this.options);
+            log.default(centerPadding({string: 'OPTIONS', padder: '▲'}));
         }
 
+        this.tasks = await this.initTasks(this);
         this.proxyConfig = await getProxyConfig(this);
         this.output = (setup.OutputSchema && setup.OutputSchema({input})) || {};
         this.output = await this.retry(this);
@@ -261,17 +267,25 @@ class Robot {
             this.Scope.tasks = setupTasks;
 
         const bootTasks = transformTasks(this.Scope.tasks || setupTasks);
-        this.tasks = resolveTaskTree(bootTasks, taskNames);
+
+        log.info('Resolving task dependency tree');
+        const {taskList, taskTree} = resolveTaskTree(bootTasks, taskNames);
+        log.info('Dependency tree resolved');
 
         if (!this.isRetry) {
             log.info('Task list from task tree:');
-            this.tasks.flatMap(task => log.default(task));
+            log.default(centerPadding({string: 'TASKS', padder: '▼'}));
+            taskList.flatMap(task => log.default(task));
+            log.default(centerPadding({string: 'TASKS', padder: '▲'}));
         }
+
+        log.default(taskTree);
+        this.tasks = taskList;
 
         return this.tasks;
     }
 
-    initPage = async ({input, input: {block, prompt, target, server, stealth}, page = null, session, setup, options, proxyConfig} = this) => {
+    initPage = async ({input, input: {block, debug, prompt, target, server, stealth}, page = null, session, setup, options, proxyConfig} = this) => {
         const url = getTargetUrl(setup, target);
         const domain = parseTargetDomain(url, target);
         if (!this.isRetry && url) log.default({url});
@@ -296,6 +310,12 @@ class Robot {
                 [page] = await this.browser.pages();
                 this.page = page;
             }
+        }
+
+        if (debug) {
+            // eslint-disable-next-line no-return-await
+            const ip = await page.evaluate(async () => await fetch('http://api.ipify.org/?format=json').then(response => response.json().catch(error => ({ip: null}))));
+            log.console.debug(ip);
         }
 
         if (block && this.options.browserPool.disable)

@@ -18,6 +18,7 @@ const tryRequire = {
     global: (log, rootPath) => (globalPath, options = {scope: false}) => {
         try {
             const requirePath = path.join(rootPath, globalPath);
+            log.join.debug('Require attempt:');
             log.join.debug('ROOT:', rootPath);
             log.join.debug('PATH:', requirePath);
             return require(requirePath);

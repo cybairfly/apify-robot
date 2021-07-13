@@ -7,8 +7,6 @@ const transformTasks = tasks =>
             pool = [...pool, {name: taskName, ...task}], []);
 
 const resolveTaskTree = (bootTasks, taskNames) => {
-    log.info('Resolving task dependency tree');
-
     taskNames = Array.isArray(taskNames) ? taskNames : [taskNames];
 
     const filterTasksByName = taskNames => taskNames.map(taskName => bootTasks.find(task => task.name === taskName));
@@ -67,10 +65,9 @@ const resolveTaskTree = (bootTasks, taskNames) => {
             Object.keys(taskTree).map(taskName =>
                 taskTree[taskName])), [...taskListNames, 'name', 'merge'], '**');
 
-    console.log(getTreeJson(treeByTask));
-    log.info('Dependency tree resolved');
+    const taskTree = getTreeJson(treeByTask);
 
-    return taskList;
+    return {taskList, taskTree};
 };
 
 module.exports = {
