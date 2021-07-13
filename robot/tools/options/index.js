@@ -92,7 +92,7 @@ const InputOptions = input => parseInputOptions(input);
 const RobotOptions = ({ input: {browser, block, session, proxyConfig }, input, setup}) => {
     const inputOptions = parseInputOptions(input);
     const defaultOptions = getDefaultOptions({input, setup});
-    const options = R.mergeDeepRight(R.mergeDeepRight(defaultOptions, setup.options), inputOptions);
+    const options = R.mergeDeepRight(R.mergeDeepRight(defaultOptions, inputOptions), setup.options);
 
     options.sessionPool.disable = typeof options.sessionPool.disable === 'function' ?
         options.sessionPool.disable({input, options}) :
