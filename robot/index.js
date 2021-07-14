@@ -223,8 +223,8 @@ class Robot {
     };
 
     start = async ({input, setup} = this) => {
-        await extendInput(input, setup);
-        this.options = RobotOptions({input, setup});
+        this.input = await extendInput(this);
+        this.options = RobotOptions(this);
 
         if (this.options.proxy.proximity.enable) {
             log.info('Acquiring proximity data...');
