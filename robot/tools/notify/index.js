@@ -27,7 +27,7 @@ const shouldExclude = (error, filters = {}) => Object
     .flatMap(filter => filter)
     .some(pattern => error.name === pattern || error.type === pattern);
 
-const formatMessage = ({input: {target, debug, session, stealth}, error, options}) => {
+const formatMessage = ({input: {target, block, debug, retry, session, stealth}, error, options}) => {
     const {details, verbose, visuals} = options.notify;
     const filterPatterns = [
         '=========================== logs',
@@ -44,12 +44,12 @@ const formatMessage = ({input: {target, debug, session, stealth}, error, options
         error.unknown = true;
 
     const errorDetails = (debug || details) && JSON.stringify({
-        input: {debug, session, stealth},
+        input: {block, debug, retry, session, stealth},
         error: JSON.parse(JSON.stringify(error)),
     }, null, 4);
 
     const message = `
-Error: ${target} \`${errorLabel}\` ${visuals ? (`${debug ? ':ladybug:' : ''}${stealth ? ':ninja:' : ''}${session ? ':cookie:' : ''}${error.retry ? ':recycle:' : ''}${error.unknown ? ':warning:' : ''}`) : ''}
+Error: ${target} \`${errorLabel}\` ${visuals ? (`${debug ? ':ladybug:' : ''}${stealth ? ':ninja:' : ''}${session ? ':cookie:' : ''}${block ? ':no_entry:' : ''}${retry && error.retry ? ':recycle:' : ''}${error.unknown ? ':warning:' : ''}`) : ''}
 https://my.apify.com/view/runs/${process.env.APIFY_ACTOR_RUN_ID}${(errorDetails && `
 \`\`\`${errorDetails}\`\`\``) || ''}`.trim();
 
