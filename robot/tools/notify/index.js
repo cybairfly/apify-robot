@@ -44,7 +44,7 @@ const formatMessage = ({input: {target, block, debug, retry, session, stealth}, 
         error.unknown = true;
 
     const errorDetails = (debug || details) && JSON.stringify({
-        input: {block, debug, retry, session, stealth},
+        input: {retry, block, debug, session, stealth},
         error: JSON.parse(JSON.stringify(error)),
     }, null, 4);
 
