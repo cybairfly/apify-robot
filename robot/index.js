@@ -314,7 +314,7 @@ class Robot {
 
         if (debug) {
             // eslint-disable-next-line no-return-await
-            const ip = await page.evaluate(async () => await fetch('http://api.ipify.org/?format=json').then(response => response.json().catch(error => ({ip: null}))));
+            const ip = await page.evaluate(async () => await fetch('http://api.ipify.org/?format=json').then(response => response.json())).catch(error => ({ip: null}));
             log.console.debug(ip);
         }
 
