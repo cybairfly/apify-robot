@@ -1,18 +1,18 @@
 const Apify = require('apify');
 
 /** @param {import('../../index')} */
-const getSessionId = ({input, error, context, setup, sessionId, sessionRetired}) => {
+const getSessionId = ({input, setup, sessionId, rotateSession}) => {
     if (sessionId)
         return sessionId;
 
-    if (input.session && !sessionRetired) {
+    if (input.session && !rotateSession) {
         sessionId = Apify.isAtHome() ?
-            setup.getProxySessionId.apify(context) :
-            setup.getProxySessionId.local(context);
+            setup.getProxySessionId.apify({input}) :
+            setup.getProxySessionId.local({input});
     } else {
         sessionId = Apify.isAtHome() ?
-            `${setup.getProxySessionId.apify(context)}_${Date.now()}` :
-            `${setup.getProxySessionId.local(context)}_${Date.now()}`;
+            `${setup.getProxySessionId.apify({input})}_${Date.now()}` :
+            `${setup.getProxySessionId.local({input})}_${Date.now()}`;
     }
 
     // sessionId must not be longer than 50 characters

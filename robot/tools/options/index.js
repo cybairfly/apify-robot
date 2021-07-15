@@ -90,15 +90,14 @@ const Options = {
 const InputOptions = input => parseInputOptions(input);
 
 const RobotOptions = ({ input: {browser, block, session, proxyConfig }, input, setup}) => {
-    const inputOptions = parseInputOptions(input);
     const defaultOptions = getDefaultOptions({input, setup});
-    const options = R.mergeDeepRight(R.mergeDeepRight(defaultOptions, setup.options), inputOptions);
+    const inputOptions = parseInputOptions(input);
+    const forceOptions = setup.input ? parseInputOptions(setup.input) : {};
+    const options = R.mergeDeepRight(R.mergeDeepRight(R.mergeDeepRight(defaultOptions, inputOptions), setup.options), forceOptions);
 
-    // TODO cleanup after upgrade to SDK 1
-    const useSessionPool = Apify.isAtHome() && !session && !options.browserPool.disable && !proxyConfig.groups.includes('RESIDENTIAL');
-    // const useSessionPool = !options.browserPool.disable && !proxyConfig.groups.includes('RESIDENTIAL');
-    if (!useSessionPool)
-        options.sessionPool.disable = true;
+    options.sessionPool.disable = typeof options.sessionPool.disable === 'function' ?
+        options.sessionPool.disable({input, options}) :
+        options.sessionPool.disable || false;
 
     if (options.launchPuppeteer.randomUserAgent) {
         options.launchPuppeteer.userAgent = proxyConfig && proxyConfig.userAgent

@@ -53,6 +53,8 @@ const redactor = (object, key, redactKeys) => {
 const redactObject = (object, transformer = redactor, redactKeys = ['proxyUrl', 'proxyUrls']) =>
     deepTransform(object, transformer, redactKeys);
 
+const trimUrl = url => url.startsWith('data:') ? url.substring(0, url.indexOf(';')) : urlParamsToEllipsis(url);
+
 const urlParamsToEllipsis = url => {
     const urlCutOffIndex = url.indexOf('?') + 1;
     return urlCutOffIndex ? `${url.slice(0, urlCutOffIndex)}...` : url;
@@ -64,8 +66,9 @@ const centerPadding = ({string = 'header', padder = '-', length = 100, upper = t
 module.exports = {
     decorators,
     decorate,
+    centerPadding,
     deepTransform,
     redactObject,
-    centerPadding,
     urlParamsToEllipsis,
+    trimUrl,
 };

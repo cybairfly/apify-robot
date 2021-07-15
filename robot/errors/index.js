@@ -107,6 +107,8 @@ class Errors {
                 super(options);
                 this.message = `Retain session: ${options.message}`;
             }
+
+            retainSession = true;
         },
         Retire: class extends RobotError {
             /** @param {RobotErrorOptions & {message: string}} options */
@@ -116,6 +118,16 @@ class Errors {
             }
 
             retireSession = true;
+        },
+        Rotate: class extends RobotError {
+            /** @param {RobotErrorOptions & {message: string}} options */
+            constructor(options) {
+                super(options);
+                this.message = `Rotate session: ${options.message}`;
+            }
+
+            retry = true;
+            rotateSession = true;
         },
     }
 
@@ -127,8 +139,8 @@ class Errors {
         PageLoad: class extends this.Timeout {
             message = 'Page failed to load within timeout';
         },
-        Request: class extends this.Timeout {
-            message = 'Failed to receive response before timeout';
+        Response: class extends this.Timeout {
+            message = 'Failed to receive expected response before timeout';
         },
     }
 
@@ -145,6 +157,10 @@ class Errors {
         }
 
         retry = true;
+    }
+
+    Unknown = class extends RobotError {
+        message = 'ATTENTION --- UNKNOWN ERROR DETECTED!';
     }
 
     ProcessPatterns = class extends RobotError {

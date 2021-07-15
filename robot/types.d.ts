@@ -1,7 +1,18 @@
+export interface Robot {
+    input: input,
+    options: options,
+    location: {
+        city: string,
+        country: string,
+        countryCode: string
+    } | null
+}
+
 export interface input {
     target: string,
     tasks: Array<string>,
     browser: string,
+    ipAddress: string,
     retry: number,
     abort: boolean,
     block: boolean,
@@ -16,14 +27,23 @@ export interface input {
 
 export interface options {
     debug: {
-        fullUrls: boolean,
-        hostOnly: boolean,
-        hideFilter: boolean,
-        muteErrors: boolean
+        muted: boolean,
+        traffic: {
+            enable: boolean,
+            fullUrls: boolean,
+            hostOnly: boolean,
+            hideFilter: boolean,
+        }
     },
     notify: {
         details: boolean,
         slack: boolean,
+    },
+    proxy: {
+        proximity: {
+            enable: boolean,
+            locationProviderId: string
+        }
     },
     server: {
         livecast: {

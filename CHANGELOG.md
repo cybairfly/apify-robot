@@ -9,7 +9,7 @@ Internals are currently backward compatible to enable a smooth transition from o
 
 ### Input
 - `retry` - retry will now trigger only on custom errors with the retry flag set to `true`
-- `silent` - removed in favor of replacement options below (`notify`, `options.debug.muteErrors`)
+- `silent` - removed in favor of replacement options below (`notify`, `options.debug.muted`)
 
 ### `Robot`
 Renamed variables for more clarity, merged actor and robot input and output. Input for the robot is no longer clearly separated from actor input and instead merged and flattened with the rest of input due to input schema constraints and considerations. Workaround for this if it should ever become an issue is pre-processing of the input before passing it to the robot for processing and accessing nested properties during automation as pre-defined. This change also rules out the potential for processing multiple inputs within a single run without the need for a higher order management actor but since the use case is unlikely and would introduce significant overhead with less clarity in terms of managing and matching inputs and outputs, drawbacks seem to far outweight the potential benefits and thus this kind of usage will not be supported in the future.
@@ -55,10 +55,10 @@ Renamed variables for more clarity, merged actor and robot input and output. Inp
 - `human` - enables optional human behavior simulation tools in context
 - `notify` - enable error notifications to external channel(s, future)
 - `prompt` - enable user prompt and require manual intervention before proceeding with the automation (currently must be implemented in scope/target)
-- `options.debug.fullUrls` - log full URLs including complete parameters
-- `options.debug.hostOnly` - only log traffic with the target host domain
-- `options.debug.hideFilter` - hide traffic blocked by filter in the logs
-- `options.debug.muteErrors` - mute error notifications to external channels
+- `options.debug.traffic.fullUrls` - log full URLs including complete parameters
+- `options.debug.traffic.hostOnly` - only log traffic with the target host domain
+- `options.debug.traffic.hideFilter` - hide traffic blocked by filter in the logs
+- `options.debug.muted` - mute error notifications to external channels
 - `options.notify.details` - include complete error in error notification
 - `options.notify.slack` - enable channel for error notifications (Slack)
 - `options.server.livecast.enable` - enable live visual stream of actions
@@ -68,8 +68,9 @@ Renamed variables for more clarity, merged actor and robot input and output. Inp
 Native support for custom errors with special flags reserved for use by the robot and support for `JSON.stringify` 
 Non-custom native errors are wrapped automatically, though only shortly before error alert and exit of the actor.
 
-**Usage examples**
+#### Usage examples
 Exhaust options `throw new Robot.Error({name, type, data, error, retry, message})`
+
 Rethrow wrapped error: 
 - custom error merged with the re-thrown error `throw new Robot.Error({error})`
 - custom error with `cause` of re-thrown error `throw new Robot.errors.Example({error})`

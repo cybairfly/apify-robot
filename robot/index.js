@@ -1,5 +1,6 @@
 /* eslint-disable lines-between-class-members */
 /**
+ * @typedef {import('./types.d').Robot} Robot
  * @typedef {import('./types.d').input} input
  * @typedef {import('./types.d').options} options
  * @typedef {import('./setup/index')} setup
@@ -24,14 +25,17 @@ const { extendInput } = require('./tools/input');
 const { RobotOptions } = require('./tools/options');
 const { notifyChannel, shouldNotify } = require('./tools/notify');
 const { transformTasks, resolveTaskTree } = require('./tools/tasks');
+const { getTargetUrl, parseTargetDomain } = require('./tools/target');
 const { decoratePage, initEventLogger, initTrafficFilter } = require('./tools/hooks');
 const { getSessionId } = require('./tools/session');
-const { getProxyConfig } = require('./tools/proxy');
-const { getBrowserPool } = require('./pools');
+const { getLocation, getProxyConfig } = require('./tools/proxy');
+const { getBrowserPool, getStealthPage } = require('./pools');
 const { startServer } = require('./tools/server');
 const { syncContext } = require('./tools/context');
-const { parseDomain, saveOutput } = require('./tools');
+const { saveOutput } = require('./tools');
 const { errors, RobotError } = require('./errors');
+const { CaptchaSolver } = require('./tools/captcha');
+const { centerPadding } = require('./tools/generic');
 const { openSessionPool, pingSessionPool } = require('./tools/session/sessionPool');
 
 const consts = require('./public/consts');
@@ -63,13 +67,14 @@ class Robot {
         this.page = null;
         this.browser = null;
         this.browserPool = null;
+        this.location = null;
         /** @type options */
         this.options = null;
         this.stealth = null;
         this.session = null;
         this.sessionId = null;
         this.sessionPool = null;
-        this.sessionRetired = false;
+        this.rotateSession = false;
         this.server = null;
         this.strategy = null;
 
@@ -118,6 +123,7 @@ class Robot {
     static RobotError = RobotError;
     static ScopeConfig = ScopeConfig;
     static TargetConfig = TargetConfig;
+    static CaptchaSolver = CaptchaSolver;
     static consts = consts;
     static errors = errors;
     static tools = tools;
@@ -163,10 +169,8 @@ class Robot {
             global: tools.tryRequire.global(log, this.route),
         };
 
-        if (debug) {
-            process.env.DEBUG = 'pw:api';
+        if (debug)
             log.setLevel(log.LEVELS.DEBUG);
-        }
 
         if (target) {
             const targetSetup = global.tryRequire.global(setup.getPath.targets.setup(target)) || {};
@@ -211,7 +215,6 @@ class Robot {
     };
 
     retry = async () => {
-        this.tasks = await this.initTasks(this);
         this.page = await this.initPage(this);
         this.context = await this.createContext(this);
         this.output = await this.handleTasks(this);
@@ -220,17 +223,30 @@ class Robot {
     };
 
     start = async ({input, setup} = this) => {
-        await extendInput(input, setup);
-        this.context = await this.createContext(this);
-        this.options = RobotOptions({input, setup});
+        this.input = await extendInput(this);
+        this.options = RobotOptions(this);
+
+        if (this.options.proxy.proximity.enable) {
+            log.info('Acquiring proximity data...');
+            const locationResult = await (setup.getProxyLocation || getLocation)(this);
+            this.location = locationResult.output ? locationResult.output.value : locationResult;
+            log.info('Location traced to', this.location);
+        }
+
         await this.assignSession();
 
         if (!this.isRetry) {
+            log.default(centerPadding({string: 'INPUT', padder: '▼'}));
             log.redact.object(input);
+            log.default(centerPadding({string: 'INPUT', padder: '▲'}));
+
+            log.default(centerPadding({string: 'OPTIONS', padder: '▼'}));
             log.redact.object(this.options);
+            log.default(centerPadding({string: 'OPTIONS', padder: '▲'}));
         }
 
-        this.proxyConfig = await getProxyConfig({input, sessionId: this.sessionId});
+        this.tasks = await this.initTasks(this);
+        this.proxyConfig = await getProxyConfig(this);
         this.output = (setup.OutputSchema && setup.OutputSchema({input})) || {};
         this.output = await this.retry(this);
 
@@ -251,27 +267,39 @@ class Robot {
             this.Scope.tasks = setupTasks;
 
         const bootTasks = transformTasks(this.Scope.tasks || setupTasks);
-        this.tasks = resolveTaskTree(bootTasks, taskNames);
+
+        log.info('Resolving task dependency tree');
+        const {taskList, taskTree} = resolveTaskTree(bootTasks, taskNames);
+        log.info('Dependency tree resolved');
 
         if (!this.isRetry) {
             log.info('Task list from task tree:');
-            this.tasks.flatMap(task => log.default(task));
+            log.default(centerPadding({string: 'TASKS', padder: '▼'}));
+            taskList.flatMap(task => log.default(task));
+            log.default(centerPadding({string: 'TASKS', padder: '▲'}));
         }
+
+        log.default(taskTree);
+        this.tasks = taskList;
 
         return this.tasks;
     }
 
-    initPage = async ({input: {block, debug, prompt, target, server, stealth}, page = null, session, setup, options, proxyConfig} = this) => {
-        const source = tryRequire.global(setup.getPath.targets.config(target)) || tryRequire.global(setup.getPath.targets.setup(target)) || {};
-        const url = source.TARGET && source.TARGET.url;
-        const domain = parseDomain(url, target);
-
+    initPage = async ({input, input: {block, debug, prompt, target, server, stealth}, page = null, session, setup, options, proxyConfig} = this) => {
+        const url = getTargetUrl(setup, target);
+        const domain = parseTargetDomain(url, target);
         if (!this.isRetry && url) log.default({url});
 
         if (!page) {
             if (!this.options.browserPool.disable) {
-                this.browserPool = await getBrowserPool(this);
-                this.page = page = await this.browserPool.newPage();
+                // TODO unify through browser pool
+                if (stealth) {
+                    this.page = page = await getStealthPage(this);
+                    this.browser = this.page.context().browser();
+                } else {
+                    this.browserPool = await getBrowserPool(this);
+                    this.page = page = await this.browserPool.newPage();
+                }
 
                 if (block)
                     initTrafficFilter(page, domain, options);
@@ -284,6 +312,12 @@ class Robot {
             }
         }
 
+        if (debug) {
+            // eslint-disable-next-line no-return-await
+            const ip = await page.evaluate(async () => await fetch('http://api.ipify.org/?format=json').then(response => response.json())).catch(error => ({ip: null}));
+            log.console.debug(ip);
+        }
+
         if (block && this.options.browserPool.disable)
             await Apify.utils.puppeteer.blockRequests(page, this.options.trafficFilter);
 
@@ -292,7 +326,7 @@ class Robot {
         this.server = this.server || (shouldStartServer && startServer(page, setup, options.server.livecast));
 
         decoratePage(this);
-        initEventLogger(page, domain, debug, options.debug);
+        initEventLogger(page, domain, input, options);
 
         return page;
     };
@@ -326,7 +360,7 @@ class Robot {
         };
 
         if (input.human)
-            this.context.human = new Human(page);
+            this.context.human = new Human(page, input);
 
         return this.context;
     }
@@ -351,14 +385,16 @@ class Robot {
             this.task.skip = task.skip && task.skip(context);
 
             if (!this.task.init) {
-                log.join.info(`Skipping task [${task.name}] on test ${task.init}`);
+                log.join.info(`TASK [${task.name}] skipped on test ${task.init}`);
                 continue;
             }
 
             if (this.task.skip) {
-                log.join.info(`Skipping task [${task.name}] on test ${task.skip}`);
+                log.join.info(`TASK [${task.name}] skipped on test ${task.skip}`);
                 continue;
             }
+
+            await page.waitForFunction(() => document.readyState === 'complete');
 
             for (const step of task.steps) {
                 this.step = {...step};
@@ -378,12 +414,12 @@ class Robot {
                 }
 
                 if (!this.step.init) {
-                    log.join.info(`Skipping step [${step.name}] of task [${task.name}] on test ${step.init}`);
+                    log.join.info(`STEP [${step.name}] of task [${task.name}] skipped on test ${step.init}`);
                     continue;
                 }
 
                 if (this.step.skip) {
-                    log.join.info(`Skipping step [${step.name}] of task [${task.name}] on test ${step.skip}`);
+                    log.join.info(`STEP [${step.name}] of task [${task.name}] skipped on test ${step.skip}`);
                     continue;
                 }
 
@@ -451,31 +487,35 @@ class Robot {
                     log.join.info(message);
                     this.step.output = await this.step.code(context, this)
                         .catch(async error => {
+                            this.error = error;
                             const scopeError = this.probeError(error);
 
-                            if (task.catch) {
+                            if (!task.catch || error instanceof Robot.Error)
+                                throw scopeError;
+
+                            this.task.catch = this.scope[task.catch.name] && this.scope[task.catch.name].constructor.name !== 'AsyncFunction' ?
+                                this.scope[task.name] && this.scope[task.name](this.context, this)[task.catch.name] :
+                                this.scope[task.catch.name];
+
+                            if (this.task.catch)
+                                log.join.info(`SCOPE Scope error handler found for task [${task.name}]`);
+                            else {
                                 this.task.catch = global.tryRequire.global(path.join(setup.getPath.generic.steps(), task.catch.name));
+
                                 if (this.task.catch)
                                     log.join.info(`STEP Generic error handler found for task [${task.name}]`);
-                                else {
-                                    this.task.catch = this.scope[task.catch.name] ?
-                                        this.scope[task.catch.name] :
-                                        this.scope[task.name] && this.scope[task.name](this.context, this)[task.catch.name];
-
-                                    if (this.task.catch)
-                                        log.join.info(`SCOPE Scope error handler found for task [${task.name}]`);
-                                }
-
-                                const result = await this.task.catch(context, this).catch(error => {
-                                    log.error(error);
-                                    throw scopeError;
-                                });
-
-                                if (result)
-                                    return result;
-
-                                throw scopeError;
                             }
+
+                            if (!this.task.catch)
+                                throw scopeError;
+
+                            const result = await this.task.catch(context, this).catch(error => {
+                                log.exception(scopeError);
+                                throw error;
+                            });
+
+                            if (result)
+                                return result;
 
                             throw scopeError;
                         });
@@ -553,7 +593,11 @@ class Robot {
         this.sessionId = getSessionId(this);
         // TODO update for standalone usage
         if (!options.sessionPool.disable) {
-            this.sessionPool = await openSessionPool(this.options.sessionPool);
+            // ArgumentError: Did not expect property `disable` to exist, got `false` in object `options`
+            this.originalSessionPoolOptions = {...this.options.sessionPool};
+            delete this.originalSessionPoolOptions.disable;
+
+            this.sessionPool = await openSessionPool(this.originalSessionPoolOptions);
             this.session = await this.sessionPool.getSession(session && this.sessionId);
             this.session.retireOnBlockedStatusCodes(SESSION.retireStatusCodes);
             log.console.debug('Retire session on status codes:', SESSION.retireStatusCodes);
@@ -566,14 +610,14 @@ class Robot {
             };
         }
 
-        log.console.debug({
+        log.console.info({
             sessionId: this.sessionId,
             'session.id': this.session.id,
         });
     }
 
     probeError = error => {
-        const isNetworkError = ['net::', 'NS_BINDING_ABORTED', 'NS_ERROR_NET_INTERRUPT'].some(item => error.message && error.message.includes(item));
+        const isNetworkError = ['net::', 'NS_BINDING_ABORTED', 'NS_ERROR_NET_'].some(item => error.message && error.message.includes(item));
         if (isNetworkError)
             error = new errors.Network({error});
 
@@ -583,7 +627,7 @@ class Robot {
         return error;
     }
 
-    handleError = async ({input, input: {notify, silent}, output, options, error, page, setup} = this) => {
+    handleError = async ({input, output, options, error, page, setup, sessionPool} = this) => {
         if (Object.keys(output).length)
             await saveOutput({input, output, page});
 
@@ -603,6 +647,11 @@ class Robot {
             console.error('■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■');
         }
 
+        if (sessionPool)
+            await pingSessionPool(this);
+
+        // workaround for log cut-off ^
+        await sleep(3 * 1000);
         throw error;
     };
 
@@ -650,7 +699,8 @@ class Robot {
                 if (error.retireSession || error instanceof errors.Network || error instanceof errors.session.Retire) {
                     log.debug('Retiring session');
                     session.retire();
-                    this.sessionRetired = true;
+                    this.rotateSession = true;
+                    session.userData.fingerprint = null;
                 } else if (error.retainSession || error instanceof errors.session.Retain) {
                     log.debug('Marking session good');
                     session.markGood();
@@ -663,18 +713,21 @@ class Robot {
                 }
             }
 
-            this.sessionPool = await openSessionPool(options.sessionPool);
+            this.sessionPool = await openSessionPool(this.originalSessionPoolOptions);
             await this.persistSessionPoolMaybe(this);
-
-            if (!this.isRetry || !this.retryCount)
-                await pingSessionPool(this);
         }
 
         // TODO merge w/ session pool logic
+        // if (error && !sessionPool) { duplicity needed after persisting pool
         if (error) {
             if (error.retireSession || error instanceof errors.session.Retire) {
                 log.debug('Retiring session');
-                this.sessionRetired = true;
+                this.rotateSession = true;
+                this.sessionId = null;
+                this.session = null;
+            } else if (error.rotateSession || error instanceof errors.session.Rotate) {
+                log.debug('Rotating session');
+                this.rotateSession = true;
                 this.sessionId = null;
                 this.session = null;
             } else {

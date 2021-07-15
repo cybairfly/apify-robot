@@ -32,6 +32,7 @@ class RobotSetup {
         /* notify these channels of errors */
         notify: {
             details: true,
+            visuals: true,
             filters: {
                 // errorNames: [],
                 // errorTypes: [],
@@ -135,6 +136,17 @@ class RobotSetup {
             // setup: target => `tasks/targets/${target}/setup`,
         },
     };
+
+    /* custom location lookup and parsing */
+    /**
+     * @param {import("../types").Robot}
+     * @returns {{
+        * city: string,
+        * country: string,
+        * stateCode: string
+    * }}
+    */
+    // getProxyLocation = async ({input, options}) => {}
 
     /* generate unique proxy session string for local and remote runs (@Apify) */
     getProxySessionId = {

@@ -5,20 +5,20 @@
     "schemaVersion": 1,
     "properties": {
         "retry": {
+            "description": "Number of retries",
             "title": "Retry",
             "type": "integer",
-            "description": "Number of retries",
             "default": 0,
             "maximum": 9,
             "unit": "retries"
         },
         "tasks": {
+            "description": "Choose tasks for the robot to perform",
             "title": "Tasks",
             "type": "string",
             "editor": "select",
             "default": "task1",
             "prefill": "task1",
-            "description": "Choose tasks for the robot to perform",
             "enum": [
                 "task1",
                 "task2",
@@ -26,11 +26,11 @@
             ]
         },
         "target": {
+            "description": "Choose target to perform selected tasks",
             "title": "Target",
             "type": "string",
             "editor": "select",
             "default": "",
-            "description": "Choose target to perform selected tasks",
             "enum": [
                 "",
                 "target1",
@@ -39,11 +39,11 @@
             ]
         },
         "browser": {
+            "description": "Choose browser for the selected tasks",
             "title": "Browser",
             "type": "string",
             "editor": "select",
             "default": "",
-            "description": "Choose browser for the selected tasks",
             "enum": [
                 "",
                 "chromium",
@@ -52,40 +52,38 @@
             ]
         },
         "username": {
+            "description": "Encrypted username",
             "sectionCaption": "Inputs",
             "title": "Username",
             "type": "string",
-            "editor": "textfield",
-            "description": "Encrypted username"
+            "editor": "textfield"
         },
         "password": {
+            "description": "Encrypted password",
             "title": "Password", 
             "type": "string",
-            "editor": "textfield",
-            "description": "Encrypted password"
+            "editor": "textfield"
         },
-        "daysBack": {
-            "title": "Days back",
-            "type": "integer",
-            "default": 0,
-            "maximum": 9,
-            "unit": "days",
-            "description": "Refund days back"
-        },
-        "ticketId": {
-            "title": "TicketID",
+        "ipAddress": {
+            "description": "Last login IP address",
+            "title": "IP Address",
             "type": "string",
             "editor": "textfield",
-            "default": "ID123",
-            "description": "Paired ticket ID"
+            "nullable": true
+        },
+        "ticketId": {
+            "description": "Paired ticket ID",
+            "title": "TicketID",
+            "type": "string",
+            "editor": "textfield"
         },
         "runType": {
+            "description": "Async or sync run",
             "title": "Run type",
             "type": "string",
             "editor": "select",
             "default": "sync",
             "prefill": "sync",
-            "description": "Async or sync run",
             "enum": [
                 "async",
                 "sync"
@@ -129,38 +127,61 @@
         },
         "debug": {
             "sectionCaption": "Debug",
+            "sectionDescription": "Debug options with reasonable verbosity defaults. Careful, some unfiltered options are very verbose *",
             "title": "Debug?",
             "type": "boolean",
             "description": "Run actor in verbose debug mode",
             "editor": "checkbox",
             "default": false
         },
-        "options.debug.fullUrls": {
-            "groupCaption": "Options:",
+        "options.debug.traffic.enable": {
+            "title": "Traffic?",
+            "type": "boolean",
+            "description": "Log request/response browser traffic",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.debug.muted": {
+            "description": "Mute error alerts to external channels",
+            "title": "Muted?",
+            "type": "boolean",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.debug.pwApi": {
+            "description": "Playwright - verbose public APIs",
+            "groupCaption": "PW options:",
+            "title": "PW API",
+            "type": "boolean",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.debug.pwAll": {
+            "description": "Playwright - complete protocol dump",
+            "title": "PW All*",
+            "type": "boolean",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.debug.traffic.fullUrls": {
+            "description": "Display URL params while logging traffic",
+            "groupCaption": "Traffic options:",
             "title": "Full URLs",
             "type": "boolean",
-            "description": "Display URL params while logging traffic",
             "editor": "checkbox",
             "default": false
         },
-        "options.debug.hostOnly": {
+        "options.debug.traffic.hostOnly": {
+            "description": "Only log traffic within the target domain",
             "title": "Host only",
             "type": "boolean",
-            "description": "Only log traffic within the target domain",
             "editor": "checkbox",
             "default": false
         },
-        "options.debug.hideFilter": {
+        "options.debug.traffic.hideFilter": {
+            "description": "Hide requests blocked by traffic filters",
             "title": "Hide filter",
             "type": "boolean",
-            "description": "Hide requests blocked by traffic filters",
-            "editor": "checkbox",
-            "default": false
-        },
-        "options.debug.muteErrors": {
-            "title": "Mute errors",
-            "type": "boolean",
-            "description": "Mute error alerts to external channels",
             "editor": "checkbox",
             "default": false
         },
@@ -219,6 +240,20 @@
             "editor": "checkbox",
             "default": false
         },
+        "options.notify.visuals": {
+            "title": "Visuals",
+            "type": "boolean",
+            "description": "Visual indicator reflecting input options at a glance",
+            "editor": "checkbox",
+            "default": true
+        },
+        "options.notify.verbose": {
+            "title": "Verbose",
+            "type": "boolean",
+            "description": "Include verbose messages from the automation library",
+            "editor": "checkbox",
+            "default": false
+        },
         "options.notify.slack": {
             "groupCaption": "Channels:",
             "title": "Slack",
@@ -242,6 +277,32 @@
             "description": "Keep proxy session across runs",
             "editor": "checkbox",
             "default": false
+        },
+        "options.proxy.proximity.enable": {
+            "sectionCaption": "Proximity",
+            "sectionDescription": "Approximate and simulate desired location through external actor providing original location details based on input location data (IP)",
+            "description": "Enable location lookup for proxy",
+            "title": "Proximity?",
+            "type": "boolean",
+            "editor": "checkbox",
+            "default": false
+        },
+        "options.proxy.proximity.locationProviderId": {
+            "description": "ID of the location provider actor",
+            "title": "Location provider ID",
+            "type": "string",
+            "editor": "textfield",
+            "nullable": true
+        },
+        "options.proxy.proximity.locationProviderApi": {
+            "title": "Location provider API - placeholder",
+            "type": "string",
+            "description": "URL of the location provider API",
+            "editor": "select",
+            "default": "",
+            "enum": [
+                ""
+            ]
         },
         "proxyConfig": {
             "title": "Proxy Config",
