@@ -168,6 +168,7 @@ const EVENTS = {
     domcontentloaded: 'domcontentloaded',
     error: 'error',
     load: 'load',
+    networkidle: 'networkidle',
     pageerror: 'pageerror',
     popup: 'popup',
     request: 'request',
