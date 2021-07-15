@@ -2,7 +2,7 @@ const Apify = require('apify');
 const got = require('got');
 const tunnel = require('tunnel');
 
-const {openKeyValueStore} = require('apify/build/key_value_store');
+const {openKeyValueStore} = Apify;
 const {SessionPool: OriginalSessionPool} = require('apify/build/session_pool/session_pool');
 
 const log = require('../../logger');
