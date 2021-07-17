@@ -10,7 +10,7 @@ const {
     urlLogger,
 } = require('./tools');
 
-const {centerPadding} = require('../generic');
+const {centerHeader} = require('../generic');
 
 // TODO merge with debug mode
 // PW @ 1.9.0 - The handler will only be called for the first url if the response is a redirect.
@@ -30,8 +30,8 @@ const initEventLogger = (page, domain, input, options = {}) => {
     const responseErrorLoggerBound = responseErrorLogger.bind(null, domain);
     page.on(EVENTS.domcontentloaded, urlLoggerBound);
     page.on(EVENTS.response, responseErrorLoggerBound);
-    page.on(EVENTS.domcontentloaded, () => log.default(centerPadding({string: EVENTS.domcontentloaded, padder: '○'})));
-    page.on(EVENTS.load, () => log.default(centerPadding({string: EVENTS.load, padder: '●'})));
+    page.on(EVENTS.domcontentloaded, () => log.default(centerHeader({string: EVENTS.domcontentloaded, padder: '○'})));
+    page.on(EVENTS.load, () => log.default(centerHeader({string: EVENTS.load, padder: '●'})));
 
     if (input.debug && options.debug.traffic.enable) {
         const domainRegex = new RegExp(`//[^/]*${domain}[.].*/`, 'i');

@@ -60,13 +60,23 @@ const urlParamsToEllipsis = url => {
     return urlCutOffIndex ? `${url.slice(0, urlCutOffIndex)}...` : url;
 };
 
-const centerPadding = ({string = 'header', padder = '-', length = 100, upper = true}) =>
-    ` ${upper ? string.toUpperCase() : string} `.padEnd((length / 2) + (string.length / 2), padder).padStart(length, padder);
+/**
+ * Create a centered and optionally uppercased header padded equally on both sides with a custom padder string
+ * @param {{
+ * string: string,
+ * padder: string,
+ * length: number,
+ * upper: boolean
+* }}} options
+* @returns {string}
+*/
+const centerHeader = ({string = 'header', padder = '-', length = 100, upper = true}) =>
+    ` ${upper ? string.toUpperCase() : string} `.padEnd((length / 2) + (string.length / 2), padder.right || padder).padStart(length, padder.left || padder);
 
 module.exports = {
     decorators,
     decorate,
-    centerPadding,
+    centerHeader,
     deepTransform,
     redactObject,
     urlParamsToEllipsis,
