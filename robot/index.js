@@ -35,7 +35,7 @@ const { syncContext } = require('./tools/context');
 const { saveOutput } = require('./tools');
 const { errors, RobotError } = require('./errors');
 const { CaptchaSolver } = require('./tools/captcha');
-const { centerPadding } = require('./tools/generic');
+const { centerHeader } = require('./tools/generic');
 const { openSessionPool, pingSessionPool } = require('./tools/session/sessionPool');
 
 const consts = require('./public/consts');
@@ -236,13 +236,13 @@ class Robot {
         await this.assignSession();
 
         if (!this.isRetry) {
-            log.default(centerPadding({string: 'INPUT', padder: '▼'}));
+            log.default(centerHeader({string: 'INPUT', padder: '▼'}));
             log.redact.object(input);
-            log.default(centerPadding({string: 'INPUT', padder: '▲'}));
+            log.default(centerHeader({string: 'INPUT', padder: '▲'}));
 
-            log.default(centerPadding({string: 'OPTIONS', padder: '▼'}));
+            log.default(centerHeader({string: 'OPTIONS', padder: '▼'}));
             log.redact.object(this.options);
-            log.default(centerPadding({string: 'OPTIONS', padder: '▲'}));
+            log.default(centerHeader({string: 'OPTIONS', padder: '▲'}));
         }
 
         this.tasks = await this.initTasks(this);
@@ -274,9 +274,9 @@ class Robot {
 
         if (!this.isRetry) {
             log.info('Task list from task tree:');
-            log.default(centerPadding({string: 'TASKS', padder: '▼'}));
+            log.default(centerHeader({string: 'TASKS', padder: '▼'}));
             taskList.flatMap(task => log.default(task));
-            log.default(centerPadding({string: 'TASKS', padder: '▲'}));
+            log.default(centerHeader({string: 'TASKS', padder: '▲'}));
         }
 
         log.default(taskTree);
@@ -365,12 +365,8 @@ class Robot {
         return this.context;
     }
 
-    handleTasks = async ({input, output, context, page, relay, setup, tasks} = this) => {
-        const {target} = input;
-
-        log.default('●'.repeat(100));
-        console.log(`Target: ${target}`);
-        log.default('●'.repeat(100));
+    handleTasks = async ({input, input: {target}, output, context, page, relay, setup, tasks} = this) => {
+        log.default(centerHeader({string: `TARGET: ${target}`, padder: '◙'}));
 
         for (const task of tasks) {
             this.task = {...task};
