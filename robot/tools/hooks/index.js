@@ -40,7 +40,7 @@ const initEventLogger = (page, domain, input, options = {}) => {
     }
 };
 
-// TODO include element handle methods
+// TODO include element handle & keyboard methods
 const decoratePage = ({page, server}) => {
     page.gotoDom = async (url, options = {}) => page.goto(url, {
         waitUntil: EVENTS.domcontentloaded,
