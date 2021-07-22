@@ -42,7 +42,7 @@ class Human {
 
     sleep = async (limit = 3) => limit > 100 ?
         sleep(Math.random() * limit) :
-        sleep(Math.random() * limit * 1000);
+        sleep(Math.random() * limit * 1000 + 1000);
 
     #humanize = action => async (...args) => {
         do await this.point(); while (Math.random() < 0.5);
