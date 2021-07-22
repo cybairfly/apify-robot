@@ -1,14 +1,35 @@
 const Apify = require('apify');
 const path = require('path');
-// const {log: defaultLog} = Apify.utils;
 
 const log = require('../../logger');
-const {EVENTS} = require('../../consts');
-const {Server} = require('../../server/index');
+const {EVENTS, SERVER} = require('../../consts');
+const {InterfaceServer} = require('interface-server');
+
+const {RobotError} = require('../../errors');
 
 const startServer = (page, setup, options) => {
-    const server = new Server(page, setup, options);
-    // page.on(EVENTS.domcontentloaded, async () => await server.serve(page));
+
+    const promptHandlers = {
+        [SERVER.interface.events.abort]: () => {
+            throw new RobotError({
+                data: {
+                    abortActor: true,
+                },
+            });
+        },
+        [SERVER.interface.events.cancel]: () => {
+            throw new RobotError({
+                data: {
+                    abortAction: true,
+                },
+            });
+        },
+        [SERVER.interface.events.confirm]: () => {
+            log.info('Payment confirmed');
+        },
+    };
+    
+    const server = new InterfaceServer({ promptHandlers });
     page.on(EVENTS.load, async () => server.serve(page));
 
     server.start();

@@ -30,7 +30,8 @@
 		"slack-node": "^0.1.8",
 		"socket.io": "^2.4.1",
 		"tunnel": "^0.0.6",
-		"user-agents": "^1.0.657"
+		"user-agents": "^1.0.657",
+		"interface-server": "git+https://github.com/cybairfly/InterfaceServer#master"
 	},
 	"scripts": {
 		"start": "node robot/index.js",

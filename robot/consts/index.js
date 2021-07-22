@@ -264,6 +264,13 @@ const SERVER = {
             // 'waitForSelector',
         ],
     },
+    interface: {
+        events: {
+            cancel: 'cancel',
+            abort: 'abort',
+            confirm: 'confirm',
+        },
+    },
 };
 
 const SESSION = {
