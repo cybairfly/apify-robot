@@ -1,6 +1,7 @@
 /* eslint-disable lines-between-class-members */
 /**
  * @typedef {import('./types.d').Robot} Robot
+ * @typedef {import('./types.d').RobotContext} RobotContext
  * @typedef {import('./types.d').input} input
  * @typedef {import('./types.d').options} options
  * @typedef {import('./setup/index')} setup
@@ -38,6 +39,7 @@ const { CaptchaSolver } = require('./tools/captcha');
 const { centerPadding } = require('./tools/generic');
 const { openSessionPool, pingSessionPool } = require('./tools/session/sessionPool');
 
+const {preloadMatchPattern, preloadIteratePatterns} = require('./public/tools');
 const consts = require('./public/consts');
 const tools = require('./public/tools');
 
@@ -350,8 +352,8 @@ class Robot {
                 listen: 'placeholder',
             },
             tools: {
-                matchPattern: 'placeholder',
-                verifyResult: 'placeholder',
+                matchPattern: preloadMatchPattern(page),
+                iteratePatterns: preloadIteratePatterns(page),
             },
             server,
             state,

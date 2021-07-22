@@ -1,5 +1,6 @@
 /**
- * @typedef {import('./scope').RobotContext} RobotContext
+ * @typedef {import('../types').Robot} Robot
+ * @typedef {import('../types').RobotContext} RobotContext
  */
 const Config = require('./config');
 const log = require('../logger');
@@ -8,7 +9,7 @@ class Scope {
     /**
      * Generic scope for either generic or target dependent steps to be executed by the robot
      * @param {RobotContext} context
-     * @param {*} robot
+     * @param {Robot} robot
      */
     constructor(context, robot) {
         this.name = robot.target;
@@ -30,6 +31,9 @@ class Scope {
         this.server = context.server;
         this.state = context.state;
         this.tools = context.tools;
+
+        this.matchPattern = context.tools.matchPattern;
+        this.iteratePatterns = context.tools.iteratePatterns;
 
         this._task = {};
         this._step = {};
