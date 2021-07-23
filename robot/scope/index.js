@@ -163,6 +163,10 @@ class Scope {
         this._robot = robot;
     }
 
+    get human() {
+        return this.context.human;
+    }
+
     will(text) {
         if (typeof text !== 'string') {
             log.error('Custom steps only accept step name as an argument');

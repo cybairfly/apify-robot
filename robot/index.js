@@ -67,6 +67,7 @@ class Robot {
         this._error = null;
 
         this.page = null;
+        this.human = null;
         this.browser = null;
         this.browserPool = null;
         this.location = null;
@@ -334,7 +335,7 @@ class Robot {
     };
 
     createContext = async ({input, output, page, relay, state, server, browserPool, sessionPool} = this) => {
-        this.context = {
+        this.context = (robot => ({
             // TODO remove legacy support
             INPUT: Object.freeze(input),
             OUTPUT: output,
@@ -359,10 +360,12 @@ class Robot {
             state,
             step: null,
             task: null,
-        };
 
-        if (input.human)
-            this.context.human = new Human(page, input);
+            get human() {
+                robot.human = robot.human || new Human(this.page, this.input);
+                return robot.human;
+            },
+        }))(this);
 
         return this.context;
     }
