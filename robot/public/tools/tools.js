@@ -1,18 +1,18 @@
+/**
+ * @typedef {import('playwright').Page} page
+ * @typedef {import('./types').pattern} pattern
+ * @typedef {import('./types').patternType} patternType
+ * @typedef {import('./types').patternShape} patternShape
+ * @typedef {import('./types').matchPattern} matchPattern
+ * @typedef {import('./types').iteratePatterns} iteratePatterns
+ */
 const Apify = require('apify');
 
-const {log} = Apify.utils;
-
-const {
-    TIMEOUTS,
-} = require('../../consts');
-
-const {
-    CustomError,
-} = require('../../errors');
-
-const {
-    saveScreenshot,
-} = require('../../tools');
+const log = require('../../logger');
+const {TIMEOUTS} = require('../../consts');
+const {CustomError} = require('../../errors');
+const {saveScreenshot} = require('../../tools');
+const {getInnerText} = require('../../tools/generic');
 
 const getPageUrl = async page => page.evaluate(() => window.location.href).catch(error => null);
 const sortByList = (list, array) => array.sort((a, b) => list.indexOf(a) - list.indexOf(b));
@@ -80,62 +80,80 @@ const searchResult = async ({page, selectors, policyNumber: input}) => {
     return page.waitForSelector(selectors.found).catch(error => null);
 };
 
-const matchPattern = async (page, patterns) => {
-    const getInnerText = node => node.innerText;
+/** @type {import('./types').matchPattern} */
+const matchPattern = async (page, pattern) => preloadMatchPattern(page)(pattern);
 
-    const evaluatedPatterns = await Promise.all(patterns.map(async pattern => ({
-        ...pattern,
-        sourceContent: await page.$eval(pattern.selector, pattern.function || getInnerText).catch(() => ''),
-    })));
+/**
+ * Curried for use in robot tools preloaded with page
+ * @param {page} page
+ * @returns {Function}
+ */
+const preloadMatchPattern = page => async pattern => {
+    const excludePattern = async (page, patternShape) => {
+        try {
+            const $node = await page.$(patternShape.selector);
+            await $node.waitForElementState('visible');
+            await $node.waitForElementState('stable');
+            await $node.waitForElementState('enabled');
+            await $node.hover();
+        } catch (error) {
+            console.log({patternShape});
+            log.debug('Element state check failed -> exclude pattern:', patternShape);
+            return true;
+        }
+        log.debug('Element state check passed -> include pattern:', patternShape);
+        return false;
+    };
 
-    const patternMatch = evaluatedPatterns.find(pattern => {
-        console.log({pattern});
+    const patternResults = await Promise.allSettled(pattern.map(async patternShape => {
+        if (await excludePattern(page, patternShape)) return null;
 
-        return pattern.contents
-            .find(content => pattern.sourceContent
-                .toLowerCase()
-                .includes(content
-                    .toLowerCase()));
-    });
+        patternShape.contents = Array.isArray(patternShape.contents) ?
+            patternShape.contents :
+            [patternShape.contents];
 
-    if (patternMatch)
+        const sourceContent = await page.$eval(patternShape.selector, patternShape.function || getInnerText).catch(() => '');
+        console.log({patternShape, sourceContent});
+
+        const patternMatch = patternShape.contents
+            .some(content => sourceContent.toLowerCase()
+                .includes(content.toLowerCase()));
+
+        return patternMatch ? patternShape : null;
+    }));
+
+    const [patternMatch = null] = patternResults.map(({status, value}) => value).filter(result => result);
+
+    if (patternMatch) {
         console.log({patternMatch});
+
+        if (patternResults.getError)
+            throw patternResults.getError();
+    }
 
     return patternMatch;
 };
 
+/** @type {import('./types').iteratePatterns} */
+const iteratePatterns = async (page, patterns = {}, patternOrder = []) => preloadIteratePatterns(page)(patterns, patternOrder);
+
 /**
- *
+ * Curried for use in robot tools preloaded with page
  * @param {object} page
- * @param {object} patternGroups
- * @param {array} patternOrder
- * @returns {string}
+ * @returns {Function}
  */
-const iteratePatterns = async (page, patternGroups = {}, patternOrder = []) => {
-    const patternTypes = sortByList(patternOrder, Object.keys(patternGroups));
+const preloadIteratePatterns = page => async (patterns = {}, patternOrder = []) => {
+    const patternTypes = sortByList(patternOrder, Object.keys(patterns));
 
     for (const patternType of patternTypes) {
         console.log({patternType});
-        const patternMatch = await matchPattern(page, patternGroups[patternType]);
+        const patternMatch = await matchPattern(page, patterns[patternType]);
 
         if (patternMatch)
             return patternType;
     }
 
-    return null;
-
-    // const outputMatches = await Promise.all(patternTypes.map(async patternType => {
-    //     const patternMatch = await matchPattern(page, patternGroups[patternType]);
-    //
-    //     if (patternMatch)
-    //         console.log({patternMatch});
-    //
-    //     return patternMatch ? OUTPUTS[patternType] : null
-    // }));
-    //
-    // const [outputMatch] = outputMatches.filter(x => x);
-    //
-    // return outputMatch;
+    log.console.debug('No pattern match found:', patternTypes);
 };
 
 const foundSearchPattern = (text, searchPatterns) =>
@@ -162,9 +180,11 @@ module.exports = {
     getPageUrl,
     handleDialog,
     searchResult,
-    foundSearchPattern,
     matchPattern,
     iteratePatterns,
     verifyResult,
     saveScreenshot,
+    foundSearchPattern,
+    preloadMatchPattern,
+    preloadIteratePatterns,
 };
