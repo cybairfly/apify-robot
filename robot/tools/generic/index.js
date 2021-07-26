@@ -45,6 +45,8 @@ const deepTransform = (object, transformer, ...args) => {
     return object;
 };
 
+const getInnerText = node => node.innerText;
+
 const redactor = (object, key, redactKeys) => {
     if (redactKeys.some(redactKey => key === redactKey))
         object[key] = '<redacted>';
@@ -78,6 +80,7 @@ module.exports = {
     decorate,
     centerHeader,
     deepTransform,
+    getInnerText,
     redactObject,
     urlParamsToEllipsis,
     trimUrl,
