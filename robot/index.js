@@ -675,8 +675,11 @@ class Robot {
         }
     }
 
-    stop = async ({browserPool, sessionPool, browser, options, session, server, page, error, input} = this) => {
+    stop = async ({browserPool, sessionPool, browser, options, session, human, server, page, error, input} = this) => {
         this.syncContext.page(null);
+
+        if (human)
+            this.human = null;
 
         if (browser) {
             log.debug('Closing the browser');
