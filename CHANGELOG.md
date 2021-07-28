@@ -26,7 +26,7 @@ Renamed variables for more clarity, merged actor and robot input and output. Inp
 - `OPTIONS.blockRequests.patterns` ➜ `options.trafficFilter.patterns.url`
 - `OPTIONS.blockRequests.analytics` ➜ `options.trafficFilter.patterns.host`
 - `SERVER` ➜ `options.server`
-- `SERVER.liveView` ➜ `options.server.livecast`
+- `SERVER.liveView` ➜ `options.server.interface`
 - `SLACK.channel` ➜ `options.notify.channels.slack.channel`
 
 ### `Robot.Scope/Target`

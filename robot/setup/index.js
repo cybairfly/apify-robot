@@ -46,8 +46,14 @@ class RobotSetup {
 
         /* robot internal server options */
         server: {
-            livecast: {
-                // events: Object,
+            interface: {
+                events: {},
+                prompt: {
+                    modal: false,
+                    handlers: {
+                        eventName: () => {},
+                    },
+                },
                 // useScreenshots: Boolean,
                 // maxScreenshotFiles: Number,
                 // snapshotTimeoutSecs: Number,

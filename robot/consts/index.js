@@ -1,5 +1,6 @@
 const Apify = require('apify');
 const crypto = require('crypto');
+const RobotError = require('../errors');
 
 const APIFY = {
     utils: {
@@ -41,12 +42,34 @@ const DEFAULT_OPTIONS = {
         },
     },
     server: {
-        livecast: {
+        interface: {
             useScreenshots: false,
             maxScreenshotFiles: 20,
             snapshotTimeoutSecs: 2,
             maxSnapshotFrequencySecs: 1,
             // screenshotDirectoryPath: 'key_value_stores/default',
+            prompt: {
+                modal: false,
+                handlers: {
+                    abort: () => {
+                        throw new RobotError({
+                            data: {
+                                abortActor: true,
+                            },
+                        });
+                    },
+                    cancel: () => {
+                        throw new RobotError({
+                            data: {
+                                cancelAction: true,
+                            },
+                        });
+                    },
+                    confirm: () => {
+                        console.log('Cancellation confirmed');
+                    },
+                },
+            },
         },
         websocket: {
             // events: Object,
@@ -257,19 +280,12 @@ const LOGGER = {
 };
 
 const SERVER = {
-    livecast: {
+    interface: {
         triggerMethods: [
             // 'goto',
             'waitFor',
             // 'waitForSelector',
         ],
-    },
-    interface: {
-        events: {
-            cancel: 'cancel',
-            abort: 'abort',
-            confirm: 'confirm',
-        },
     },
 };
 
