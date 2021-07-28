@@ -47,7 +47,6 @@ class RobotSetup {
         /* robot internal server options */
         server: {
             interface: {
-                events: {},
                 prompt: {
                     modal: false,
                     handlers: {
