@@ -26,7 +26,7 @@
 		"parse-domain": "^3.0.3",
 		"playwright": "^1.11.0",
 		"promise.any": "^2.0.2",
-		"puppeteer": "^8.0.0",
+		"puppeteer": "^10.1.0",
 		"ramda": "^0.27.1",
 		"shortid": "^2.2.16",
 		"slack-node": "^0.1.8",
