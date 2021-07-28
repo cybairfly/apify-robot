@@ -1,6 +1,6 @@
 const Apify = require('apify');
 
-const { log } = Apify.utils;
+const { log, sleep } = Apify.utils;
 
 const {
     ANTI_CAPTCHA_TOKEN,
@@ -24,8 +24,26 @@ class CaptchaSolver {
         this.stats = stats;
     }
 
+    solveCaptcha = async (page, getSiteKey, captchaSelector) => {
+        const captchaSolution = await this.getSolution(page, getSiteKey, captchaSelector);
+        await this.injectSolution(page, captchaSolution);
+        await sleep(Math.random() * 1000 + 1000);
+    }
+
+    injectSolution = async (page, solution) => page.evaluate(({solution, SELECTORS}) => {
+        const $captchaResponse = document.querySelector(SELECTORS.captchaResponse);
+        if ($captchaResponse)
+            $captchaResponse.innerHTML = solution;
+
+        if (window.grecaptcha.enterprise)
+            window.grecaptcha.enterprise.getResponse = () => solution;
+        else
+            window.grecaptcha.getResponse = () => solution;
+    }, {solution, SELECTORS});
+
     async getSolution(page, getSiteKey, captchaSelector) {
-        const $captcha = await page.waitForSelector(captchaSelector || SELECTORS.captchaFrame).catch(error => null);
+        // const $captcha = await page.waitForFunction(captchaSelector => document.querySelector(captchaSelector), (captchaSelector || SELECTORS.captchaFrame)).catch(error => null);
+        const $captcha = await page.waitForSelector(captchaSelector || SELECTORS.captchaFrame, {state: 'attached'}).catch(error => null);
 
         if (!$captcha) {
             log.error('No captcha selector found');
@@ -105,21 +123,8 @@ class CaptchaSolver {
         this.solved++;
         const solution = solutionResponse.solution.gRecaptchaResponse;
 
-        await this.injectSolution(page, solution);
-
         return solution;
     }
-
-    injectSolution = async (page, solution) => page.evaluate(({solution, SELECTORS}) => {
-        const $captchaResponse = document.querySelector(SELECTORS.captchaResponse);
-        if ($captchaResponse)
-            $captchaResponse.innerHTML = solution;
-
-        if (window.grecaptcha.enterprise)
-            window.grecaptcha.enterprise.getResponse = () => solution;
-        else
-            window.grecaptcha.getResponse = () => solution;
-    }, {solution, SELECTORS});
 
     getSolvedCount() {
         return this.solved;
