@@ -107,7 +107,7 @@
         "prompt": {
             "title": "Prompt?",
             "type": "boolean",
-            "description": "Await action approval via livecast interface",
+            "description": "Await action approval via server interface",
             "editor": "checkbox",
             "default": false
         },
@@ -209,11 +209,11 @@
             "editor": "checkbox",
             "default": false
         },
-        "options.server.livecast.enable": {
+        "options.server.interface.enable": {
             "groupCaption": "Options:",
-            "title": "Livecast",
+            "title": "Interface",
             "type": "boolean",
-            "description": "Live-cast of actor run",
+            "description": "Interactive visual livecast",
             "editor": "checkbox",
             "default": false
         },

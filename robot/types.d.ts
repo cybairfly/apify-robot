@@ -41,8 +41,10 @@ export interface RobotContext {
         listen: Function
     },
     server: {
-        http: {},
-        livecast: {},
+        hypertext: {},
+        interface: {
+            serve: (page: Page) => undefined
+        },
         websocket: {
             send: (message: String) => String,
             cast: (message: String) => String
@@ -93,7 +95,7 @@ export interface options {
         }
     },
     server: {
-        livecast: {
+        interface: {
             enable: boolean
         },
         websocket: {

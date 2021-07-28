@@ -325,8 +325,8 @@ class Robot {
             await Apify.utils.puppeteer.blockRequests(page, this.options.trafficFilter);
 
         // const singleThread = setup.maxConcurrency === 1;
-        const shouldStartServer = !this.server && (prompt || (server && options.server.livecast.enable));
-        this.server = this.server || (shouldStartServer && startServer(page, setup, options.server.livecast));
+        const shouldStartServer = !this.server && (prompt || (server && options.server.interface.enable));
+        this.server = this.server || (shouldStartServer && startServer(page, setup, options.server.interface));
 
         decoratePage(this);
         initEventLogger(page, domain, input, options);
@@ -675,8 +675,11 @@ class Robot {
         }
     }
 
-    stop = async ({browserPool, sessionPool, browser, options, session, server, page, error, input} = this) => {
+    stop = async ({browserPool, sessionPool, browser, options, session, human, server, page, error, input} = this) => {
         this.syncContext.page(null);
+
+        if (human)
+            this.human = null;
 
         if (browser) {
             log.debug('Closing the browser');
@@ -738,7 +741,7 @@ class Robot {
         }
 
         if (server) {
-            await sleep(options.server.livecast.snapshotTimeoutSecs);
+            await sleep(options.server.interface.snapshotTimeoutSecs);
             await server.serve(page);
             await sleep(5 * 1000);
         }

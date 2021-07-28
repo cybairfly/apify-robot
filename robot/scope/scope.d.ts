@@ -29,8 +29,8 @@ export interface RobotContext {
         listen: Function
     },
     server: {
-        http: {},
-        livecast: {},
+        hypertext: {},
+        interface: {},
         websocket: {
             send: (message: String) => String,
             cast: (message: String) => String
