@@ -24,9 +24,12 @@ class CaptchaSolver {
         this.stats = stats;
     }
 
-    solveCaptcha = async (page, getSiteKey, captchaSelector) => {
-        const captchaSolution = await this.getSolution(page, getSiteKey, captchaSelector);
+    solveCaptcha = async (page, {getSiteKey, captchaSelector, injectSolution}) => {
+        const captchaSolution = await this.getSolution(page, {getSiteKey, captchaSelector});
         await this.injectSolution(page, captchaSolution);
+        if (injectSolution)
+            await injectSolution(page, captchaSolution);
+
         await sleep(Math.random() * 1000 + 1000);
     }
 
@@ -41,7 +44,7 @@ class CaptchaSolver {
             window.grecaptcha.getResponse = () => solution;
     }, {solution, SELECTORS});
 
-    async getSolution(page, getSiteKey, captchaSelector) {
+    async getSolution(page, {getSiteKey, captchaSelector}) {
         // const $captcha = await page.waitForFunction(captchaSelector => document.querySelector(captchaSelector), (captchaSelector || SELECTORS.captchaFrame)).catch(error => null);
         const $captcha = await page.waitForSelector(captchaSelector || SELECTORS.captchaFrame, {state: 'attached'}).catch(error => null);
 
