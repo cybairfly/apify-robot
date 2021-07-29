@@ -4,16 +4,10 @@ const fs = require('fs');
 const express = require('express');
 const socketio = require('socket.io');
 const bodyParser = require('body-parser');
+const {promisify} = require('util');
 const {InterfaceServer} = require('interface-server');
 
-const {promisify} = require('util');
-
-// const {LiveViewServer} = Apify;
-// const {log} = Apify.utils;
-
 const writeFile = promisify(fs.writeFile);
-
-// const Snapshot = require('./snapshot');
 const log = require('../logger');
 
 const {EVENTS, SERVER} = require('../consts');
