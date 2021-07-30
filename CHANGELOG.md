@@ -61,28 +61,47 @@ Renamed variables for more clarity, merged actor and robot input and output. Inp
 - `options.debug.muted` - mute error notifications to external channels
 - `options.notify.details` - include complete error in error notification
 - `options.notify.slack` - enable channel for error notifications (Slack)
-- `options.server.livecast.enable` - enable live visual stream of actions
+- `options.server.interface.enable` - enable live visual stream of actions
 - `options.server.websocket.enable` - enable real-time communication server
+
+### `Robot.tools`
+Pattern matching has been updated to only match elements actually visible on the page in order to avoid false match positives with hidden elements not intended for current state of the user-facing website interface. Below mentioned tools are now also pre-initialized with the page and available in `Robot.Context` and on instances of `Robot.Scope/Target` class for convenience.
+- `matchPattern(page, pattern)` - now also available preloaded for convenience as `matchPattern(pattern)` in `Robot.Context` and instances of `Robot.Scope/Target`
+- `iteratePatterns(page, patterns, [patternOrder])` - now also available preloaded for convenience as `iteratePatterns(patterns, [patternOrder])` in `Robot.Context` and instances of `Robot.Scope/Target`
 
 ### `Robot.Error`
 Native support for custom errors with special flags reserved for use by the robot and support for `JSON.stringify` 
 Non-custom native errors are wrapped automatically, though only shortly before error alert and exit of the actor.
 
 #### Usage examples
-Exhaust options `throw new Robot.Error({name, type, data, error, retry, message})`
+Exhaust options: `throw new Robot.Error({name, type, data, error, retry, message, rotateSession, retireSession})`
 
 Rethrow wrapped error: 
 - custom error merged with the re-thrown error `throw new Robot.Error({error})`
-- custom error with `cause` of re-thrown error `throw new Robot.errors.Example({error})`
+- custom error with `cause` of re-thrown error `throw new Robot.errors.Example({error, data: {test: 'anything'}})`
 
 Reserved properties:
 - `data: Object` - container for arbitrary data properties
 - `type: String` - constructor name of the custom error
-- `cause: Error` - optional cause of the custom error
+- `error: Error` - optional cause of the custom error
 - `retry: Boolean` - retry current run till retry limit
+- `rotateSession` - rotate proxy session on retry
+- `retireSession` - rotate proxy session on retry
 
 ### `Robot.Human`
-Initialize page with human behavior options on demand - to be extended with more functionality.
+Enable humanized toolset for manual and automatic simulation of human behavior. 
+Enable automatic pointer tracking and visual pointer indicator in debug mode.
+
+- `human.click` - humanized clicking with random movements and action delays
+- `human.point` - humanized pointing with random movements and action delays
+- `human.press` - humanized keypress with random movements and action delays
+- `human.sleep` - humanized waiting with random movements and action delays
+- `human.type` - humanized typing with random movements and action delays
+
+Currently disabled by default due to unresolved interference with other actions:
+- `human.startMotion` - start automated continuous simulation of human behavior
+- `human.stopMotion` - stop automated continuous simulation of human behavior
+
 
 ### `Robot.Setup`
 - `step.abort(context)` - support centralized abort trigger across all targets
@@ -103,12 +122,17 @@ Extends `Robot.Scope`
   - `input.options` - input options for various robot features transformed into an object at runtime from the flat input schema using dot notation
   - `page.gotoDom` - utility method for navigation with `waitUntil` option enabled and set to `EVENTS.domcontentloaded`
   - `human` - optional human behavior simulation tool to replace native methods where needed (must be enabled on input)
-      - `human.type`
-      - `human.click`
-      - `human.sleep`
+    - `human.click` - humanized clicking with random movements and action delays
+    - `human.point` - humanized pointing with random movements and action delays
+    - `human.press` - humanized keypress with random movements and action delays
+    - `human.sleep` - humanized waiting with random movements and action delays
+    - `human.type` - humanized typing with random movements and action delays
   - `pools` 
     - `BrowserPool` - exposed browser pool instance if applicable
     - `SessionPool` - exposed session pool instance if applicable
+  - `tools`
+    - `matchPattern` - pattern matching utility for a single pattern
+    - `iteratePatterns` - pattern matching utility for multiple patterns
 
 Properties available directly on the scope instance, outside of context:
 - `this.task` - currently processed task as defined in `Robot.Setup`
