@@ -1,8 +1,8 @@
 module.exports = {
     getApifyProxySession: {},
-    OPTIONS: {
-        blockRequests: {},
+    options: {
+        trafficFilter: {},
         launchPuppeteer: {},
         liveViewServer: {},
-    }
+    },
 };

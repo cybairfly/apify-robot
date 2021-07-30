@@ -1,17 +1,15 @@
 const Apify = require('apify');
 
 const {log} = Apify.utils;
-
-const {
-    PUPPETEER,
-} = require('../../consts');
-
-const {
-    CustomError,
-} = require('../../errors');
+const {EVENTS} = require('../../consts');
+const {CustomError} = require('../../errors');
 
 const goto = async (page, url, options = {}) => {
-    const response = await page.goto(url, {waitUntil: PUPPETEER.events.domcontentloaded, ...options});
+    const response = await page.goto(url, {
+        waitUntil: EVENTS.domcontentloaded,
+        ...options,
+    });
+
     const status = response.status();
 
     if (status >= 400) {
