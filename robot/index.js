@@ -127,6 +127,7 @@ class Robot {
     static ScopeConfig = ScopeConfig;
     static TargetConfig = TargetConfig;
     static CaptchaSolver = CaptchaSolver;
+
     static consts = consts;
     static errors = errors;
     static tools = tools;

@@ -24,8 +24,8 @@ class CaptchaSolver {
         this.stats = stats;
     }
 
-    solveCaptcha = async (page, {getSiteKey, captchaSelector, injectSolution} = {}) => {
-        const captchaSolution = await this.getSolution(page, {getSiteKey, captchaSelector});
+    solveCaptcha = async (page, {siteKey, getSiteKey, captchaSelector, injectSolution} = {}) => {
+        const captchaSolution = await this.getSolution(page, {siteKey, getSiteKey, captchaSelector});
         await this.injectSolution(page, captchaSolution);
         if (injectSolution)
             await injectSolution(page, captchaSolution);
@@ -44,7 +44,7 @@ class CaptchaSolver {
             window.grecaptcha.getResponse = () => solution;
     }, {solution, SELECTORS});
 
-    async getSolution(page, {getSiteKey, captchaSelector} = {}) {
+    async getSolution(page, {siteKey, getSiteKey, captchaSelector} = {}) {
         // const $captcha = await page.waitForFunction(captchaSelector => document.querySelector(captchaSelector), (captchaSelector || SELECTORS.captchaFrame)).catch(error => null);
         const $captcha = await page.waitForSelector(captchaSelector || SELECTORS.captchaFrame, {state: 'attached'}).catch(error => null);
 
@@ -59,7 +59,7 @@ class CaptchaSolver {
             return match ? match.getAttribute('data-sitekey') : null;
         };
 
-        const siteKey = await page.evaluate(getSiteKey || getSiteKeyDefault);
+        siteKey = siteKey || await page.evaluate(getSiteKey || getSiteKeyDefault);
         const userAgent = await page.evaluate(() => navigator.userAgent);
 
         if (!siteKey)
