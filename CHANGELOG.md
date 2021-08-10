@@ -28,10 +28,8 @@ Renamed variables for more clarity, merged actor and robot input and output. Inp
 - `SLACK.channel` ➜ `options.notify.channels.slack.channel`
 
 ### `Robot.Scope/Target`
-- `constructor(setup, target, robot)` ➜ `constructor(context, [robot])`
-  - simplify optional scope/target constructors
-- `stepName = () => {}` ➜ `taskName = context => ({ stepName: context => {}, ... })`
-  - steps are now optionally (recommended and will become the default) wrapped by their respective tasks in `Robot.Scope/Target` implementations to follow the structure in `Robot.Setup` more closely and provide other additional benefits through this closure, including type hints in step signatures. Updated `context` is passed to both tasks and steps at runtime.
+- `constructor(setup, target, robot)` ➜ `constructor(context, [robot])` - simplify optional scope/target constructors
+- `stepName = () => {}` ➜ `taskName = context => ({ stepName: context => {}, ... })` - steps are now optionally (recommended and will become default) wrapped by their respective tasks in `Robot.Scope/Target` implementations to follow the structure in `Robot.Setup` more closely and provide other additional benefits through this closure, including type hints in step signatures. Updated `context` is passed to both tasks and steps at runtime.
 
 - `context`
   - `relay` ➜ `state`
