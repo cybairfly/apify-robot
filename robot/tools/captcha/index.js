@@ -31,6 +31,8 @@ class CaptchaSolver {
             await injectSolution(page, captchaSolution);
 
         await sleep(Math.random() * 1000 + 1000);
+
+        return captchaSolution;
     }
 
     injectSolution = async (page, solution) => page.evaluate(({solution, SELECTORS}) => {
