@@ -1,3 +1,8 @@
+/**
+ * Basic setup of the project merged with input and target-specific options at runtime
+ * into the final compound setup with static options and dynamic options called during
+ * runtime with current context
+ */
 class RobotSetup {
     /* definition of automation tasks */
     tasks = {
@@ -103,7 +108,9 @@ class RobotSetup {
         },
 
         /* https://sdk.apify.com/docs/typedefs/session-pool-options */
-        sessionPool: {},
+        sessionPool: {
+            // disable: Boolean
+        },
 
         /* https://playwright.dev/docs/network/#abort-requests */
         /* https://sdk.apify.com/docs/api/puppeteer#puppeteerblockrequestspage-options */
