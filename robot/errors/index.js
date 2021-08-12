@@ -28,7 +28,7 @@ class Errors {
             message = 'Access has been blocked';
         },
         Captcha: class extends this.Access {
-            message = 'Access has been blocked';
+            message = 'Access has been blocked by captcha';
         },
         MultiFactor: class extends this.Access {
             message = 'Multifactor authentication required';
