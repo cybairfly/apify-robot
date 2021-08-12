@@ -396,7 +396,7 @@ class Robot {
                 continue;
             }
 
-            await page.waitForFunction(() => document.readyState === 'complete');
+            await page.waitForFunction(() => document.readyState === 'complete').catch(error => null);
 
             for (const step of task.steps) {
                 this.step = {...step};
