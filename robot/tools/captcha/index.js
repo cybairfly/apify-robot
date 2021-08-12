@@ -26,6 +26,11 @@ class CaptchaSolver {
 
     solveCaptcha = async (page, {siteKey, getSiteKey, captchaSelector, injectSolution} = {}) => {
         const captchaSolution = await this.getSolution(page, {siteKey, getSiteKey, captchaSelector});
+        if (!captchaSolution) {
+            log.error('Could not get captcha solution');
+            return;
+        }
+
         await this.injectSolution(page, captchaSolution);
         if (injectSolution)
             await injectSolution(page, captchaSolution);
