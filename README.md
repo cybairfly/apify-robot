@@ -1,253 +1,318 @@
 # Apify Robot (WIP)
-#### RPA for the Web: Automation of arbitrary tasks with focus on the web and a simple-to-use API
+*RPA framework for automation of arbitrary tasks with focus on the web*
 
-This project aims to provide a generic solution and simple API to automate any process 
-with special focus on repetitive tasks related to specific target websites. The robot 
-strives to be as flexible and versatile as possible while making the automation process 
-organized and clear at a glance thanks to abstracting the entire flow of automation to 
-global configuration defining important aspects of the robot's behavior. You are able 
-to define a high-level structure of the process using a simple configuration and then 
-provide implementation for various tasks and optionally different hosts (target websites).
+Project aims to provide a generic solution and simple API to automating any abstract process at large scale with extra focus on repetitive tasks performed at specific web hosts (websites, APIs...). The framework aims for maximum versatility and flexibility while making the automation process well structured, clear and organized thanks to describing the entire automation abstraction in project setup and providing convenient tools and templates for quick and efficient scaling of specific implementations sharing the same or similar abstraction.
 
-- [Robot]()
-    - [Setup]() - global or target specific startup and runtime settings for the robot's behavior
-    - [Target]() - abstract definition of the target host (website) to perform the automation against
-      - [Config]() - utility abstraction to extract target specific data away from the logic of the flow
-    - [Tasks]() - abstract definition of a body of work to be performed using `steps` as defined in `setup`
-        - [Steps]() - actual implementation of the code to be executed as a part of accomplishing a `task`
-        - [Flows]() - loose group of `steps` merged into a single class to serve as a whole or part of a `task`
-    - [Context]() 
-    - [Tools]()
+## Introduction
+  - [Robot](#robot)
+    - [Setup](#setup) - global or target specific startup and runtime behavior settings of the framework
+    - [Scope](#scope) - generic container for the implementation of target independent automation tasks
+    - [Target](#target) - container for implementation of automation steps performed against specific target
+      - [Config](#targetconfig) - utility abstraction to extract scope/target specific data away from the main logic
+    - [Tasks](#task) - abstract definition of a body of work to be performed by executing more granular `steps`
+        - [Steps](#steps) - actual implementation of the code to be executed as part of accomplishing a `task`
+    - [Context](#context) - global source of runtime awareness and container for common runtime-aware tools
+    - [Errors](#errors) - custom error wrapper for advanced error handling and a dictionary of common errors
+    - [Tools](#tools) - convenience tools for quick and efficient development and maintenance of automations
 
-### Objectives
-- flexibility - highly customizable
-- versatility - wide range of use cases
-- robustness - flow control & monitoring
-
-### Examples
+## Application
 - login check - checking validity of credentials at target host websites
 - e-commerce - automated product customization before order completion
 - service payments - automated payment processing for various services
 - service subscription management - check and change state of subscriptions
-- ... etc - pretty much anything you can do manually using a browser
+- ... etc - pretty much anything you can do manually, using any web browser
 
-### Overview
-The execution of the tasks is handled by a Robot. The robot loads a configuration
-with the high-level structure of the process and resolves the order of the tasks with
-a dependency tree.
+## Objectives
+- flexibility - highly customizable to fit every project
+- scalability - rapid scaling of the automation model
+- versatility - support for a wide range of use cases
+- robustness - predictable flow control & monitoring
 
-Each task can have multiple sequential steps, which can be either generic or specific
-for a particular target. The implementation of the specific step for a particular
-target will be automatically loaded by the Robot during the execution of the whole
-process.
+## Features
+### Flexibility
+Many concepts are recommended defaults and can be adapted to fit the needs of any automation project.
 
-## Robot 
-### [Setup]() ([Target]()) > [Tasks]() > [Steps]()/[Flows]() ([Context]()) > [Tools]()
+- #### Project scope
+  Framework can handle an arbitrary number of automation tasks within a single automation project. Alternatively, the granularity of projects per tasks can be as fine as required. Each task can be also hosted in its own separate project.
 
-> Robot takes individual `steps` optionally grouped in `flows` and using common `tools` 
+- #### Project structure
+  Paths to all crucial parts of the project are customizable. Recommended default structure:
+  - project root
+    - robot - contains global setup and represents the automation framework in the project
+    - tasks - contains automation implementations
+      - generic - contains generic implementations shared by any of the automation tasks and targets
+      - targets - contains target-specific implementations intened for particular web hosts (websites, APIs...)
+    - tools - contains generic tools reusable by different tasks and targets outside of the automation process
+
+- #### Dynamic properties
+  Different aspects of the project can be adapted to its specific needs dynamically, through custom logic executed during run time and affecting current context or behavior of the framework (e.g. input ID, proxy selection etc.)
+
+- #### Execution control
+  Optional step predicates enable precise conditional control over execution of the automation and early exit when things don't follow the ideal path and provide assurance of successful execution of preceding steps otherwise.
+
+### Scalability
+Projects can be rapidly scaled to perform identical tasks with different host implementations thanks to a simple public contract, readily available convenience tools and the ability to consolidate and reuse generic parts of the automation process across all targets.
+
+### Versatility
+Framework enables creation of automations with arbitrary complexity. Generic code can be arbitrarily mixed and interact with target-specific code to perform any imaginable tasks with maximum implementation and runtime efficiency. Common features frequently used at runtime or during debugging are an input option toggle away and ready for use when needed.
+
+### Robustness
+Creating robust automations capable of handling all possible scenarios gracefully is not easy. The framework helps with that by providing efficient debugging tools, support for retries at the minutest level and custom error models designed to handle or classify known or unknown edge cases and report their details to external notification channels after directing both runtime context and the automation process accordingly.
+
+### Readability
+Implementation for targets is designed as a linear sequence of steps and events with maximum readability in mind that strives to make it easy to follow the entirety of the automation process without the need to jump out of context between various modules unnecessarily. The idea is to keep the main execution flow as fluent and continuous as possible both during development and maintenance to make it easy to follow the process as a whole along with surrounding context.
+
+### Reusability
+One of the most important features is the ability to share and reuse any generic code throughout the entire automation project to prevent numerous duplication of general purpose code and reduce maintenance of reusable generic segments to a minimum. Furthermore, tasks can also depend on and be reused by any other tasks as defined by project setup and resolved with a dependency tree at startup.
+
+#### Composability
+High reusability and low maintenance ratio is achieved by arbitrarily mixing generic and target-specific implementations.
+
+Implementation example:
+- G obtain data from a remote resource (e.g. list of targets with credentials)
+- G decrypt secrets using local private key
+- T prepare target website for a login attempt
+- T trigger login action using decrypted credentials
+- G approximate user location using a remote API
+- G query national holiday information from a remote API
+- G request more details for multi-factor authentication
+- T utilize additional details (OTP) and handle the MFA
+- G detect and handle login errors or expected patterns
+- G report validity of credentials to a remote endpoint
+- G store encrypted input and entry ID to local dataset
+- T prepare user account to desired starting point (e.g. profile selection)
+- G reuse MFA channel with remote consumer to optimize profile selection (maybe)
+- T prepare user account for desired automation objective (e.g. insurance payment)
+- T obtain vital payment information from target (e.g. name, due date, payment amount)
+- G report payment details to remote endpoint for internal pairing and real-time verification
+- G obtain payment confirmation code from remote automation consumer (e.g. payment issuer)
+- T apply payment confirmation details obtained in real time to the automation process
+- G prompt payment details with live agent for visual inspection and interaction
+- G abort automation prematurely based on input or real-time interaction (optional)
+- T finish automation objective (e.g. by confirming payment details and action)
+- T verify success of automation objective or assume error otherwise
+- G store a backup of output and payment confirmation to long-term storage
+- G report automation result to remote infrastructure in real time (mobile app)
+- T detect and handle or classify target-specific errors (maybe)
+- G detect and handle or classify (un)expected errors or patterns
+- G evaluate current proxy provider and/or IP through a remote API
+- G report errors and error details to a monitoring channel (maybe)
+
+G - generic steps
+T - target-specific steps
+
+### Documentation
+Important features like various automation utilities available in the context or directly on implementation instances (should) have properly documented interface and vital information readily available through IDE to make writing implementations of the automation as efficient and easy as possible.
+
+### Automation
+Curiously enough, the automation framework aims to automate many processes related to building automation projects... and maintaining them afterwards.
+
+Control entire automation process dynamically at each step based on current context and result of the preceeding step(s). Report each step and its status in real time to remote endpoints. Support granular precision retry of each individual step with optional real-time input. Produce a sequence of verbose logs with performed actions and capture debug buffers for each step and/or the final result. Maintain and keep-alive a pool of working proxy IPs for each individual target. Provide convenient tools for efficient development and maintenance of automations. And more...
+
+### Robot 
+### [Setup](#setup) > [Scope](#scope)/[Target](#target) > [Context](#context) > [Tasks](#tasks) > [Steps](#steps)
+
+> Robot takes single `steps` optionally grouped in `scope` and uses shared `tools` 
 to accomplish preset `tasks` defined in global `setup` within its runtime `context`
 
-Robot handles the execution of all tasks and their steps in the correct order and
-handles possible failures of the individual units. Firstly the order of the execution
-of the tasks is resolved by building a dependency tree and then flattening the tree
-to a ordered array of tasks. 
+Execution of tasks is handled by an instance of the Robot. The framework loads the project setup containing a high-level structure and description of the automation process and resolves the order of the tasks with a dependency tree to ensure mutually dependent tasks are executed in the correct order, while handling possible errors at individual steps. Control flow predicates determine actual execution sequence depending on intermediate states during the automation. Each task can contain a sequence of many steps which can be either generic or specific for a particular remote target. Implementation of a step for a particular target will be automatically loaded during execution of the whole process.
 
-[comment]: <> (TODO: if the task has two dependencies, which one gets executed first?)
-[comment]: <> (dependencies are executed in the order of declaration in the merge array)
+### Input
+[Input schema](INPUT_SCHEMA.json) (plus custom properties specific to the automation project)
 
-[comment]: <> (TODO: this applies generally to other subtasks (sublevels of the tree)
-[comment]: <> (tree is built in a way so that most nested deps are executed first up to the parent before the next dep)
+### Output
+[Output schema](OUTPUT_SCHEMA.js) should be defined according to specific needs of the project and provided to the robot through the setup.
 
 ### Context
-Context is an object with other objects as properties
+Context is a container for the main state and properties of the robot and its tasks. Context is passed down to the lowest unit of execution and other places throughout run time to provide maximum flexibility for both inside and outside of the execution scope. Unified context ensures complete automation awareness at any point and makes it easy to extract and use any preloaded automation tools or access different properties and current state of the automation from anywhere.
 
-`{INPUT, OUTPUT, input, output, page, task, step, relay, target, server}`
+`Context <{input, output, page, task, step, state, pools, events, tools, server}>`
 
 Property|Type|Description
 ---|---|---
-INPUT|object|Actor input (global)
-OUTPUT|object|Actor output (global)
-input|object|Robot input
-output|object|Robot output
-page|object|Puppeteer page
-task|object|Task object as defined in configuration
-step|object|Step object as defined in configuration
-relay|object|Utility object for passing data between `steps` and `tasks`
-target|string|Host (target website)
-server|instance|Live view and interaction server (WIP)
+input|object|Robot and actor input
+output|object|Robot and actor output
+page|object|Browser page instance
+task|object|Task as defined in setup
+step|object|Step as defined in setup
+state|object|Utility object for passing data between `steps` and `tasks`
+pools|object|Hosts pools of Apify SDK (browser pool, session pool)
+tools|object|Preloaded runtime-aware convenience automation tools
+server|instance|Universal server for real-time inspection and interaction
 
-Robot passes the global context down to the lowest unit of execution to enable maximum 
-flexibility in the scope of automation execution. Wide context is also passed to other 
-places like setup predicates for execution flow control.
+### [Setup](robot/setup/index.js)
+- global `setup` - defines default behavior of the robot
+- target `setup` - defines behavior of the robot for a specific target host or website
 
-### Target
-[Target](robot/target/index.js)
-Defines target of automation and target specific behavior, e.g. order of steps (execution sequence) etc. Provides helper methods for adapting tasks to target websites. Definition of automation steps directly in this class body is supported in addition to outsourcing the flow to a separate class with path defined in setup.
+Robot has full control over execution of the automation based on the logic defined in project setup but it also recognizes and adapts to target specific overrides where necessary, meaning behavior of the framework can also change based on the host (automation target).
 
-[Target.Config](robot/target/config.js)
-Utility class to extract target specific data away from the logic of the flow.
+High level abstraction of the automation process is described in a single project setup file in the root of the project. Among other things, this file describes each task along with its steps and global paths to the implementation of the steps and their expected output. The configuration can contain the properties described in its model class linked above.
 
-### Setup
-[Robot.Setup](robot/setup.js)
+### [Scope](robot/scope/index.js)
+Defines a container for arbitrary parts of the automation. Collections of individual steps can be composed in this wrapper. Steps in the scope can be interleaved by other intermittent steps outside of the scope as defined by the sequence in global or local setup.
 
-- global `setup` - defines global behavior of the robot
-- target `setup` - defines behavior of the robot based on specific target host (website)
+```
+class Scope extends Robot.Scope {
+    // optional constructor & super
+    // (automatic context bindings)
+    constructor(context, robot) {
+        super(context, robot);
+    }
 
-Robot has full control over execution of the automation based on the logic pre-defined 
-in its global setup and also recognizes and uses a target specific config over-ride 
-where applicable and needed - meaning behavior of the robot can also change based on 
-the host (automation target).
+    [task] = (context) => ({
+        [step]: (context) => {
+           <!-- implementation -->
+        }
+    });
+}
+```
 
-The whole process is described in a single configuration file in the root of the project.
-The configuration file describes each task and its steps, paths to the implementation
-of the steps and output. The configuration can contain the following properties: TODO.
+##### [Scope.Config](robot/target/config.js)
+Utility class to extract target specific data away from the logic of the scope.
 
-### Tasks
-> layout - control - outline - overview - centralize
+### [Target](robot/target/index.js)
+Extends [Scope](robot/scope/index.js)
 
-context -> | `task` | -> (output)
------------|------|------------
-object|runtime sequence outline + flow control predicates|object
+Defines a scope specific to one particular target of automation and provides support for target-specific behavior overrides when needed (e.g. modified execution sequence). Provides helper methods for adapting tasks to the target if necessary.
 
-Basic abstraction of a complete body of work to be performed by the robot in a generic 
-fashion or involving a specific on-line host (target website). Abstract `tasks` are 
-composed of individual `steps` performed by the robot exactly as prescribed by `task`'s 
-configuration and flow control mechanisms.
+```
+class Target extends Robot.Target {
+    [task] = (context) => ({
+        [step]: (context) => {
+           <!-- implementation -->
+        }
+    });
+}
+```
 
-A Task breaks up the whole process to a series of smaller steps, where each steps is
-the smallest unit of execution. For example a task can be `Payment` with these steps: 
-`Search policy`, `Start payment`, `Confirm payment`, `Verify result`, `Backup output`.
-
-Task can have multiple dependencies on other task defined by the `merge` property.
-Robot will resolve these dependencies and run all tasks in correct order.
-
-Task can multiple properties influencing the execution of the task:
-
-##### Steps
-> simplicity - granularity - execution
-
-context -> | `step` | -> (output)
------------|------|------------
-object|function|object
-
-Basic execution unit of the RPA process handled by the robot. Basically a function receiving a global 
-context for maximum flexibility and optionally returning an object which is merged into global output.
-
-
-##### Flows
-> convenience - organization - execution
-
-context -> | flow `step(s)` | -> (output)
------------|------|------------
-object|class method|object
-
-A loose collection of individual steps can be composed into a larger `flow` containing steps wrapped 
-and grouped together by a class. Steps of the flow can be organized to match the execution sequence 
-for clarity and convenience but they do not control the order of execution in any way and they can be 
-interleaved by other intermittent steps outside of the flow defined by the global execution sequence 
-configuration. 
-
-Flows can be defined directly in target body or in a separate class located via `flows` path defined in `setup`
-
-> **Flows can also be generic or target specific.**
-
-### Tools
-Robot can use various internal or external tools to do work. Internal tools are defined 
-within the robot's scope and external tools can be imported from any location into task 
-steps, preferably from the pre-existing `tools` directory. Target specific utilities are 
-ideally kept within the target's own directory.
-
-# Units of work
-Robot can process several levels / types of execution units.
-
-[Task]() - (high level) abstract definition of a task to be performed using `steps` as defined in the configuration
-
-[Step]() - (lower level) actual implementation of the code to be executed as a part of accomplishing a `task`
-
-[Flow]() - loose group of `steps` consolidated into a larger collection to serve as a whole or part of a `task`
-
-**Unit specificity**
-- generic - unit without any relationship to a particular target website or common to multiple websites
-- target - unit specialized for performing automation at or involving a specific host (target website)
+##### [Target.Config](robot/target/config.js)
+Utility class to extract target specific data away from the logic of the scope.
 
 ### Task
-- layout
-- control
-- overview
-- precision
+Define runtime sequence layout and control flow predicates for a particular automation objective.
 
-context -> | `task` | -> (output)
------------|------|------------
-config|collection of `steps`|object
+context ➜ | scope/target `task` ➜ | [output]
+-|-|-
+object|task closure|object
 
-A Task breaks up the whole process to a series of smaller steps, where each steps is
-the smallest unit of execution. For example a task can be a `Login`, which will have
-3 steps: `Fill username`, `Fill password`, `Submit login form`.
+Basic abstraction of a complete body of work to be performed by the robot in a generic fashion or involving a specific web host as the target. These abstract `tasks` are composed of individual `steps` performed by the robot exactly as prescribed by `task`'s setup and flow control mechanism. Tasks further reduce the whole automation process into a series of granular steps, where each steps is the smallest unit of execution for the Robot. An example task would be `InsurancePayment` with steps such as these: `Search policy`, `Start payment`, `Confirm payment`, `Verify result`, `Backup output`.
 
-Task can have multiple dependencies on other task defined by the `merge` property.
-Robot will resolve these dependencies and run all tasks in correct order.
+Multiple dependencies on other preceding tasks can be defined in the task definition. The framework will resolve them at run time and run all tasks in correct order.
 
-Task can multiple properties influencing the execution of the task:
+```
+[task] = (context) => ({
+    <!-- steps -->
+});
+```
 
-### Step
-- simplicity
-- granularity
+#### Steps
+Define the smallest unit for actual execution logic of the automation tasks.
 
-context -> | `step` | -> (output)
------------|------|------------
-global context|function|object
+context ➜ | scope/target `task` ➜ | task `step(s)` ➜ | [output]
+-|-|-|-
+object|task closure|task method(s)|object
 
-Basic execution unit of the RPA process handled by the robot. Basically a function receiving a global 
-context for maximum flexibility and optionally returning an object which is merged into global output.
+Basic execution unit of the automation process handled by the robot. Basically a virtually isolated function receiving global context for maximum awareness and flexibility, optionally returning an output object which gets merged with global output.
+
+Step specificity:
+- generic - unit without a tight coupling to a particular target website or common to different websites
+- target - unit specialized for performing automation at or involving a specific host (e.g. target website)
+
+```
+[task] = (context) => ({
+    [step]: (context) => {
+    <!-- implementation -->
+    },
+    [step]: (context) => {
+    <!-- implementation -->
+    },
+    ...
+});
+```
+
+### [Errors](robot/errors/index.js)
+Custom error handling with native support for rethrows and specific flags affecting consequent behavior of the framework along with an extendable dictionary of common errors helps cover any scenarios, expected or unexpected.
+
+Examples:
+- `Robot.errors.Network` - throw, print and report a generic network error
+- `Robot.errors.access.Blocked` - throw, print and report a generic access error
+- `Robot.errors.session.Rotate` - rotate proxy session before retrying a failed action
+- `Robot.errors.Status({error, retry: true, retireSession: true, statusCode: 403})` - rethrow previous error as cause of the custom error, retire proxy session before retrying failed action and print a message with failed status code before reporting the error to external monitoring channel
+
+### [Tools](robot/public/tools/index.js)
+Robot can use various internal or external tools to do work. Internal tools are available on the robot and external tools can be imported from any location into task steps, preferably from the pre-existing `tools` directory. Utilities specific to a single target are ideally kept within the target's own directory.
+
+#### [Login](robot/public/tools/index.js)
+Convenient abstractions for a very common automation activity, authorization. 
+
+Future version will offer a fully automated login experience utilizing provided secrets.
+
+#### [Human](robot/human/index.js)
+Humanized toolset for both manual and automated simulation of human behavior.
+
+#### [Server](robot/server/index.js)
+Universal server for real-time network communication (WIP) and visual inspection of and interaction with the automation.
+
+#### Proxy
+Internals of the framework along with other features like custom errors and flags ensure correct rotation of proxy sessions and fingerprints on different occasions like fresh runs or retries and ping the proxy pools at the target level to ensure that sessions will remain valid for extended periods of time.
+
+#### Patterns
+Convenient abstractions for a very common automation activity, pattern matching. 
+
+Future version will provide a unified API for both back-end and front-end evaluation.
+
+#### Logging
+Automated or manual logging of performed actions with distinct visual hints for quick orientation.
+
+#### Reports
+Automated error classification and reporting to external monitoring channel(s).
+
+#### Etc.
+More information in type definitions and inline documentation (WIP)
 
 
-### Flow
-- context
-- convenience
-- organization
-
-context -> | flow `step` | -> (output)
------------|------|------------
-global context|class method|object
-
-A loose collection of individual steps can be composed into a larger `flow` containing steps wrapped 
-and grouped together by a class. Steps of the flow can be organized to match the execution sequence 
-for clarity and convenience but they do not control the order of execution in any way and they can be 
-interleaved by other intermittent steps outside of the flow defined by the global execution sequence 
-configuration. 
-
-> Flows can also be generic or target specific.
-
-### Execution control
-Predicate functions for code execution flow control:
--  `init` - condition to start a `task|step`
--  `skip` - condition to skip a `task|step`
--  `stop` - condition to make a `task|step` break out of the pre-defined execution sequence
--  `done` - condition to consider a `step` finished and move on to the next one (`task`s are not affected)
-
-TODO - fail when task dependency fails 
-
-[comment]: <> (Describe the configuration options of steps and the "code" and "flow" options)
-
-### INPUT
-Actor input (not to be confused with actionable input for the robot used during the automation process)
-
-See actor input schema for details.
-
-[Robot actor input schema](INPUT_SCHEMA.json)
-
-[Actor input schema (docs)](https://docs.apify.com/actors/development/input-schema)
-
-### OUTPUT
-TODO
+### Demo
+```
+class Target extends Robot.Target {
+    [tasks.login] = ({page, human, ...context}) => ({
+        [steps.prepareTarget]: async (context) => {
+            await page.waitForFunction(() => window.location.href === PREDICATES.login);
+            ...
+            return OUTPUTS.targetPrepared;
+        },
+        [steps.prepareLogin]: async ({state: {username, password}}) => {
+            await human.type(SELECTORS.input.username, username);
+            await human.type(SELECTORS.input.password, password);
+            ...
+            return OUTPUTS.loginPrepared;
+        },
+        [steps.attemptLogin]: async (context) => {
+            await human.press('Enter');
+            ...
+            return OUTPUTS.loginSuccess;
+        },
+        [steps.reportStatus]: async ({server, output}) => {
+            await server.send(EVENTS.loginStatus(output));
+            ...
+        }
+    });
+    ...
+}
+```
 
 ## Deployment
+Personal introduction to the automation framework used is currently recommended due to largely missing documentation.
 
-Add additional notes about how to deploy this on a live system
+Presence of the library installed as an `npm` module is represented by the directory with the main setup of the project and framework, typically `./robot` in the project root. Directory structure, paths and other aspects are completely configurable and supplied to the framework at run time through the main setup.
 
-## Built With
+Additional information:
+- [Changelog](https://gitlab.com/cybaerfly/apify-robot/-/blob/master/CHANGELOG.md) - diff from past versions
 
-* [Apify](https://sdk.apify.com) - Lower level web automation framework
+## Dependency
+
+* [Apify](https://sdk.apify.com) - a lower level web automation framework
+
+More details in [package.json](package.json)
 
 ## Contributing
 
@@ -255,15 +320,70 @@ Please read [CONTRIBUTING.md]() for details on our code of conduct, and the proc
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://gitlab.com/cybaerfly/apify-robot/-/tags). 
 
 ## Authors
 
-- Vasek Tobey Vlcek - initial project - [Apify Robot]()
-- Matej Vavrinec - design consultant - [Apify Robot]()
+- Vasek Tobey Vlcek - maintainer
+- Peter Patek - design consultant
+- Matej Vavrinec - design consultant
+- Milán Vasárhelyi - docs & development
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+List of [contributors](https://gitlab.com/cybaerfly/apify-robot/-/graphs/master) participating in this project.
 
 ## License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE.md](LICENSE.md) file for details
+
+## Roadmap
+```
+T   update all targets to reflect third party changes and clean up the target queue
+T   reduce the influx of unknown/unhandled errors to monitoring channel 50%
+G/T stabilize and lock automations to a fixed release version   80%
+T   maximize control and handling precision using custom errors 20%
+T   implement missing features (invalid credentials check etc.) 75%
+T   replace deprecated outputs (generic login failed etc.)  50%
+T   refactor legacy code and deprecated references  30%
+G   release interface server to avoid breaking interactive livecasting  75%
+G   migrate project and its dependencies to SDK 1   75%
+G/T support non-boolean output formats and output segmentation per task 30%
+G   optimize start-up time by reducing amount of docker container cold starts
+G   redesign built-in server for real-time communication    30%
+G/T design and implement a generic real-time protocol across targets    20%
+T   upgrade all targets to latest implementation model and remove legacy leftovers  10%
+T   split up tasks into granular steps for more real-time precision & retry options 10%
+G/T improve pattern matching toolset and extend its capabilities to verification polling etc.   30%
+G   safely re-introduce generic error handling to reduce codebase and monitoring noise
+G/T optimize runtime efficiency with pattern racing and generic observer for dynamic content
+G   improve automated logging and debugging tools for more efficient troubleshooting    70%
+G/T further automate and unify login handling with a higher-level abstraction toolset   50%
+G   optimize start-up time by reducing amount of browser instance cold starts
+G   improve types and documentation for crucial parts of the framework  5%
+
+Performance & optimizations
+Container start-up
+    G   optimize start-up time by reducing amount of docker container cold starts
+    G       > independent functional prototype with reduced efficiency
+    G       > complete integration with the automation framework
+Automation start-up
+    G   optimize framework internals for maximum efficiency (minor effect)
+    G   optimize fingerprint generation for maximum efficiency (up to seconds)
+    G   optimize start-up time by reducing amount of browser instance cold starts - requires:
+    G       > support for dynamic proxy rotation in browser contexts and instances (Apify SDK)
+Target implementations
+    Pre/Login
+        T   fine-tune and optimize traffic filter rules for each target individually
+        G       > support complex pattern matching and white-list approach in traffic filters
+        T   optimize all actions preceding login for maximum speed and efficiency (DOM events)
+        T   prefer direct interaction with website traffic above interaction with rendered UI
+        G/T     > further automate and unify login handling with a higher-level abstraction toolset   50%
+        T   individual reverse engineering of entire login process (Optional. Highly efficient but does not scale well. Time consuming on both development and maintenance. Extremely difficult for highly protected targets)
+    Universal
+        G   redesign built-in server for real-time communication    30%
+        G/T     > design and implement a generic real-time protocol    20%
+        T   replace inefficient async code and fixed waits with more efficient alternatives (fail fast)
+        G/T     > optimize runtime efficiency with pattern racing and generic observer for dynamic content
+
+T - targets
+G - generic
+```
