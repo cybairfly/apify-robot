@@ -71,6 +71,7 @@ class Robot {
         this.browser = null;
         this.browserPool = null;
         this.location = null;
+        this.proxyIp = null;
         /** @type options */
         this.options = null;
         this.stealth = null;
@@ -317,9 +318,15 @@ class Robot {
         }
 
         if (debug) {
+            const proxyIp = await page.evaluate(async () =>
             // eslint-disable-next-line no-return-await
-            const ip = await page.evaluate(async () => await fetch('http://api.ipify.org/?format=json').then(response => response.json())).catch(error => ({ip: null}));
-            log.console.debug(ip);
+                await fetch('https://api.ipify.org/?format=json')
+                    .then(response => response.json())
+                    .then(({ip}) => ip))
+                .catch(error => null);
+
+            this.proxyIp = proxyIp;
+            log.console.debug({proxyIp});
         }
 
         if (block && this.options.browserPool.disable)
