@@ -404,7 +404,7 @@ class Robot {
                 this.syncContext.step(this.step);
 
                 log.default('▬'.repeat(100));
-                log.info(`STEP [${step.name}] @ TASK [${task.name}]`);
+                log.info(`TASK [${task.name}] ► STEP [${step.name}]`);
                 log.default('▬'.repeat(100));
 
                 this.step.init = !step.init || step.init(context);
@@ -522,6 +522,11 @@ class Robot {
                             throw scopeError;
                         });
                 }
+
+                log.default('='.repeat(100));
+                log.info(`TASK [${task.name}] ► STEP [${step.name}] ➜ OUTPUT`);
+                log.default('='.repeat(100));
+                log.default(this.step.output);
 
                 if (this.step.output && typeof this.step.output !== 'object') {
                     log.join.warning('STEP ignoring step output (not an object)', output);
