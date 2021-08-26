@@ -51,7 +51,7 @@ Many concepts are recommended defaults and can be adapted to fit the needs of an
   Optional step predicates enable precise conditional control over execution of the automation and early exit when things don't follow the ideal path and provide assurance of successful execution of preceding steps otherwise.
 
 ### Scalability
-Projects can be rapidly scaled to perform identical tasks with different host implementations thanks to a simple public contract, readily available convenience tools and the ability to consolidate and reuse generic parts of the automation process across all targets.
+Projects can be rapidly scaled to perform identical tasks with different host implementations thanks to a simple public contract, readily available debugging tools and the ability to consolidate and reuse generic parts of the automation process across all targets.
 
 ### Versatility
 Framework enables creation of automations with arbitrary complexity. Generic code can be arbitrarily mixed and interact with target-specific code to perform any imaginable tasks with maximum implementation and runtime efficiency. Common features frequently used at runtime or during debugging are an input option toggle away and ready for use when needed.
@@ -60,7 +60,7 @@ Framework enables creation of automations with arbitrary complexity. Generic cod
 Creating robust automations capable of handling all possible scenarios gracefully is not easy. The framework helps with that by providing efficient debugging tools, support for retries at the minutest level and custom error models designed to handle or classify known or unknown edge cases and report their details to external notification channels after directing both runtime context and the automation process accordingly.
 
 ### Readability
-Implementation for targets is designed as a linear sequence of steps and events with maximum readability in mind that strives to make it easy to follow the entirety of the automation process without the need to jump out of context between various modules unnecessarily. The idea is to keep the main execution flow as fluent and continuous as possible both during development and maintenance to make it easy to follow the process as a whole along with surrounding context.
+Implementation of tasks is designed as a linear sequence of steps and events with maximum readability in mind that strives to make it easy to follow the entirety of the automation process without the need to jump out of context between various modules unnecessarily. The idea is to keep the main execution flow as fluent and continuous as possible both during development and maintenance to make it easy to follow the process as a whole along with surrounding context.
 
 ### Reusability
 One of the most important features is the ability to share and reuse any generic code throughout the entire automation project to prevent numerous duplication of general purpose code and reduce maintenance of reusable generic segments to a minimum. Furthermore, tasks can also depend on and be reused by any other tasks as defined by project setup and resolved with a dependency tree at startup.
@@ -69,36 +69,38 @@ One of the most important features is the ability to share and reuse any generic
 High reusability and low maintenance ratio is achieved by arbitrarily mixing generic and target-specific implementations.
 
 Implementation example:
-- G obtain data from a remote resource (e.g. list of targets with credentials)
-- G decrypt secrets using local private key
-- T prepare target website for a login attempt
-- T trigger login action using decrypted credentials
-- G approximate user location using a remote API
-- G query national holiday information from a remote API
-- G request more details for multi-factor authentication
-- T utilize additional details (OTP) and handle the MFA
-- G detect and handle login errors or expected patterns
-- G report validity of credentials to a remote endpoint
-- G store encrypted input and entry ID to local dataset
-- T prepare user account to desired starting point (e.g. profile selection)
-- G reuse MFA channel with remote consumer to optimize profile selection (maybe)
-- T prepare user account for desired automation objective (e.g. insurance payment)
-- T obtain vital payment information from target (e.g. name, due date, payment amount)
-- G report payment details to remote endpoint for internal pairing and real-time verification
-- G obtain payment confirmation code from remote automation consumer (e.g. payment issuer)
-- T apply payment confirmation details obtained in real time to the automation process
-- G prompt payment details with live agent for visual inspection and interaction
-- G abort automation prematurely based on input or real-time interaction (optional)
-- T finish automation objective (e.g. by confirming payment details and action)
-- T verify success of automation objective or assume error otherwise
-- G store a backup of output and payment confirmation to long-term storage
-- G report automation result to remote infrastructure in real time (mobile app)
-- T detect and handle or classify target-specific errors (maybe)
-- G detect and handle or classify (un)expected errors or patterns
-- G evaluate current proxy provider and/or IP through a remote API
-- G report errors and error details to a monitoring channel (maybe)
+- Login
+  - G obtain data from a remote resource (e.g. list of targets with credentials)
+  - G decrypt secrets using local private key
+  - T prepare target website for a login attempt
+  - T trigger login action using decrypted credentials
+  - G approximate user location using a remote API
+  - G query national holiday information from a remote API
+  - G request more details for multi-factor authentication
+  - T utilize additional details (OTP) and handle the MFA
+  - G detect and handle login errors or expected patterns
+  - G report validity of credentials to a remote endpoint
+  - G store encrypted input and entry ID to local dataset
+- Payment
+  - T prepare user account to desired starting point (e.g. profile selection)
+  - G reuse MFA channel with remote consumer to optimize profile selection (maybe)
+  - T prepare user account for desired automation objective (e.g. insurance payment)
+  - T obtain vital payment information from target (e.g. name, due date, payment amount)
+  - G report payment details to remote endpoint for internal pairing and real-time verification
+  - G obtain payment confirmation code from remote automation consumer (e.g. payment issuer)
+  - T apply payment confirmation details obtained in real time to the automation process
+  - G prompt payment details with live agent for visual inspection and interaction
+  - G abort automation prematurely based on input or real-time interaction (optional)
+  - T finish automation objective (e.g. by confirming payment details and action)
+  - T verify success of automation objective or assume error otherwise
+  - G store a backup of output and payment confirmation to long-term storage
+  - G report automation result to remote infrastructure in real time (mobile app)
+  - T detect and handle or classify target-specific errors (maybe)
+  - G detect and handle or classify (un)expected errors or patterns
+  - G evaluate current proxy provider and/or IP through a remote API
+  - G report errors and error details to a monitoring channel (maybe)
 
-G - generic steps
+G - generic steps\
 T - target-specific steps
 
 ### Documentation
@@ -110,7 +112,7 @@ Curiously enough, the automation framework aims to automate many processes relat
 Control entire automation process dynamically at each step based on current context and result of the preceeding step(s). Report each step and its status in real time to remote endpoints. Support granular precision retry of each individual step with optional real-time input. Produce a sequence of verbose logs with performed actions and capture debug buffers for each step and/or the final result. Maintain and keep-alive a pool of working proxy IPs for each individual target. Provide convenient tools for efficient development and maintenance of automations. And more...
 
 ### Robot 
-### [Setup](#setup) > [Scope](#scope)/[Target](#target) > [Context](#context) > [Tasks](#tasks) > [Steps](#steps)
+### [Setup](#setup) > [Scope](#scope)/[Target](#target) > [Context](#context) > [Tasks](#task) > [Steps](#steps)
 
 > Robot takes single `steps` optionally grouped in `scope` and uses shared `tools` 
 to accomplish preset `tasks` defined in global `setup` within its runtime `context`
@@ -274,9 +276,12 @@ More information in type definitions and inline documentation (WIP)
 ### Demo
 ```
 class Target extends Robot.Target {
-    [tasks.login] = ({page, human, ...context}) => ({
+    [tasks.login] = ({page, human}) => ({
         [steps.prepareTarget]: async (context) => {
-            await page.waitForFunction(() => window.location.href === PREDICATES.login);
+            await Promise.all([
+                page.gotoDom(URLS.login),
+                page.waitForResponse(PREDICATES.start)
+            ])
             ...
             return OUTPUTS.targetPrepared;
         },
