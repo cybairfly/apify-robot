@@ -30,6 +30,13 @@ export interface RobotContext {
         stealth: Boolean
     },
     output: Object,
+    task: Object,
+    step: {
+        attachOutput: (output: Object) => Object;
+        output: {
+            attach: (output: Object) => Object
+        }
+    },
     page: Page,
     human: Human | undefined,
     pools: {
