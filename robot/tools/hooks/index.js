@@ -28,7 +28,7 @@ const initTrafficFilter = async (page, domain, options) =>
 const initEventLogger = (page, domain, input, options = {}) => {
     const urlLoggerBound = urlLogger.bind(null, page);
     const responseErrorLoggerBound = responseErrorLogger.bind(null, domain);
-    page.on(EVENTS.domcontentloaded, urlLoggerBound);
+    page.on(EVENTS.framenavigated, urlLoggerBound);
     page.on(EVENTS.response, responseErrorLoggerBound);
     page.on(EVENTS.domcontentloaded, () => log.default(centerHeader({string: EVENTS.domcontentloaded, padder: '○'})));
     page.on(EVENTS.load, () => log.default(centerHeader({string: EVENTS.load, padder: '●'})));

@@ -188,6 +188,7 @@ const DEFAULT_OPTIONS = {
 const EVENTS = {
     console: 'console',
     dialog: 'dialog',
+    framenavigated: 'framenavigated',
     domcontentloaded: 'domcontentloaded',
     error: 'error',
     load: 'load',

@@ -1,5 +1,6 @@
+const {EVENTS} = require('../../consts');
 const log = require('../../logger');
-const {urlParamsToEllipsis} = require('../generic');
+const {urlParamsToEllipsis, centerHeader} = require('../generic');
 
 const abortRoute = (route, domain, options) => {
     const {fullUrls = false, hostOnly = false, hideFilter = false} = options.debug.traffic;
@@ -25,8 +26,9 @@ const abortRoute = (route, domain, options) => {
 };
 
 const urlLogger = async page => {
-    const lastUrl = await page.evaluate(() => window.location.href).catch(() => null);
-    if (lastUrl) console.log({lastUrl});
+    const url = await page.evaluate(() => window.location.href).catch(() => null);
+    log.default(centerHeader({string: EVENTS.framenavigated, padder: '›'}));
+    if (url) log.default({url});
 };
 
 // TODO merge with handlers
