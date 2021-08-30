@@ -204,7 +204,7 @@ class Robot {
                 this.retryIndex++;
 
                 log.exception(error);
-                log.default('◄'.repeat(100));
+                log.default('_'.repeat(100));
                 log.info(`RETRY [R-${this.retryCount}]`);
                 log.default('◄'.repeat(100));
 
@@ -386,7 +386,7 @@ class Robot {
             this.task.model = Object.freeze(task);
             this.syncContext.task(this.task);
 
-            log.default('■'.repeat(100));
+            log.default('_'.repeat(100));
             log.info(`TASK [${task.name}]`);
             log.default('■'.repeat(100));
 
@@ -410,7 +410,7 @@ class Robot {
                 this.step.model = Object.freeze(step);
                 this.syncContext.step(this.step);
 
-                log.default('▬'.repeat(100));
+                log.default('_'.repeat(100));
                 log.info(`TASK [${task.name}] ► STEP [${step.name}]`);
                 log.default('▬'.repeat(100));
 
@@ -530,7 +530,7 @@ class Robot {
                         });
                 }
 
-                log.default('='.repeat(100));
+                log.default('_'.repeat(100));
                 log.info(`TASK [${task.name}] ► STEP [${step.name}] ➜ OUTPUT`);
                 log.default('='.repeat(100));
                 log.default(this.step.output);
