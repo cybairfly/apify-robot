@@ -117,6 +117,7 @@ class Errors {
     timeout = {
         PageLoad: class extends this.Timeout { },
         Response: class extends this.Timeout { },
+        Selector: class extends this.Timeout { },
     }
 
     Verification = class extends RobotError {
