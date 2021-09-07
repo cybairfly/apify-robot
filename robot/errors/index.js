@@ -10,8 +10,8 @@ const RobotError = require('./robot.error');
 /**
  * Dictionary of custom errors for the robot
  * Basic error: class extends RobotError {};
- * Child error: class extends this.super {};
- * Extra error: class extends this.super {
+ * Child error: class extends this.Super {};
+ * Extra error: class extends this.Super {
         constructor(options = {}) {
             super(options);
             ...
@@ -20,47 +20,47 @@ const RobotError = require('./robot.error');
  */
 class Errors {
     Access = class extends RobotError {
-        message = 'Access issue on requested resource';
+        message = this.message || 'Access issue on requested resource';
     }
 
     access = {
         Blocked: class extends this.Access {
-            message = 'Access has been blocked';
+            message = this.message || 'Access has been blocked';
         },
         Captcha: class extends this.Access {
-            message = 'Access has been blocked by captcha';
+            message = this.message || 'Access has been blocked by captcha';
         },
         MultiFactor: class extends this.Access {
-            message = 'Multifactor authentication required';
+            message = this.message || 'Multifactor authentication required';
         },
         RateLimit: class extends this.Access {
-            message = 'Resource has been rate limited';
+            message = this.message || 'Resource has been rate limited';
         },
     }
 
     Login = class extends RobotError {
-        message = 'Error occured during login attempt';
+        message = this.message || 'Error occured during login attempt';
     }
 
     login = {
         Authentication: class extends this.Login {
-            message = 'Login failed using provided credentials';
+            message = this.message || 'Login failed using provided credentials';
         },
         InvalidUsername: class extends this.Login {
-                message = 'Login failed using provided username';
+                message = this.message || 'Login failed using provided username';
         },
         InvalidPassword: class extends this.Login {
-                message = 'Login failed using provided password';
+                message = this.message || 'Login failed using provided password';
         },
     }
 
     Network = class extends RobotError {
-        message = 'Network layer error (check proxy)';
+        message = this.message || 'Network layer error (check proxy)';
     }
 
     network = {
         ConnectionAborted: class extends this.Network {
-            message = 'Connection aborted by target';
+            message = this.message || 'Connection aborted by target';
         },
     }
 
@@ -135,20 +135,20 @@ class Errors {
     }
 
     Timeout = class extends RobotError {
-        message = 'Timeout during requested action';
+        message = this.message || 'Timeout during requested action';
     }
 
     timeout = {
         PageLoad: class extends this.Timeout {
-            message = 'Page failed to load within timeout';
+            message = this.message || 'Page failed to load within timeout';
         },
         Response: class extends this.Timeout {
-            message = 'Failed to receive expected response before timeout';
+            message = this.message || 'Failed to receive expected response before timeout';
         },
     }
 
     Verification = class extends RobotError {
-        message = 'Failed to verify result success';
+        message = this.message || 'Failed to verify result success';
     }
 
     RetryLogin = class extends RobotError {
@@ -163,7 +163,7 @@ class Errors {
     }
 
     Unknown = class extends RobotError {
-        message = 'ATTENTION --- UNKNOWN ERROR DETECTED!';
+        message = this.message || 'ATTENTION --- UNKNOWN ERROR DETECTED!';
     }
 
     ProcessPatterns = class extends RobotError {
