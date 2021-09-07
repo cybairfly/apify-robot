@@ -19,49 +19,27 @@ const RobotError = require('./robot.error');
     }
  */
 class Errors {
-    Access = class extends RobotError {
-        message = this.message || 'Access issue on requested resource';
-    }
+    Access = class extends RobotError { }
 
     access = {
-        Blocked: class extends this.Access {
-            message = this.message || 'Access has been blocked';
-        },
-        Captcha: class extends this.Access {
-            message = this.message || 'Access has been blocked by captcha';
-        },
-        MultiFactor: class extends this.Access {
-            message = this.message || 'Multifactor authentication required';
-        },
-        RateLimit: class extends this.Access {
-            message = this.message || 'Resource has been rate limited';
-        },
+        Blocked: class extends this.Access { },
+        Captcha: class extends this.Access { },
+        MultiFactor: class extends this.Access { },
+        RateLimit: class extends this.Access { },
     }
 
-    Login = class extends RobotError {
-        message = this.message || 'Error occured during login attempt';
-    }
+    Login = class extends RobotError { }
 
     login = {
-        Authentication: class extends this.Login {
-            message = this.message || 'Login failed using provided credentials';
-        },
-        InvalidUsername: class extends this.Login {
-                message = this.message || 'Login failed using provided username';
-        },
-        InvalidPassword: class extends this.Login {
-                message = this.message || 'Login failed using provided password';
-        },
+        Authentication: class extends this.Login { },
+        InvalidUsername: class extends this.Login { },
+        InvalidPassword: class extends this.Login { },
     }
 
-    Network = class extends RobotError {
-        message = this.message || 'Network layer error (check proxy)';
-    }
+    Network = class extends RobotError { }
 
     network = {
-        ConnectionAborted: class extends this.Network {
-            message = this.message || 'Connection aborted by target';
-        },
+        ConnectionAborted: class extends this.Network { },
     }
 
     Retry = class extends RobotError {
@@ -134,17 +112,11 @@ class Errors {
         },
     }
 
-    Timeout = class extends RobotError {
-        message = this.message || 'Timeout during requested action';
-    }
+    Timeout = class extends RobotError { }
 
     timeout = {
-        PageLoad: class extends this.Timeout {
-            message = this.message || 'Page failed to load within timeout';
-        },
-        Response: class extends this.Timeout {
-            message = this.message || 'Failed to receive expected response before timeout';
-        },
+        PageLoad: class extends this.Timeout { },
+        Response: class extends this.Timeout { },
     }
 
     Verification = class extends RobotError {
