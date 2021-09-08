@@ -28,7 +28,7 @@ const {
 
 const log = require('../../logger');
 const {TIMEOUTS} = require('../../consts');
-const {RobotError, errors} = require('../../errors');
+const {CustomError} = require('../../errors');
 const {getInnerText} = require('../../tools/generic');
 
 const getPageUrl = async page => page.evaluate(() => window.location.href).catch(error => null);
@@ -181,6 +181,10 @@ const foundSearchPattern = (text, searchPatterns) =>
 
 const verifyResult = ({selector, contents}) => {
     const $element = document.querySelector(selector);
+
+    if (!$element)
+        return false;
+
     const elementText = $element.innerText;
 
     return (Array.isArray(contents) ? contents : [contents])
