@@ -28,7 +28,7 @@ const { notifyChannel, shouldNotify } = require('./tools/notify');
 const { transformTasks, resolveTaskTree } = require('./tools/tasks');
 const { getTargetUrl, parseTargetDomain } = require('./tools/target');
 const { decoratePage, initEventLogger, initTrafficFilter } = require('./tools/hooks');
-const { getSessionId } = require('./tools/session');
+const { getSessionId, persistSessionPoolMaybe } = require('./tools/session');
 const { getLocation, getProxyConfig } = require('./tools/proxy');
 const { getBrowserPool, getStealthPage } = require('./pools');
 const { startServer } = require('./tools/server');
@@ -150,7 +150,7 @@ class Robot {
         if (typeof input !== 'object' || input === null)
             throw Error('Task input missing in actor input: input<object>');
 
-        if (typeof tasks !== 'string' && !Array.isArray(tasks) || !tasks.length)
+        if ((typeof tasks !== 'string' && !Array.isArray(tasks)) || !tasks.length)
             throw Error('Task missing in actor input: tasks<array>');
 
         this.input = input;
@@ -669,25 +669,6 @@ class Robot {
         throw error;
     };
 
-    persistSessionPoolMaybe = async ({sessionPool, session, options} = this) => {
-        // TODO maybe update in newer version of session pool
-        // const originalSession = sessionPool.sessionMap.get(session.id);
-        const originalSession = sessionPool.sessions.find(originalSession => originalSession.id === session.id);
-        const poolHasVacancy = sessionPool.sessions.length < options.sessionPool.maxPoolSize;
-        const doPersistState = originalSession || poolHasVacancy;
-        if (doPersistState) {
-            sessionPool.sessions = originalSession ? [
-                ...sessionPool.sessions.filter(originalSession => originalSession.id !== session.id),
-                session,
-            ] : [
-                ...sessionPool.sessions,
-                session,
-            ];
-
-            await sessionPool.persistState();
-        }
-    }
-
     stop = async ({browserPool, sessionPool, browser, options, session, human, server, page, error, input} = this) => {
         this.syncContext.page(null);
 
@@ -731,7 +712,7 @@ class Robot {
             }
 
             this.sessionPool = await openSessionPool(this.originalSessionPoolOptions);
-            await this.persistSessionPoolMaybe(this);
+            await persistSessionPoolMaybe(this);
         }
 
         // TODO merge w/ session pool logic
