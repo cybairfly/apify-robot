@@ -90,7 +90,7 @@ const DEFAULT_OPTIONS = {
 
     browserPool: {
         disable: false,
-        options: {
+        plugins: {
             launchOptions: {
                 headless: Apify.isAtHome(),
             },
