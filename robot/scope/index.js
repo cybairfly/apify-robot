@@ -175,8 +175,8 @@ class Scope {
 
         // TODO fire custom event
         // TODO fire websocket event
-        log.default('_'.repeat(100));
-        log.info(`NEXT [${text}]`);
+        log.default(' '.repeat(100));
+        log.default(`NEXT [${text}]`);
         log.default('-'.repeat(100));
     }
 }

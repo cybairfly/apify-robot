@@ -6,8 +6,9 @@ const handlers = require('./handlers');
 
 const {
     abortRoute,
-    responseErrorLogger,
     urlLogger,
+    preloadUrlLogger,
+    responseErrorLogger,
 } = require('./tools');
 
 const {centerHeader} = require('../generic');
@@ -27,12 +28,15 @@ const initTrafficFilter = async (page, domain, options) =>
     });
 
 const initEventLogger = ({page, domain, input, options}) => {
-    const urlLoggerBound = urlLogger.bind(null, page);
+    const urlLoggerPreloaded = preloadUrlLogger(page, {debug: input.debug});
     const responseErrorLoggerBound = responseErrorLogger.bind(null, domain);
-    page.on(EVENTS.framenavigated, urlLoggerBound);
+    page.on(EVENTS.framenavigated, urlLoggerPreloaded);
     page.on(EVENTS.response, responseErrorLoggerBound);
-    page.on(EVENTS.domcontentloaded, () => log.console.debug(centerHeader({string: EVENTS.domcontentloaded, padder: '○'})));
-    page.on(EVENTS.load, () => log.console.debug(centerHeader({string: EVENTS.load, padder: '●'})));
+
+    if (input.debug) {
+        page.on(EVENTS.domcontentloaded, () => log.default(centerHeader({string: EVENTS.domcontentloaded, padder: '○'})));
+        page.on(EVENTS.load, () => log.default(centerHeader({string: EVENTS.load, padder: '●'})));
+    }
 
     if (input.debug && options.debug.traffic.enable) {
         const domainRegex = new RegExp(`//[^/]*${domain}[.].*/`, 'i');

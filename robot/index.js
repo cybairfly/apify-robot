@@ -224,8 +224,8 @@ class Robot {
                 this.retryIndex++;
 
                 log.exception(error);
-                log.default('_'.repeat(100));
-                log.info(`RETRY [R-${this.retryCount}]`);
+                log.default(' '.repeat(100));
+                log.default(`RETRY [R-${this.retryCount}]`);
                 log.default('◄'.repeat(100));
 
                 this.error = null;
@@ -281,9 +281,15 @@ class Robot {
         this.proxyConfig = await getProxyConfig(this);
         this.output = (setup.OutputSchema && setup.OutputSchema({input})) || {};
         this.output = await this.retry(this);
-
         await saveOutput(this);
-        log.default({OUTPUT: this.output});
+
+        const OUTPUT = filterOutput(this.output);
+        log.default(' '.repeat(100));
+        log.default('OUTPUT');
+        log.default('='.repeat(100));
+        log.default(OUTPUT);
+        log.default(' ');
+
         await this.stop();
     }
 
@@ -346,7 +352,7 @@ class Robot {
         }
 
         if (debug) {
-            this.proxyIp = getProxyIp(page);
+            this.proxyIp = await getProxyIp(page);
             log.console.debug({proxyIp: this.proxyIp});
         }
 
@@ -397,8 +403,8 @@ class Robot {
             this.task.model = Object.freeze(task);
             this.syncContext.task(this.task);
 
-            log.default('_'.repeat(100));
-            log.info(`TASK [${task.name}]`);
+            log.default(' '.repeat(100));
+            log.default(`TASK [${task.name}]`);
             log.default('■'.repeat(100));
 
             this.task.init = !task.init || task.init(context);
@@ -421,8 +427,8 @@ class Robot {
                 this.step.model = Object.freeze(step);
                 this.syncContext.step(this.step);
 
-                log.default('_'.repeat(100));
-                log.info(`TASK [${task.name}] ► STEP [${step.name}]`);
+                log.default(' '.repeat(100));
+                log.default(`TASK [${task.name}] ► STEP [${step.name}]`);
                 log.default('▬'.repeat(100));
 
                 this.step.init = !step.init || step.init(context);
@@ -541,10 +547,11 @@ class Robot {
                         });
                 }
 
-                log.default('_'.repeat(100));
-                log.info(`TASK [${task.name}] ► STEP [${step.name}] ➜ OUTPUT`);
+                log.default(' '.repeat(100));
+                log.default(`TASK [${task.name}] ► STEP [${step.name}] ➜ OUTPUT`);
                 log.default('='.repeat(100));
                 log.default(this.step.output);
+                log.default(' ');
 
                 if (this.step.output && typeof this.step.output !== 'object') {
                     log.join.warning('STEP ignoring step output (not an object)', output);

@@ -25,11 +25,16 @@ const abortRoute = (route, domain, options) => {
     return route.abort();
 };
 
-const urlLogger = async page => {
+const urlLogger = (page, {debug}) => async () => {
     const url = await page.evaluate(() => window.location.href).catch(() => null);
-    log.console.debug(centerHeader({string: EVENTS.framenavigated, padder: '›'}));
+
+    if (debug)
+        log.default(centerHeader({string: EVENTS.framenavigated, padder: '›'}));
+
     if (url) log.default({url});
 };
+
+const preloadUrlLogger = (page, options) => urlLogger(page, options);
 
 // TODO merge with handlers
 const responseErrorLogger = async (domain, response) => {
@@ -57,5 +62,6 @@ const responseErrorLogger = async (domain, response) => {
 module.exports = {
     abortRoute,
     urlLogger,
+    preloadUrlLogger,
     responseErrorLogger,
 };
