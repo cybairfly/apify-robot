@@ -153,6 +153,8 @@ const saveOutput = async ({page, name, input, output: currentOutput, retryCount,
     return output;
 };
 
+const filterOutput = output => Object.fromEntries(Object.entries(output).filter(([key, value]) => value));
+
 const flushAsyncQueueCurry = queue => async () => Promise.all(queue);
 
 module.exports = {
@@ -164,5 +166,6 @@ module.exports = {
     saveOutput,
     savePageContent,
     saveScreenshot,
+    filterOutput,
     flushAsyncQueueCurry,
 };
