@@ -144,6 +144,12 @@ class RobotSetup {
             },
         },
 
+        /* standalone w/o browser pool & fpgen stealth support */
+        launchContext: {
+            playwright: {},
+            puppeteer: {},
+        },
+
         /* https://sdk.apify.com/docs/api/apify#launchpuppeteer */
         launchPuppeteer: {},
     };

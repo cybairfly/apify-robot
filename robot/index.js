@@ -290,25 +290,32 @@ class Robot {
         return this.tasks;
     }
 
-    initPage = async ({input, input: {block, debug, prompt, target, server, stealth}, page = null, session, setup, options, proxyConfig} = this) => {
-        const url = getTargetUrl(setup, target);
-        const domain = parseTargetDomain(url, target);
-        if (!this.isRetry && url) log.default({url});
-
+    initPage = async ({input: {block, debug}, page = null, domain, options} = this) => {
         if (!page) {
             if (!this.options.browserPool.disable) {
                     this.browserPool = await getBrowserPool(this);
                     this.page = page = await this.browserPool.newPage();
-
-                if (block)
-                    initTrafficFilter(page, domain, options);
             } else {
-                const proxyUrl = this.proxyConfig.newUrl(this.sessionId);
-                const options = {...this.options.launchPuppeteer, proxyUrl};
-                this.browser = await Apify.launchPuppeteer(options);
+                this.browser = await getBrowser(this);
+
+                if (options.library.puppeteer)
                 [page] = await this.browser.pages();
+                else {
+                    const [context] = this.browser.contexts();
+                    [page] = context.pages();
+                }
+
                 this.page = page;
             }
+        }
+
+        if (block) {
+            // TODO full support for traffic filters in Puppeteer (interception mode)
+            if (options.library.puppeteer) {
+                log.warning('Traffic filters supported in limited mode for Puppeteer');
+                await Apify.utils.puppeteer.blockRequests(page, options.trafficFilter);
+            } else
+                initTrafficFilter(page, domain, options);
         }
 
         if (debug) {

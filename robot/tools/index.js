@@ -1,5 +1,15 @@
+/**
+ * @typedef {import('apify').Session} Session
+ * @typedef {import('apify').ProxyConfiguration} ProxyConfiguration
+ *
+ * @typedef {import('../types').Robot} Robot
+ * @typedef {import('../types').input} input
+ * @typedef {import('../types').options} options
+ */
+
 const Apify = require('apify');
 const path = require('path');
+const playwright = require('playwright');
 
 const log = require('../logger');
 
@@ -32,6 +42,28 @@ const tryRequire = {
             return false;
         }
     },
+};
+
+/**
+ * Launch standalone browser
+ * @param {options} options
+ * @param {Session} session
+ * @param {ProxyConfiguration} proxyConfig
+ * @returns {Promise<*>}
+ */
+const getBrowser = async ({options, session, proxyConfig}) => {
+    const launchContext = options.library.puppeteer ?
+        options.launchContext.puppeteer :
+        options.launchContext.playwright;
+
+    launchContext.proxyUrl = launchContext.proxyUrl || proxyConfig.newUrl(session.id);
+
+    if (options.library.playwright)
+        launchContext.launcher = playwright[options.browser || 'firefox'];
+
+    return options.library.puppeteer ?
+        Apify.launchPuppeteer(launchContext) :
+        Apify.launchPlaywright(launchContext);
 };
 
 const getPage = async options => {
@@ -121,12 +153,16 @@ const saveOutput = async ({page, name, input, output: currentOutput, retryCount,
     return output;
 };
 
+const flushAsyncQueueCurry = queue => async () => Promise.all(queue);
+
 module.exports = {
     tryRequire,
     getUserAgent,
+    getBrowser,
     getPage,
     parseDomain,
     saveOutput,
     savePageContent,
     saveScreenshot,
+    flushAsyncQueueCurry,
 };
