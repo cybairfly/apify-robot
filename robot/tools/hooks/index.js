@@ -31,8 +31,8 @@ const initEventLogger = ({page, domain, input, options}) => {
     const responseErrorLoggerBound = responseErrorLogger.bind(null, domain);
     page.on(EVENTS.framenavigated, urlLoggerBound);
     page.on(EVENTS.response, responseErrorLoggerBound);
-    page.on(EVENTS.domcontentloaded, () => log.default(centerHeader({string: EVENTS.domcontentloaded, padder: '○'})));
-    page.on(EVENTS.load, () => log.default(centerHeader({string: EVENTS.load, padder: '●'})));
+    page.on(EVENTS.domcontentloaded, () => log.console.debug(centerHeader({string: EVENTS.domcontentloaded, padder: '○'})));
+    page.on(EVENTS.load, () => log.console.debug(centerHeader({string: EVENTS.load, padder: '●'})));
 
     if (input.debug && options.debug.traffic.enable) {
         const domainRegex = new RegExp(`//[^/]*${domain}[.].*/`, 'i');

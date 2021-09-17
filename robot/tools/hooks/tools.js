@@ -27,7 +27,7 @@ const abortRoute = (route, domain, options) => {
 
 const urlLogger = async page => {
     const url = await page.evaluate(() => window.location.href).catch(() => null);
-    log.default(centerHeader({string: EVENTS.framenavigated, padder: '›'}));
+    log.console.debug(centerHeader({string: EVENTS.framenavigated, padder: '›'}));
     if (url) log.default({url});
 };
 
