@@ -297,14 +297,8 @@ class Robot {
 
         if (!page) {
             if (!this.options.browserPool.disable) {
-                // TODO unify through browser pool
-                if (stealth) {
-                    this.page = page = await getStealthPage(this);
-                    this.browser = this.page.context().browser();
-                } else {
                     this.browserPool = await getBrowserPool(this);
                     this.page = page = await this.browserPool.newPage();
-                }
 
                 if (block)
                     initTrafficFilter(page, domain, options);

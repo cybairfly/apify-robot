@@ -25,6 +25,17 @@ const TIMEOUTS = {
 };
 
 const DEFAULT_OPTIONS = {
+    library: {
+        // playwright: true,
+        // puppeteer: true,
+    },
+
+    browser: {
+        // firefox: true,
+        // chrome: true,
+        // webkit: true,
+    },
+
     crypto: {
         publicKey: {
             format: 'der',
@@ -41,6 +52,7 @@ const DEFAULT_OPTIONS = {
             padding: crypto.constants.RSA_PKCS1_PADDING,
         },
     },
+
     server: {
         interface: {
             useScreenshots: false,
@@ -75,17 +87,9 @@ const DEFAULT_OPTIONS = {
             // events: Object,
         },
     },
+
     browserPool: {
         disable: false,
-        browser: {
-            // firefox: true,
-            // chrome: true,
-            // webkit: true,
-        },
-        library: {
-            // playwright: true,
-            // puppeteer: true,
-        },
         options: {
             launchOptions: {
                 headless: Apify.isAtHome(),
@@ -114,11 +118,13 @@ const DEFAULT_OPTIONS = {
             },
         },
     },
+
     sessionPool: {
         sessionOptions: {
             maxAgeSecs: 24 * 60 * 60,
         },
     },
+
     trafficFilter: {
         resources: [
             // 'document',
@@ -167,6 +173,7 @@ const DEFAULT_OPTIONS = {
             ],
         },
     },
+
     launchPuppeteer: {
         randomUserAgent: false,
         headless: true,

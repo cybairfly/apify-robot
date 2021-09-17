@@ -106,8 +106,8 @@ const RobotOptions = ({ input: {browser, block, session, proxyConfig }, input, s
     }
 
     if (browser) {
-        options.browserPool.browser = {};
-        options.browserPool.browser[browser] = true;
+        options.browser = {};
+        options.browser[browser] = true;
     }
 
     if (block)

@@ -91,6 +91,15 @@ export interface options {
             hideFilter: boolean,
         }
     },
+    library: {
+        playwright: boolean,
+        puppeteer: boolean,
+    },
+    browser: {
+        firefox: boolean,
+        chromium: boolean,
+        webkit: boolean,
+    },
     notify: {
         details: boolean,
         slack: boolean,
@@ -108,5 +117,42 @@ export interface options {
         websocket: {
             enable: boolean
         }
-    }
+    },
+    browserPool: {
+        disable: boolean,
+        plugins: {
+            useIncognitoPages: boolean,
+            launchOptions: {
+                headless: boolean,
+                devtools: boolean,
+            },
+        },
+        fpgen: {
+            devices: Array<string>,
+            browsers: Array<Object>,
+            operatingSystems: Array<string>,
+        },
+        hooks: {
+        // preLaunchHooks: null,
+        // postLaunchHooks: null,
+        // prePageCreateHooks: null,
+        // postPageCreateHooks: null,
+        // prePageCloseHooks: null,
+        // postPageCloseHooks: null,
+            browser: {
+                before: Function,
+                after: Function,
+            },
+            page: {
+                before: {
+                    open: Function,
+                    close: Function,
+                },
+                after: {
+                    open: Function,
+                    close: Function,
+                },
+            },
+        },
+    },
 }

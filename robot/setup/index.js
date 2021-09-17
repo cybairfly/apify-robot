@@ -34,6 +34,19 @@ class RobotSetup {
     /* robot options (global setup) */
     /* runtime priority: target setup > global setup > default options */
     options = {
+        /* lower level automation library */
+        library: {
+            // playwright: true,
+            // puppeteer: true,
+        },
+
+        /* browser utilized for automation */
+        browser: {
+            // firefox: true,
+            // chrome: true,
+            // webkit: true,
+        },
+
         /* notify these channels of errors */
         notify: {
             details: true,
@@ -68,20 +81,23 @@ class RobotSetup {
             },
         },
 
+        /* https://github.com/apify/browser-pool#new_BrowserPool_new */
         browserPool: {
-            // disable: false,
-            browser: {
-                // firefox: true,
-                // chrome: true,
-                // webkit: true,
-            },
-            library: {
-                // playwright: true,
-                // puppeteer: true,
-            },
-            options: {
+            /* standalone browser with no support for stealth hooks */
+            // disable: Boolean,
+
+            /* https://github.com/apify/browser-pool#browserplugin */
+            plugins: {
                 // launchOptions: {},
             },
+
+            fpgen: {
+                // devices: [String],
+                // browsers: [Object],
+                // operatingSystems: [String],
+            },
+
+            /* https://github.com/apify/browser-pool#lifecycle-management-with-hooks */
             hooks: {
                 // preLaunchHooks: () => {},
                 // postLaunchHooks: () => {},
