@@ -12,6 +12,7 @@ const {
 
 const {centerHeader} = require('../generic');
 
+// TODO support Puppeteer?
 // TODO merge with debug mode
 // PW @ 1.9.0 - The handler will only be called for the first url if the response is a redirect.
 const initTrafficFilter = async (page, domain, options) =>
@@ -25,7 +26,7 @@ const initTrafficFilter = async (page, domain, options) =>
             route.continue();
     });
 
-const initEventLogger = (page, domain, input, options = {}) => {
+const initEventLogger = ({page, domain, input, options}) => {
     const urlLoggerBound = urlLogger.bind(null, page);
     const responseErrorLoggerBound = responseErrorLogger.bind(null, domain);
     page.on(EVENTS.framenavigated, urlLoggerBound);

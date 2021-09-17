@@ -17,6 +17,13 @@ const Apify = require('apify');
  */
 const getLocation = async ({input, options}) => Apify.call(options.proxy.proximity.locationProviderId, {ip: input.ipAddress});
 
+const getProxyIp = async page => page.evaluate(async () =>
+// eslint-disable-next-line no-return-await
+    await fetch('https://api.ipify.org/?format=json')
+        .then(response => response.json())
+        .then(({ip}) => ip))
+    .catch(error => null);
+
 /** @param {Robot} */
 const getProxyConfig = async ({input: { proxyConfig = {} }, options, location, sessionId}) => {
     const builtProxyUrl = options.proxy.proximity.enable && buildProxyUrl(location);
@@ -58,5 +65,6 @@ const buildProxyUrl = location => {
 
 module.exports = {
     getLocation,
+    getProxyIp,
     getProxyConfig,
 };

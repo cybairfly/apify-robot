@@ -1,5 +1,8 @@
 /* eslint-disable lines-between-class-members */
 /**
+ * @typedef {import('apify').Session} Session
+ * @typedef {import('apify').ProxyConfiguration} ProxyConfiguration
+ *
  * @typedef {import('./types.d').Robot} Robot
  * @typedef {import('./types.d').RobotContext} RobotContext
  * @typedef {import('./types.d').input} input
@@ -29,11 +32,11 @@ const { transformTasks, resolveTaskTree } = require('./tools/tasks');
 const { getTargetUrl, parseTargetDomain } = require('./tools/target');
 const { decoratePage, initEventLogger, initTrafficFilter } = require('./tools/hooks');
 const { getSessionId, persistSessionPoolMaybe } = require('./tools/session');
-const { getLocation, getProxyConfig } = require('./tools/proxy');
+const { getLocation, getProxyConfig, getProxyIp } = require('./tools/proxy');
 const { getBrowserPool, getStealthPage } = require('./pools');
-const { startServer } = require('./tools/server');
+const { maybeStartServer } = require('./tools/server');
 const { syncContext } = require('./tools/context');
-const { saveOutput } = require('./tools');
+const { getBrowser, saveOutput, flushAsyncQueueCurry } = require('./tools');
 const { errors, RobotError } = require('./errors');
 const { CaptchaSolver } = require('./tools/captcha');
 const { centerHeader } = require('./tools/generic');
@@ -72,13 +75,21 @@ class Robot {
         this.browserPool = null;
         this.location = null;
         this.proxyIp = null;
-        /** @type options */
+
+        /** @type {ProxyConfiguration} */
+        this.proxyConfig = null;
+
+        /** @type {options} */
         this.options = null;
-        this.stealth = null;
+
+        /** @type {Session} */
         this.session = null;
+
+        this.stealth = null;
         this.sessionId = null;
         this.sessionPool = null;
         this.rotateSession = false;
+        this.domain = null;
         this.server = null;
         this.strategy = null;
 
@@ -89,7 +100,9 @@ class Robot {
         this.tasks = {};
         this.steps = {};
         this.errors = [];
+        this.asyncQueue = [];
 
+        this.flushAsyncQueue = flushAsyncQueueCurry(this.asyncQueue);
         this.retry = this.catch(this.retry);
         this.syncContext = syncContext(this);
     }
@@ -185,6 +198,13 @@ class Robot {
         return new Robot(this.input, this.setup);
     };
 
+    debug = page => async text => {
+        log.default(''.repeat(100));
+        log.info(`DEBUG [${text}]`);
+        log.default('-'.repeat(100));
+        await saveScreenshot({id, name, page, retryCount, store}) || null;
+    }
+
     catch = retry => async ({input} = this) => {
         try {
             return await retry(this);
@@ -219,8 +239,15 @@ class Robot {
         }
     };
 
-    retry = async () => {
+    retry = async ({input: {target}, setup}) => {
+        const url = getTargetUrl(setup, target);
+        this.domain = parseTargetDomain(url, target);
+        if (!this.isRetry && url) log.default({url});
+
         this.page = await this.initPage(this);
+        maybeStartServer(this);
+        decoratePage(this);
+        initEventLogger(this);
         this.context = await this.createContext(this);
         this.output = await this.handleTasks(this);
 
@@ -293,13 +320,13 @@ class Robot {
     initPage = async ({input: {block, debug}, page = null, domain, options} = this) => {
         if (!page) {
             if (!this.options.browserPool.disable) {
-                    this.browserPool = await getBrowserPool(this);
-                    this.page = page = await this.browserPool.newPage();
+                this.browserPool = await getBrowserPool(this);
+                this.page = page = await this.browserPool.newPage();
             } else {
                 this.browser = await getBrowser(this);
 
                 if (options.library.puppeteer)
-                [page] = await this.browser.pages();
+                    [page] = await this.browser.pages();
                 else {
                     const [context] = this.browser.contexts();
                     [page] = context.pages();
@@ -319,26 +346,9 @@ class Robot {
         }
 
         if (debug) {
-            const proxyIp = await page.evaluate(async () =>
-            // eslint-disable-next-line no-return-await
-                await fetch('https://api.ipify.org/?format=json')
-                    .then(response => response.json())
-                    .then(({ip}) => ip))
-                .catch(error => null);
-
-            this.proxyIp = proxyIp;
-            log.console.debug({proxyIp});
+            this.proxyIp = getProxyIp(page);
+            log.console.debug({proxyIp: this.proxyIp});
         }
-
-        if (block && this.options.browserPool.disable)
-            await Apify.utils.puppeteer.blockRequests(page, this.options.trafficFilter);
-
-        // const singleThread = setup.maxConcurrency === 1;
-        const shouldStartServer = !this.server && (prompt || (server && options.server.interface.enable));
-        this.server = this.server || (shouldStartServer && startServer(page, setup, options.server.interface));
-
-        decoratePage(this);
-        initEventLogger(page, domain, input, options);
 
         return page;
     };
@@ -379,7 +389,7 @@ class Robot {
         return this.context;
     }
 
-    handleTasks = async ({input, input: {target}, output, context, page, relay, setup, tasks} = this) => {
+    handleTasks = async ({input: {target}, output, context, page, setup, tasks} = this) => {
         log.default(centerHeader({string: `TARGET: ${target}`, padder: '◙'}));
 
         for (const task of tasks) {
@@ -642,15 +652,26 @@ class Robot {
         return error;
     }
 
-    handleError = async ({input, output, options, error, page, setup, sessionPool} = this) => {
+    handleError = async ({input, output, error, page, sessionPool} = this) => {
+        this.asyncQueue.push(this.stop());
+
         if (Object.keys(output).length)
             await saveOutput({input, output, page});
-
-        await this.stop();
 
         if (log.getLevel() === log.LEVELS.DEBUG)
             log.object.debug(error);
 
+        await this.reportError(this);
+
+        if (sessionPool)
+            await pingSessionPool(this);
+
+        await this.flushAsyncQueue();
+
+        throw error;
+    };
+
+    reportError = async ({input, output, options, error, setup} = this) => {
         if (shouldNotify({input, error, setup, options})) {
             await notifyChannel({input, output, error, options});
             console.error('■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■');
@@ -661,13 +682,6 @@ class Robot {
             console.error('Error in robot - please contact support to update configuration');
             console.error('■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■');
         }
-
-        if (sessionPool)
-            await pingSessionPool(this);
-
-        // workaround for log cut-off ^
-        await sleep(3 * 1000);
-        throw error;
     };
 
     stop = async ({browserPool, sessionPool, browser, options, session, human, server, page, error, input} = this) => {
