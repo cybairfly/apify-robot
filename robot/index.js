@@ -346,7 +346,9 @@ class Robot {
             // TODO full support for traffic filters in Puppeteer (interception mode)
             if (options.library.puppeteer) {
                 log.warning('Traffic filters supported in limited mode for Puppeteer');
-                await Apify.utils.puppeteer.blockRequests(page, options.trafficFilter);
+                await Apify.utils.puppeteer.blockRequests(page, {urlPatterns: [
+                    ...options.trafficFilter.urlPatterns,
+                ]});
             } else
                 initTrafficFilter(page, domain, options);
         }
