@@ -1,7 +1,7 @@
 /**
- * @typedef {import('../types').Robot} Robot
- * @typedef {import('../types').input} input
- * @typedef {import('../types').options} options
+ * @typedef {import('../../types').Robot} Robot
+ * @typedef {import('../../types').input} input
+ * @typedef {import('../../types').options} options
  */
 
 const puppeteer = require('puppeteer');
@@ -14,7 +14,7 @@ const FingerprintInjector = require('@apify-packages/fingerprint-injector');
 
 /**
  * Get browser pool with custom hooks & options
- * @param {import('../types').Robot}
+ * @param {import('../../types').Robot}
  */
 const getBrowserPool = async ({input: {stealth}, options, proxyConfig: proxyConfiguration, session, sessionId}) => {
     const hooks = initHooks(options.browserPool.hooks);
