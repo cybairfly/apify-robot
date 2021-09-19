@@ -2,11 +2,13 @@
 // Useful for debugging
 
 async function trackPointer(page) {
-    await page.addInitScript(pointerTracker).catch(async error => {
-        await page.evaluateOnNewDocument(pointerTracker).catch(error => {
+    try {
+        page.addInitScript(pointerTracker);
+    } catch (error) {
+        page.evaluateOnNewDocument(pointerTracker).catch(error => {
             console.log('Failed to inject pointer tracker');
         });
-    });
+    }
 }
 
 const pointerTracker = () => {
