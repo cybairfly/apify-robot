@@ -36,14 +36,13 @@ const { getLocation, getProxyConfig, getProxyIp } = require('./tools/proxy');
 const { getBrowserPool, getStealthPage } = require('./tools/stealth');
 const { maybeStartServer } = require('./tools/server');
 const { syncContext } = require('./tools/context');
-const { getBrowser, saveOutput, filterOutput, flushAsyncQueueCurry } = require('./tools');
 const { errors, RobotError } = require('./errors');
 const { CaptchaSolver } = require('./tools/captcha');
 const { centerHeader } = require('./tools/generic');
 const { openSessionPool, pingSessionPool } = require('./tools/session/sessionPool');
 const { getBrowser, saveOutput, curryDebug, filterOutput, flushAsyncQueueCurry } = require('./tools');
 
-const {preloadMatchPattern, preloadIteratePatterns} = require('./public/tools');
+const {preloadMatchPattern, preloadIteratePatterns} = require('./public/tools/patterns');
 const consts = require('./public/consts');
 const tools = require('./public/tools');
 
