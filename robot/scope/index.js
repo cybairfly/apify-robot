@@ -32,6 +32,7 @@ class Scope {
         this.state = context.state;
         this.tools = context.tools;
 
+        this.debug = context.tools.debug;
         this.matchPattern = context.tools.matchPattern;
         this.iteratePatterns = context.tools.iteratePatterns;
 

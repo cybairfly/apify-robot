@@ -1,16 +1,13 @@
 /**
  * @typedef {import('playwright').Page} page
- * @typedef {import('./types').pattern} pattern
- * @typedef {import('./types').patternType} patternType
- * @typedef {import('./types').patternShape} patternShape
- * @typedef {import('./types').matchPattern} matchPattern
- * @typedef {import('./types').iteratePatterns} iteratePatterns
+ * @typedef {import('./types').debug} debug
  */
 const Apify = require('apify');
 const pptrTools = require('./pptr');
 
 const {
     tryRequire,
+    curryDebug,
     saveOutput,
     savePageContent,
     saveScreenshot,
@@ -32,7 +29,9 @@ const {CustomError} = require('../../errors');
 const {getInnerText} = require('../../tools/generic');
 
 const getPageUrl = async page => page.evaluate(() => window.location.href).catch(error => null);
-const sortByList = (list, array) => array.sort((a, b) => list.indexOf(a) - list.indexOf(b));
+
+/** @type {debug} */
+const debug = async (page, name) => curryDebug(null)(page)(name);
 
 /**
  * Attempts login with provided details and inputs.
@@ -196,6 +195,7 @@ module.exports = {
     ...pptrTools,
     log,
     tryRequire,
+    debug,
     login,
     decrypt,
     decryptObject,

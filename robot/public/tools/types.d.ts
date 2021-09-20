@@ -1,5 +1,13 @@
 import {Page} from 'playwright';
 
+export interface debug {
+    /**
+     * Capture optionally named debug buffers to store on demand
+     * @param {string} [name]
+     */
+     (name?: string): undefined;
+}
+
 export interface matchPattern {
     /**
      * Match exact pattern shape by selector and expected contents

@@ -44,6 +44,15 @@ const tryRequire = {
     },
 };
 
+const curryDebug = (input = {}) => page => async name => {
+    if (!input.debug) return;
+    log.default(' '.repeat(100));
+    log.default(`DEBUG [${name || '<anonymous>'}]`);
+    log.default('-'.repeat(100));
+    await saveScreenshot({name: `DEBUG${name ? `-${name}` : ''}`, page});
+    await savePageContent({name: `DEBUG${name ? `-${name}` : ''}`, page});
+};
+
 /**
  * Launch standalone browser
  * @param {options} options
@@ -159,6 +168,7 @@ const flushAsyncQueueCurry = queue => async () => Promise.all(queue);
 
 module.exports = {
     tryRequire,
+    curryDebug,
     getUserAgent,
     getBrowser,
     getPage,

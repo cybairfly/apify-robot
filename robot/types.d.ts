@@ -2,7 +2,7 @@ import {SessionPool} from 'apify';
 import {BrowserPool} from 'browser-pool';
 import {Page} from 'playwright';
 import Human from './human';
-import {iteratePatterns, matchPattern} from './public/tools/types.d';
+import {debug, iteratePatterns, matchPattern} from './public/tools/types.d';
 
 export {iteratePatterns, matchPattern};
 
@@ -59,6 +59,7 @@ export interface RobotContext {
     },
     state: Object,
     tools: {
+        debug: debug,
         matchPattern: matchPattern,
         iteratePatterns: iteratePatterns
     }

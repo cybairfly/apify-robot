@@ -41,6 +41,7 @@ const { errors, RobotError } = require('./errors');
 const { CaptchaSolver } = require('./tools/captcha');
 const { centerHeader } = require('./tools/generic');
 const { openSessionPool, pingSessionPool } = require('./tools/session/sessionPool');
+const { getBrowser, saveOutput, curryDebug, filterOutput, flushAsyncQueueCurry } = require('./tools');
 
 const {preloadMatchPattern, preloadIteratePatterns} = require('./public/tools');
 const consts = require('./public/consts');
@@ -197,13 +198,6 @@ class Robot {
 
         return new Robot(this.input, this.setup);
     };
-
-    debug = page => async text => {
-        log.default(''.repeat(100));
-        log.info(`DEBUG [${text}]`);
-        log.default('-'.repeat(100));
-        await saveScreenshot({id, name, page, retryCount, store}) || null;
-    }
 
     catch = retry => async ({input} = this) => {
         try {
@@ -380,6 +374,7 @@ class Robot {
                 listen: 'placeholder',
             },
             tools: {
+                debug: curryDebug(input)(page),
                 matchPattern: preloadMatchPattern(page),
                 iteratePatterns: preloadIteratePatterns(page),
             },
