@@ -11,7 +11,7 @@ const {
     responseErrorLogger,
 } = require('./tools');
 
-const {centerHeader} = require('../generic');
+const {createHeader} = require('../generic');
 
 // TODO support Puppeteer?
 // TODO merge with debug mode
@@ -34,8 +34,8 @@ const initEventLogger = ({page, domain, input, options}) => {
     page.on(EVENTS.response, responseErrorLoggerBound);
 
     if (input.debug) {
-        page.on(EVENTS.domcontentloaded, () => log.default(centerHeader({string: EVENTS.domcontentloaded, padder: '○'})));
-        page.on(EVENTS.load, () => log.default(centerHeader({string: EVENTS.load, padder: '●'})));
+        page.on(EVENTS.domcontentloaded, () => log.default(createHeader(EVENTS.domcontentloaded, {padder: '○'})));
+        page.on(EVENTS.load, () => log.default(createHeader(EVENTS.load, {padder: '●'})));
     }
 
     if (input.debug && options.debug.traffic.enable) {

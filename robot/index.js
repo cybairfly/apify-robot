@@ -38,7 +38,7 @@ const { maybeStartServer } = require('./tools/server');
 const { syncContext } = require('./tools/context');
 const { errors, RobotError } = require('./errors');
 const { CaptchaSolver } = require('./tools/captcha');
-const { centerHeader } = require('./tools/generic');
+const { createHeader } = require('./tools/generic');
 const { openSessionPool, pingSessionPool } = require('./tools/session/sessionPool');
 const { getBrowser, saveOutput, curryDebug, filterOutput, flushAsyncQueueCurry } = require('./tools');
 
@@ -261,13 +261,13 @@ class Robot {
         await this.assignSession();
 
         if (!this.isRetry) {
-            log.default(centerHeader({string: 'INPUT', padder: '▼'}));
+            log.default(createHeader('INPUT', {padder: '▼'}));
             log.redact.object(input);
-            log.default(centerHeader({string: 'INPUT', padder: '▲'}));
+            log.default(createHeader('INPUT', {padder: '▲'}));
 
-            log.default(centerHeader({string: 'OPTIONS', padder: '▼'}));
+            log.default(createHeader('OPTIONS', {padder: '▼'}));
             log.redact.object(this.options);
-            log.default(centerHeader({string: 'OPTIONS', padder: '▲'}));
+            log.default(createHeader('OPTIONS', {padder: '▲'}));
         }
 
         this.tasks = await this.initTasks(this);
@@ -305,9 +305,9 @@ class Robot {
 
         if (!this.isRetry) {
             log.info('Task list from task tree:');
-            log.default(centerHeader({string: 'TASKS', padder: '▼'}));
+            log.default(createHeader('TASKS', {padder: '▼'}));
             taskList.flatMap(task => log.default(task));
-            log.default(centerHeader({string: 'TASKS', padder: '▲'}));
+            log.default(createHeader('TASKS', {padder: '▲'}));
         }
 
         log.default(taskTree);
@@ -392,7 +392,7 @@ class Robot {
     }
 
     handleTasks = async ({input: {target}, output, context, page, setup, tasks} = this) => {
-        log.default(centerHeader({string: `TARGET: ${target}`, padder: '◙'}));
+        log.default(createHeader(`TARGET: ${target}`, {padder: '◙'}));
 
         for (const task of tasks) {
             this.task = {...task};

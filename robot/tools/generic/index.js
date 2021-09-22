@@ -62,23 +62,15 @@ const urlParamsToEllipsis = url => {
     return urlCutOffIndex ? `${url.slice(0, urlCutOffIndex)}...` : url;
 };
 
-/**
- * Create a centered and optionally uppercased header padded equally on both sides with a custom padder string
- * @param {{
- * string: string,
- * padder: string,
- * length: number,
- * upper: boolean
-* }}} options
-* @returns {string}
-*/
-const centerHeader = ({string = 'header', padder = '-', length = 100, upper = true}) =>
-    ` ${upper ? string.toUpperCase() : string} `.padEnd((length / 2) + (string.length / 2), padder.right || padder).padStart(length, padder.left || padder);
+/** @type {import('./types').createHeader} */
+const createHeader = (header = 'header', {padder = '-', length = 100, center = false, upper = false} = {}) => center ?
+    ` ${upper ? header.toUpperCase() : header} `.padEnd((length / 2) + (header.length / 2 + 1), padder.right || padder).padStart(length, padder.left || padder) :
+    `${upper ? header.toUpperCase() : header} `.padEnd(length, padder);
 
 module.exports = {
     decorators,
     decorate,
-    centerHeader,
+    createHeader,
     deepTransform,
     getInnerText,
     redactObject,
