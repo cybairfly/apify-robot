@@ -42,8 +42,10 @@ class CaptchaSolver {
 
     injectSolution = async (page, solution) => page.evaluate(({solution, SELECTORS}) => {
         const $captchaResponse = document.querySelector(SELECTORS.captchaResponse);
-        if ($captchaResponse)
+        if ($captchaResponse) {
+            $captchaResponse.value = solution;
             $captchaResponse.innerHTML = solution;
+        }
 
         if (window.grecaptcha.enterprise)
             window.grecaptcha.enterprise.getResponse = () => solution;
