@@ -392,7 +392,7 @@ class Robot {
     }
 
     handleTasks = async ({input: {target}, output, context, page, setup, tasks} = this) => {
-        log.default(createHeader(`TARGET: ${target}`, {padder: '◙'}));
+        log.default(createHeader(target, {center: true, upper: true, padder: '◙'}));
 
         for (const task of tasks) {
             this.task = {...task};

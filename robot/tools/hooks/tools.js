@@ -29,7 +29,7 @@ const urlLogger = (page, {debug}) => async () => {
     const url = await page.evaluate(() => window.location.href).catch(() => null);
 
     if (debug)
-        log.default(createHeader(EVENTS.framenavigated, {padder: '›'}));
+        log.default(createHeader(EVENTS.framenavigated, {center: true, padder: '›'}));
 
     if (url) log.default({url});
 };

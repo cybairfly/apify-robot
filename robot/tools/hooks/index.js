@@ -34,8 +34,8 @@ const initEventLogger = ({page, domain, input, options}) => {
     page.on(EVENTS.response, responseErrorLoggerBound);
 
     if (input.debug) {
-        page.on(EVENTS.domcontentloaded, () => log.default(createHeader(EVENTS.domcontentloaded, {padder: '○'})));
-        page.on(EVENTS.load, () => log.default(createHeader(EVENTS.load, {padder: '●'})));
+        page.on(EVENTS.domcontentloaded, () => log.default(createHeader(EVENTS.domcontentloaded, {center: true, padder: '○'})));
+        page.on(EVENTS.load, () => log.default(createHeader(EVENTS.load, {center: true, padder: '●'})));
     }
 
     if (input.debug && options.debug.traffic.enable) {
