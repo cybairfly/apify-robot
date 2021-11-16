@@ -1,6 +1,6 @@
 /**
- * @typedef {import('./d').RobotErrorOptions} RobotErrorOptions
- * @typedef {import('./d').StatusErrorOptions} StatusErrorOptions
+ * @typedef {import('./types').RobotErrorOptions} RobotErrorOptions
+ * @typedef {import('./types').StatusErrorOptions} StatusErrorOptions
  */
 
 /* eslint-disable max-classes-per-file */

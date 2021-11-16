@@ -10,7 +10,7 @@ export interface debug {
 
 export interface matchPattern {
     /**
-     * Match exact pattern shape by selector and expected contents
+     * Match exact pattern shape by selector and expected contents \
      * Throw error specified in pattern on pattern match (optional)
      * @param {Page} page
      * @param {Array<patternShape>} pattern
@@ -21,7 +21,7 @@ export interface matchPattern {
 
 export interface iteratePatterns {
     /**
-     * Iteratively match all provided patterns until a match is found
+     * Iteratively match all provided patterns until a match is found \
      * Optionally process the patterns in a custom order of execution
      * @param {Page} page
      * @param {Object.<pattern>} patterns

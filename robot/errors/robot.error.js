@@ -1,5 +1,5 @@
 /**
- * @typedef {import('./d').RobotErrorOptions} RobotErrorOptions
+ * @typedef {import('./types').RobotErrorOptions} RobotErrorOptions
  */
 
 const model = require('./robot.error.model');
