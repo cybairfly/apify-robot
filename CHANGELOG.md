@@ -1,4 +1,4 @@
-0.2.0 / 2021-05-XX
+0.2.0 / 2021-11-17
 ==================
 ## Overview
 Internals are currently backward compatible to enable a smooth transition from older versions, the upgrade will however require at least an update of a project's `Robot.Setup` and any tools updated in the "breaking" section. Ideally, input schema and API of the implementations should also be updated. Legacy functionality and backward compatibility will be completely removed in upcoming versions in the future.
@@ -43,6 +43,10 @@ Renamed variables for more clarity, merged actor and robot input and output. Inp
   - `selectors.loggedIn` ➜ `selectors.verify`
   - throw if none of either `predicate` or `selectors.verify` is present for login status verification
 
+
+<!-- ############################################################################################################################################### -->
+
+
 ## Updates
 - [Browser pool](https://github.com/apify/browser-pool) - support for all its features and browsers
 - [Session pool](https://sdk.apify.com/docs/api/session-pool) - support for target-specific proxy management
@@ -77,10 +81,10 @@ Renamed variables for more clarity, merged actor and robot input and output. Inp
       - `enable` - enable built-in websocket server for external real-time network communication (future)
 
 ### `Robot.CaptchaSolver`
-TODO
-- `solveCaptcha`
-- `injectSolution`
-- `getSolution`
+Automated captcha solver utilizing the paid services provided by AntiCaptcha
+- `getSolution` - manual handling of the captcha solution received from service
+- `solveCaptcha` - automated handling of the captcha including injection attempt
+- `injectSolution` - attempt to inject captcha solution at target automatically
 
 ### `Robot.Error`
 Native support for custom errors with special flags reserved for use by the robot and support for `JSON.stringify` 
@@ -102,26 +106,30 @@ Reserved properties:
 - `retireSession` - rotate proxy session on retry
 
 ### `Robot.Human`
-Enable humanized toolset for manual and automatic simulation of human behavior. 
-Enable automatic pointer tracking and visual pointer indicator in debug mode.
+Enable humanized toolset for manual or automatic simulation of human behavior. 
+Enable automatic pointer tracking and visual movement indicator in debug mode.
 
-- `human.click` - humanized clicking with random movements and action delays
-- `human.point` - humanized pointing with random movements and action delays
-- `human.press` - humanized keypress with random movements and action delays
-- `human.sleep` - humanized waiting with random movements and action delays
-- `human.type` - humanized typing with random movements and action delays
+- `human`
+  - `click` - humanized clicking with random movements and action delays
+  - `point` - humanized pointing with random movements and action delays
+  - `press` - humanized keypress with random movements and action delays
+  - `sleep` - humanized waiting with random movements and action delays
+  - `type` - humanized typing with random movements and action delays
 
-Currently disabled by default due to unresolved interference with other actions:
+Automatic spontaneous motion is currently disabled by default. Manual usage:
 - `human.startMotion` - start automated continuous simulation of human behavior
 - `human.stopMotion` - stop automated continuous simulation of human behavior
 
 
 ### `Robot.Setup`
-Documented in the base class `Robot.Setup`
+Documented in-line in the base class `Robot.Setup`
 - `step.abort(context)` - support centralized abort trigger across all targets
 - `options.browserPool` - browser pool options with extra options and mappings
 - `options.sessionPool` - session pool options with extra options for the robot
 - `options.sessionPool.disable` - disable session pool
+- `options.browser` - browser utilized for automation
+- `options.library` - lower level automation library option
+- `options.launchContext` - options for standalone browser (no stealth support)
 - `options.notify.details` - include extra error details in external notifications
 - `options.notify.filters` - specify error alert filters based on error name/type
 - `options.notify.visuals` - include visual indicator of important input options
@@ -135,7 +143,13 @@ Introduce generic scope abstraction for larger, target independent automations
 Extends `Robot.Scope`
 
 ### `Robot.Scope/Target`
-- `Robot.context`
+Constructor parameters:
+- `context` - context passed to every instance of `Robot.Scope/Target`
+- `robot` - back-door to the running robot instance for more advanced runtime manipulation (use with caution!)
+
+Bindings between the contents of `context` and instances of this class are automatically initialized through the base class. Therefore **constructor is optional** if there is no need to manage properties or **local** state of the scope. For sharing and managing **global** state across all scopes at runtime, use the `state` object hosted in `context`.
+
+`context`
   - `task` - task currently being processed
   - `step` - step currently being processed
   - `input` - input as defined by input schema
@@ -149,6 +163,7 @@ Extends `Robot.Scope`
     - `BrowserPool` - exposed browser pool instance if applicable
     - `SessionPool` - exposed session pool instance if applicable
   - `tools` - convenience automation tools preloaded with `page`
+    - `debug` - capture named debug buffers to store on demand
     - `matchPattern` - pattern matching utility for a single pattern
     - `iteratePatterns` - pattern matching utility for multiple patterns
   - `state` - utility relay object for passing state and data between steps and scopes
@@ -161,6 +176,7 @@ Extends `Robot.Scope`
     - [ ] `websocket` - future universal websocket server with dynamic custom handlers
 
 Properties available directly on the scope instance, outside of context:
+- `this.debug` - capture named debug buffers to store on demand
 - `this.task` - currently processed task as defined in `Robot.Setup`
   - `this.task.output` - output of current task
 - `this.step` - currently processed step as defined in `Robot.Setup`
@@ -179,7 +195,11 @@ Properties available directly on the scope instance, outside of context:
     - [ ] dispatch a custom event via built-in websocket server (future)
     - [ ] support optional automatic screenshot for inline steps (future)
 
-Bindings between children extending from this class and contents of `context` are automatically initialized through the `Robot.Scope` base class. Therefore constructor is optional if there is no need to manage properties or **local** state of the scope. The `state` object hosted by `context` is intended for sharing and managing **global** state across all scopes, steps and tasks at runtime.
+Convenience shortcuts already preloaded with `page`
+- `this.matchPattern(pattern)` - curried version on `Robot.Scope/Target`
+- `tools.matchPattern(pattern)` - curried version in `Robot.context.tools`
+- `this.iteratePatterns(patterns, [patternOrder])` - curried version on `Robot.Scope/Target`
+- `tools.iteratePatterns(patterns, [patternOrder])` - curried version in `Robot.context.tools`
 
 ### `Robot.errors`
 Limited dictionary of the most common errors with support for error instance matching. Default errors that can be further modified or extended for the needs of a specific automation project.
@@ -191,9 +211,10 @@ Limited dictionary of the most common errors with support for error instance mat
 - `Robot.errors.Status({error, retry: true, retireSession: true, statusCode: 403})` - rethrow previous error as cause of the custom error, retire proxy session before retrying failed action and print a message with failed status code
 
 ### `Robot.tools`
-Pattern matching has been updated to only match elements actually visible on the page in order to avoid false match positives with hidden elements not intended for current state of the user-facing website interface. Below mentioned tools are now also pre-initialized with the page and available in `Robot.Context` and directly on instances of `Robot.Scope/Target` class for convenience.
-- `matchPattern(pattern)` - convenience shortcut preloaded with `page`
-- `iteratePatterns(patterns, [patternOrder])` - convenience shortcut preloaded with `page`
+Pattern matching has been updated to only match elements actually visible on the page in order to avoid false match positives with hidden elements not intended for current state of the user-facing website interface. 
+- `debug(page, name)` - store debug buffers on demand
+- `matchPattern(page, pattern)` - match a single exact pattern
+- `iteratePatterns(page, patterns, [patternOrder])` - test multiple or all patterns until a match is found
 
 0.1.0 / 2021-01-14
 0.1.18 / 2021-01-13
