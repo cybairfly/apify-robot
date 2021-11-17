@@ -17,15 +17,18 @@ const {
 
 class Server {
     constructor(page, setup, options = {}) {
-        this.interface = new InterfaceServer(options);
         this.hypertext = null;
         this.websocket = null;
 
-        // temporary remapping
-        this.start = this.interface.start.bind(this.interface);
-        this.serve = this.interface.serve.bind(this.interface);
-        this.prompt = this.interface.prompt.bind(this.interface);
-        page.on(EVENTS.load, async () => this.interface.serve(page));
+        if (InterfaceServer) {
+            this.interface = new InterfaceServer(options);
+
+            // temporary remapping
+            this.start = this.interface.start.bind(this.interface);
+            this.serve = this.interface.serve.bind(this.interface);
+            this.prompt = this.interface.prompt.bind(this.interface);
+            page.on(EVENTS.load, async () => this.interface.serve(page));
+        }
     }
 }
 

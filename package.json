@@ -7,7 +7,6 @@
 		"/robot",
 		"/tasks",
 		"/tools",
-		"/apify.json",
 		"/Dockerfile",
 		"/INPUT_SCHEMA.json",
 		"/OUTPUT_SCHEMA.js",
@@ -16,13 +15,11 @@
 	"dependencies": {
 		"@types/puppeteer": "^5.4.3",
 		"apify": "^1.3.4",
-		"apify-human": "git+https://gitlab.com/cybaerfly/apify-human.git#master",
 		"browser-pool": "^2.0.2",
 		"dot-object": "^2.1.4",
 		"fingerprint-generator": "^1.0.0",
 		"fingerprint-injector": "^1.0.0",
 		"got": "^11.8.2",
-		"interface-server": "git+https://github.com/cybairfly/InterfaceServer.git#master",
 		"parse-domain": "^3.0.3",
 		"playwright": "^1.11.0",
 		"promise.any": "^2.0.2",
@@ -31,6 +28,16 @@
 		"slack-node": "^0.1.8",
 		"socket.io": "^2.4.1",
 		"tunnel": "^0.0.6"
+	},
+	"optionalDependencies": {
+		"apify-human": "git+https://gitlab.com/cybaerfly/apify-human",
+		"interface-server": "git+https://github.com/cybairfly/InterfaceServer"
+	},
+	"devDependencies": {
+		"@apify/eslint-config": "^0.1.4",
+		"@types/puppeteer": "^5.4.3",
+		"eslint": "^7.27.0",
+		"jest": "^27.0.1"
 	},
 	"scripts": {
 		"start": "node robot/index.js",
@@ -45,11 +52,5 @@
 		"name": "Vasek Tobey Vlcek",
 		"email": "cyberfly@email.cz",
 		"url": "http://www.apify.com"
-	},
-	"devDependencies": {
-		"@apify/eslint-config": "^0.1.4",
-		"@types/puppeteer": "^5.4.3",
-		"eslint": "^7.27.0",
-		"jest": "^27.0.1"
 	}
 }

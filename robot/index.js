@@ -383,8 +383,13 @@ class Robot {
             task: null,
 
             get human() {
-                robot.human = robot.human || new Human(this.page, {...this.input, human: {motion: {enable: false}}});
-                return robot.human;
+                if (Human) {
+                    robot.human = robot.human || new Human(this.page, {...this.input, human: {motion: {enable: false}}});
+
+                    return robot.human;
+                }
+
+                throw Error('Human cannot be used as it is not installed! Please install this optional dependency first.');
             },
         }))(this);
 
