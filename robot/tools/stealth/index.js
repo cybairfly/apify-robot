@@ -10,7 +10,7 @@ const { utils: { log } } = require('apify');
 const { BrowserPool, PuppeteerPlugin, PlaywrightPlugin } = require('browser-pool');
 
 const FingerprintGenerator = require('fingerprint-generator');
-const FingerprintInjector = require('@apify-packages/fingerprint-injector');
+const {FingerprintInjector} = require('fingerprint-injector');
 
 /**
  * Get browser pool with custom hooks & options
@@ -50,7 +50,8 @@ const getBrowserPool = async ({input: {stealth}, options, proxyConfig: proxyConf
     };
 
     browserPoolOptions.preLaunchHooks.push(async (pageId, launchContext) => {
-        launchContext.proxyUrl = await proxyConfiguration.newUrl(session.id);
+        if (proxyConfiguration)
+            launchContext.proxyUrl = await proxyConfiguration.newUrl(session.id);
     });
 
     if (stealth) {
@@ -62,7 +63,6 @@ const getBrowserPool = async ({input: {stealth}, options, proxyConfig: proxyConf
         session.userData.fingerprint = session.userData.fingerprint || fingerprint;
 
         const fingerprintInjector = new FingerprintInjector({ fingerprint });
-        await fingerprintInjector.initialize();
 
         browserPoolOptions.preLaunchHooks.push((pageId, launchContext) => {
             const { useIncognitoPages, launchOptions } = launchContext;
@@ -145,8 +145,6 @@ const getStealthPage = async ({options, proxyConfig: proxyConfiguration, session
     session.userData.fingerprint = session.userData.fingerprint || fingerprint;
 
     const fingerprintInjector = new FingerprintInjector({ fingerprint });
-    await fingerprintInjector.initialize();
-
     const launchContext = browserPlugin.createLaunchContext();
     const browser = await browserPlugin.launch(launchContext);
 

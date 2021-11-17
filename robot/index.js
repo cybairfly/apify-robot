@@ -11,11 +11,11 @@
  */
 
 const Apify = require('apify');
+const Human = require('apify-human');
 const R = require('ramda');
 const path = require('path');
 
 const log = require('./logger');
-const Human = require('./human');
 const Setup = require('./setup');
 const Scope = require('./scope');
 const Target = require('./target');
@@ -383,7 +383,7 @@ class Robot {
             task: null,
 
             get human() {
-                robot.human = robot.human || new Human(this.page, this.input);
+                robot.human = robot.human || new Human(this.page, {...this.input, human: {motion: {enable: false}}});
                 return robot.human;
             },
         }))(this);
