@@ -4,6 +4,7 @@
  * @typedef {import('../../types.d').options} options
  */
 const Apify = require('apify');
+const log = require('../../logger');
 
 /**
  * @param {Robot}
@@ -25,7 +26,8 @@ const getProxyIp = async page => page.evaluate(async () =>
     .catch(error => null);
 
 /** @param {Robot} */
-const getProxyConfig = async ({input: { proxyConfig = {} }, options, location, sessionId}) => {
+const getProxyConfig = async robot => {
+    const {input: { proxyConfig = {} }, options, location, sessionId} = robot;
     const builtProxyUrl = options.proxy.proximity.enable && buildProxyUrl(location);
     const [inputProxyUrl] = (proxyConfig && proxyConfig.proxyUrls) || [builtProxyUrl];
 
@@ -46,7 +48,17 @@ const getProxyConfig = async ({input: { proxyConfig = {} }, options, location, s
         proxyOptions.countryCode = proxyConfig.countryCode || proxyConfig.country;
     }
 
-    const proxyConfiguration = await Apify.createProxyConfiguration(proxyOptions);
+    const proxyConfiguration = await Apify.createProxyConfiguration(proxyOptions)
+        .catch(error => {
+            log.warning(`Proxy config failed! Running without proxy!`);
+            log.error(error.message);
+
+            robot.output = {
+                _PROXYLESS_: true,
+            };
+
+            return null;
+        });
 
     return proxyConfiguration;
 };
