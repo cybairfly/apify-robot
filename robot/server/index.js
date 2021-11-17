@@ -1,13 +1,9 @@
 const Apify = require('apify');
 const http = require('http');
 const fs = require('fs');
-const express = require('express');
-const socketio = require('socket.io');
-const bodyParser = require('body-parser');
 const {promisify} = require('util');
 const {InterfaceServer} = require('interface-server');
 
-const writeFile = promisify(fs.writeFile);
 const log = require('../logger');
 
 const {EVENTS, SERVER} = require('../consts');
