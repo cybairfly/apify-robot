@@ -43,6 +43,7 @@ const { openSessionPool, pingSessionPool } = require('./tools/session/sessionPoo
 const { getBrowser, saveOutput, curryDebug, filterOutput, flushAsyncQueueCurry } = require('./tools');
 
 const {preloadMatchPattern, preloadIteratePatterns} = require('./public/tools/patterns');
+
 const consts = require('./public/consts');
 const tools = require('./public/tools');
 
@@ -238,7 +239,7 @@ class Robot {
         if (!this.isRetry && url) log.default({url});
 
         this.page = await this.initPage(this);
-        maybeStartServer(this);
+        this.server = maybeStartServer(this);
         decoratePage(this);
         initEventLogger(this);
         this.context = await this.createContext(this);
