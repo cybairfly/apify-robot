@@ -30,7 +30,7 @@ const { RobotOptions } = require('./tools/options');
 const { notifyChannel, shouldNotify } = require('./tools/notify');
 const { transformTasks, resolveTaskTree } = require('./tools/tasks');
 const { getTargetUrl, parseTargetDomain } = require('./tools/target');
-const { decoratePage, initEventLogger, initTrafficFilter } = require('./tools/hooks');
+const { decorateInstance, initEventLogger, initTrafficFilter } = require('./tools/hooks');
 const { getSessionId, persistSessionPoolMaybe } = require('./tools/session');
 const { getLocation, getProxyConfig, getProxyIp } = require('./tools/proxy');
 const { getBrowserPool, getStealthPage } = require('./tools/stealth');
@@ -240,7 +240,7 @@ class Robot {
 
         this.page = await this.initPage(this);
         this.server = maybeStartServer(this);
-        decoratePage(this);
+        decorateInstance(this);
         initEventLogger(this);
         this.context = await this.createContext(this);
         this.output = await this.handleTasks(this);

@@ -11,6 +11,11 @@ const {
     responseErrorLogger,
 } = require('./tools');
 
+const {
+    logify,
+    decorateInstance,
+} = require('./page');
+
 const {createHeader} = require('../generic');
 
 // TODO support Puppeteer?
@@ -45,86 +50,9 @@ const initEventLogger = ({page, domain, input, options}) => {
     }
 };
 
-// TODO include element handle + keyboard methods + evaluations
-const decoratePage = ({page, server}) => {
-    page.gotoDom = async (url, options = {}) => page.goto(url, {
-        waitUntil: EVENTS.domcontentloaded,
-        ...options,
-    });
-
-    page.typeHuman = async (selector, text, options) => {
-        const characters = text.split('');
-
-        for (const character of characters)
-            await page.type(selector, character, {...options, delay: Math.random() * 100});
-    };
-
-    const decorateGoto = async (page, args, originalMethod) => {
-        const response = await originalMethod.apply(page, args);
-        const statusCode = response.status();
-
-        if (statusCode >= 400) {
-            const retireSession = SESSION.retireStatusCodes.some(code => code === statusCode);
-
-            if (retireSession)
-                throw new errors.session.Retire({statusCode});
-
-            else
-                throw new errors.Status({statusCode});
-        }
-
-        return response;
-    };
-
-    LOGGER.triggerMethods.map(methodName => {
-        const originalMethod = page[methodName];
-
-        if (server && SERVER.interface.triggerMethods.some(triggerMethod => methodName.includes(triggerMethod))) {
-            page[methodName] = async (...args) => {
-                const argsForLog = args => args.map(arg => typeof arg === 'function' ? arg.toString().replace(/\s+/g, ' ') : arg);
-                console.log({[methodName]: argsForLog(args)});
-
-                try {
-                    const result = await originalMethod.apply(page, args);
-                    await server.serve(page);
-                    return Promise.resolve(result);
-                } catch (error) {
-                    await server.serve(page);
-                    log.error(error);
-                    throw error;
-                }
-            };
-        } else {
-            page[methodName] = async (...args) => {
-                // SANITIZE SENSITIVE DATA
-                const getArgsForLog = args => {
-                    if (methodName === 'type') {
-                        const [selector, text, ...restArgs] = args;
-                        return [selector, ...restArgs];
-                    }
-
-                    return args.map(arg => typeof arg === 'function' ?
-                        arg
-                            .toString()
-                            .replace(/\s+/g, ' ') :
-                        arg);
-                };
-
-                console.log({[methodName]: getArgsForLog(args)});
-
-                if (methodName === 'goto')
-                    return decorateGoto(page, args, originalMethod);
-
-                return originalMethod.apply(page, args);
-            };
-        }
-    });
-
-    return page;
-};
-
 module.exports = {
-    decoratePage,
     initEventLogger,
     initTrafficFilter,
+    decorateInstance,
+    logify,
 };
