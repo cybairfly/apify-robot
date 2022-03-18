@@ -1,9 +1,11 @@
 import {SessionPool} from 'apify';
 import {BrowserPool} from 'browser-pool';
 import {Page} from 'playwright';
+import RobotSetup from './setup';
 import Human from './human';
 import {debug, iteratePatterns, matchPattern} from './public/tools/types.d';
 
+const robotSetup = new RobotSetup();
 export {iteratePatterns, matchPattern};
 
 export interface Robot {
@@ -64,6 +66,10 @@ export interface RobotContext {
         iteratePatterns: iteratePatterns
     }
 }
+
+export type Server = (page: Page, setup: setup, options: Object | undefined) => Object;
+
+export type setup = typeof robotSetup;
 
 export interface input {
     target: string,
@@ -157,3 +163,5 @@ export interface options {
         },
     },
 }
+
+export as namespace types;

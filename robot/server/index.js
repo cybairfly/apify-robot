@@ -1,5 +1,6 @@
 const Apify = require('apify');
 const http = require('http');
+const path = require('path');
 const fs = require('fs');
 const {promisify} = require('util');
 const {InterfaceServer} = require('interface-server');
@@ -16,11 +17,21 @@ const {
 } = process.env;
 
 class Server {
+    /**
+     * Custom built-in server for automated internal use and custom manual interactions with remote counterparts from within the automations
+     * @param {Object} page
+     * @param {types.setup} setup
+     * @param {types.options} options
+     */
     constructor(page, setup, options = {}) {
         this.hypertext = http.createServer();
         this.websocket = null;
 
         if (InterfaceServer) {
+            const clientOptions = options.server.interface.client;
+            if (clientOptions.route)
+                clientOptions.route = path.join(setup._rootPath, clientOptions.route);
+
             this.interface = new InterfaceServer({
                 ...options.interface,
                 httpServer: this.hypertext,
