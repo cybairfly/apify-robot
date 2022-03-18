@@ -20,6 +20,11 @@ const {
 } = require('../../crypto');
 
 const {
+    logify,
+    decorateInstance,
+} = require('../../tools/hooks/page');
+
+const {
     redactObject,
 } = require('../../tools/generic');
 
@@ -120,6 +125,7 @@ module.exports = {
     tryRequire,
     debug,
     login,
+    logify,
     decrypt,
     decryptObject,
     redactObject,
@@ -132,5 +138,6 @@ module.exports = {
     saveOutput,
     saveScreenshot,
     savePageContent,
+    decorateInstance,
     foundSearchPattern,
 };
