@@ -17,11 +17,14 @@ const {
 
 class Server {
     constructor(page, setup, options = {}) {
-        this.hypertext = null;
+        this.hypertext = http.createServer();
         this.websocket = null;
 
         if (InterfaceServer) {
-            this.interface = new InterfaceServer(options);
+            this.interface = new InterfaceServer({
+                ...options.interface,
+                httpServer: this.hypertext,
+            });
 
             // temporary remapping
             this.start = this.interface.start.bind(this.interface);
