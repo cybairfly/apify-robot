@@ -65,6 +65,10 @@ class RobotSetup {
         /* robot internal server options */
         server: {
             interface: {
+                client: {
+                    /* custom client views */
+                    // route: 'robot/client',
+                },
                 prompt: {
                     modal: false,
                     handlers: {
