@@ -33,7 +33,7 @@ class Server {
                 clientOptions.route = path.join(setup._rootPath, clientOptions.route);
 
             this.interface = new InterfaceServer({
-                ...options.interface,
+                ...options.server.interface,
                 httpServer: this.hypertext,
             });
 
