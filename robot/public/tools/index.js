@@ -20,6 +20,10 @@ const {
 } = require('../../crypto');
 
 const {
+    integrateInstance,
+} = require('../../tools/hooks');
+
+const {
     redactObject,
 } = require('../../tools/generic');
 
@@ -132,5 +136,6 @@ module.exports = {
     saveOutput,
     saveScreenshot,
     savePageContent,
+    integrateInstance,
     foundSearchPattern,
 };
