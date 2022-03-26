@@ -72,7 +72,7 @@ class RobotSetup {
                 prompt: {
                     modal: false,
                     handlers: {
-                        eventName: () => {},
+                        // eventName: () => {},
                     },
                 },
                 // useScreenshots: Boolean,
