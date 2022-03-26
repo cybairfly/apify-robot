@@ -62,25 +62,7 @@ const DEFAULT_OPTIONS = {
             // screenshotDirectoryPath: 'key_value_stores/default',
             prompt: {
                 modal: false,
-                handlers: {
-                    abort: () => {
-                        throw new RobotError({
-                            data: {
-                                abortActor: true,
-                            },
-                        });
-                    },
-                    cancel: () => {
-                        throw new RobotError({
-                            data: {
-                                cancelAction: true,
-                            },
-                        });
-                    },
-                    confirm: () => {
-                        console.log('Prompt action confirmed');
-                    },
-                },
+                handlers: {},
             },
         },
         websocket: {
