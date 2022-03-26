@@ -1,29 +1,8 @@
-const {EVENTS} = require('../../consts');
-const log = require('../../logger');
-const {urlParamsToEllipsis, createHeader} = require('../generic');
+const log = require('../../../logger');
+const { EVENTS } = require('../../../consts');
 
-const abortRoute = (route, domain, options) => {
-    const {fullUrls = false, hostOnly = false, hideFilter = false} = options.debug.traffic;
-
-    const request = route.request();
-    const url = request.url();
-    const method = request.method();
-    const type = request.resourceType();
-
-    if (!hideFilter) {
-        const cols = {
-            status: '-'.repeat(3),
-            method: method.padEnd(7, '-'),
-            type: type.padEnd(11, '-'),
-            domain: (url.includes(domain) && domain) || '-'.repeat(domain.length),
-            url: !fullUrls ? urlParamsToEllipsis(url) : url,
-        };
-
-        log.debug(`█ TX | ${cols.status} | ${cols.method} | ${cols.type} | ${cols.domain} | ${cols.url}`);
-    }
-
-    return route.abort();
-};
+const {handlers} = require('../traffic/handlers');
+const {createHeader} = require('../../generic');
 
 const urlLogger = (page, {debug}) => async () => {
     const url = await page.evaluate(() => window.location.href).catch(() => null);
@@ -59,9 +38,24 @@ const responseErrorLogger = async (domain, response) => {
     }
 };
 
+const initEventLogger = ({page, domain, input, options}) => {
+    const urlLoggerPreloaded = preloadUrlLogger(page, {debug: input.debug});
+    const responseErrorLoggerBound = responseErrorLogger.bind(null, domain);
+    page.on(EVENTS.framenavigated, urlLoggerPreloaded);
+    page.on(EVENTS.response, responseErrorLoggerBound);
+
+    if (input.debug) {
+        page.on(EVENTS.domcontentloaded, () => log.default(createHeader(EVENTS.domcontentloaded, {center: true, padder: '○'})));
+        page.on(EVENTS.load, () => log.default(createHeader(EVENTS.load, {center: true, padder: '●'})));
+    }
+
+    if (input.debug && options.debug.traffic.enable) {
+        const domainRegex = new RegExp(`//[^/]*${domain}[.].*/`, 'i');
+        page.on(EVENTS.request, handlers.request(domain, domainRegex, options));
+        page.on(EVENTS.response, handlers.response(domain, domainRegex, options));
+    }
+};
+
 module.exports = {
-    abortRoute,
-    urlLogger,
-    preloadUrlLogger,
-    responseErrorLogger,
+    initEventLogger,
 };
