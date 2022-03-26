@@ -214,7 +214,7 @@ const LOGGER = {
             // '$',
             // '$$',
             // '$$eval',
-            // '$eval',
+            '$eval',
             // '$x',
             // 'accessibility',
             // 'addScriptTag',
@@ -297,8 +297,10 @@ const SERVER = {
     interface: {
         triggerMethods: [
             // 'goto',
-            'waitFor',
-            // 'waitForSelector',
+            // 'waitFor',
+            // 'waitForFunction',
+            'waitForSelector',
+            // 'waitForXPath',
         ],
     },
 };
