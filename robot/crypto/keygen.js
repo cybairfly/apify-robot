@@ -3,7 +3,7 @@ const Apify = require('apify');
 const {
     generateKeys,
     testEncryption,
-} = require('./crypto');
+} = require('./index');
 
 Apify.main(async () => {
     // const {generateKeys, X509Filename} = await Apify.getInput();
