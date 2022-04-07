@@ -119,7 +119,20 @@ export interface options {
     },
     server: {
         interface: {
-            enable: boolean
+            enable: boolean,
+            useScreenshots: boolean,
+            maxScreenshotFiles: number,
+            snapshotTimeoutSecs: number,
+            maxSnapshotFrequencySecs: number,
+            client: {
+                route: string,
+            },
+            prompt: {
+                modal: boolean,
+                handlers: {
+                    [string]: function
+                },
+            },
         },
         websocket: {
             enable: boolean
