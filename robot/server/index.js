@@ -26,6 +26,7 @@ class Server {
     constructor(page, setup, options = {}) {
         this.hypertext = http.createServer();
         this.websocket = null;
+        this.options = options.server;
 
         if (InterfaceServer) {
             const clientOptions = options.server.interface.client;
