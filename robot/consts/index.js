@@ -16,6 +16,7 @@ const APIFY = {
 };
 
 const TIMEOUTS = {
+    one: 1 * 1000,
     five: 5 * 1000,
     ten: 10 * 1000,
     half: 15 * 1000,
