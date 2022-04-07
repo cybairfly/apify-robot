@@ -1,3 +1,19 @@
+0.2.1 / 2021-4-7
+==================
+## Overview
+Custom views for visual interaction through interace server.
+Improved support for frames both in public tools and internally.
+Internal improvements and cleanup of automated logging and debugging tools and hooks.
+Automated response error (>400) logging moved to debug mode only to minimize risk of unintended leaks.
+
+## Updates
+### `Robot.Setup`
+- `options.interface.client` - support for custom client views and interfaces on the interface server
+
+### `Robot.tools`
+- `integrateInstance` - integration of custom page or frame instances at runtime to enable on them the built-in automated facilities of the framework (support for frames)
+
+
 0.2.0 / 2021-11-17
 ==================
 ## Overview
