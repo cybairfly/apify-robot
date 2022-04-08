@@ -13,31 +13,31 @@
 		"/README.md"
 	],
 	"dependencies": {
-		"@types/puppeteer": "^5.4.3",
+		"@types/puppeteer": "^5.4.5",
 		"apify": "^1.3.4",
-		"browser-pool": "^2.0.2",
+		"browser-pool": "^2.0.4",
 		"dot-object": "^2.1.4",
 		"fingerprint-generator": "^1.0.0",
 		"fingerprint-injector": "^1.0.0",
-		"got": "^11.8.2",
-		"parse-domain": "^3.0.3",
-		"playwright": "^1.11.0",
-		"promise.any": "^2.0.2",
-		"puppeteer": "^9.0.0",
-		"ramda": "^0.27.1",
+		"got": "^11.8.3",
+		"parse-domain": "^3.0.4",
+		"playwright": "^1.20.2",
+		"promise.any": "^2.0.3",
+		"puppeteer": "^9.1.1",
+		"ramda": "^0.27.2",
 		"slack-node": "^0.1.8",
 		"socket.io": "^2.4.1",
 		"tunnel": "^0.0.6"
 	},
 	"optionalDependencies": {
-		"apify-human": "git+https://gitlab.com/cybaerfly/apify-human",
-		"interface-server": "git+https://github.com/cybairfly/InterfaceServer"
+		"apify-human": "gitlab:cybaerfly/apify-human",
+		"interface-server": "github:cybairfly/InterfaceServer"
 	},
 	"devDependencies": {
 		"@apify/eslint-config": "^0.1.4",
 		"@types/puppeteer": "^5.4.3",
-		"eslint": "^7.27.0",
-		"jest": "^27.0.1"
+		"eslint": "^7.32.0",
+		"jest": "^27.5.1"
 	},
 	"scripts": {
 		"start": "node robot/index.js",
