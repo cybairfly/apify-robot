@@ -1,9 +1,11 @@
 <!doctype html>
 <html>
+
 <head>
     <title>Live view</title>
     <style type="text/css">
-        html, body {
+        html,
+        body {
             margin: 0 auto;
             padding: 0 auto;
             width: 100%;
@@ -111,12 +113,14 @@
         }
     </style>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.slim.js"></script>
+    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"
+        integrity="sha384-fKnu0iswBIqkjxrhQCTZ7qlLHOFEgNkRmK2vaO/LbTZSXdJfAu6ewRBdwHPhBo/H"
+        crossorigin="anonymous"></script>
 
     <script>
         let liveViewSocket = null;
 
-        function showPrompt({showPrompt = {}}) {
+        function showPrompt({ showPrompt = {} }) {
             if (!showPrompt) return;
 
             const $prompt = document.querySelector('#prompt');
@@ -145,7 +149,7 @@
 
         function showSnapshot(snapshot) {
             if (!snapshot) return;
-            const {htmlContent, screenshotIndex} = snapshot;
+            const { htmlContent, screenshotIndex } = snapshot;
             document.querySelector('#pageUrl').innerText = snapshot.pageUrl;
             const $liveView = document.querySelector('#liveView');
 
@@ -159,7 +163,7 @@
         }
 
         function getSocketIoPath() {
-            const {pathname} = window.location;
+            const { pathname } = window.location;
             return pathname.endsWith('/')
                 ? pathname + 'socket.io'
                 : '/socket.io';
@@ -221,16 +225,18 @@
         if (isThisTopWindow()) connect();
     </script>
 </head>
+
 <body>
 
-<div id="pageUrl">Loading...</div>
-<iframe src="frame.html" id="liveView" scrolling="no" sandbox="allow-same-origin allow-scripts"></iframe>
+    <div id="pageUrl">Loading...</div>
+    <iframe src="frame.html" id="liveView" scrolling="no" sandbox="allow-same-origin allow-scripts"></iframe>
 
-<div id="prompt" class="hidden">
-    <a href="#" id="cancel" class="button" onclick="answerPrompt({action: 'cancel'})">CANCEL</a>
-    <a href="#" id="abort" class="button" onclick="answerPrompt({action: 'abort'})">ABORT</a>
-    <a href="#" id="confirm" class="button" onclick="answerPrompt({action: 'confirm'})">CONFIRM</a>
-</div>
+    <div id="prompt" class="hidden">
+        <a href="#" id="cancel" class="button" onclick="answerPrompt({action: 'cancel'})">CANCEL</a>
+        <a href="#" id="abort" class="button" onclick="answerPrompt({action: 'abort'})">ABORT</a>
+        <a href="#" id="confirm" class="button" onclick="answerPrompt({action: 'confirm'})">CONFIRM</a>
+    </div>
 
 </body>
+
 </html>
