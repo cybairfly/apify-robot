@@ -119,6 +119,26 @@ to accomplish preset `tasks` defined in global `setup` within its runtime `conte
 
 Execution of tasks is handled by an instance of the Robot. The framework loads the project setup containing a high-level structure and description of the automation process and resolves the order of the tasks with a dependency tree to ensure mutually dependent tasks are executed in the correct order, while handling possible errors at individual steps. Control flow predicates determine actual execution sequence depending on intermediate states during the automation. Each task can contain a sequence of many steps which can be either generic or specific for a particular remote target. Implementation of a step for a particular target will be automatically loaded during execution of the whole process.
 
+### Entry
+Example of the minimal startup below including:
+- navigate the npm package to project root
+- check basic input shape requirements
+- build an instance based on project setup
+- start the automation using that instance
+
+```
+const Apify = require('apify');
+const Robot = require('apify-robot');
+const setup = require('./robot');
+
+const route = __dirname;
+
+Apify.main(async () => {
+    const input = (await Apify.getValue('INPUT')) || require('./INPUT_LOCAL');
+    const OUTPUT = await Robot.route(route).check(input).build(setup).start();
+});
+```
+
 ### Input
 [Input schema](INPUT_SCHEMA.json) (plus custom properties specific to the automation project)
 
@@ -342,53 +362,16 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE.md](LIC
 
 ## Roadmap
 ```
-T   update all targets to reflect third party changes and clean up the target queue
-T   reduce the influx of unknown/unhandled errors to monitoring channel 50%
-G/T stabilize and lock automations to a fixed release version   80%
-T   maximize control and handling precision using custom errors 20%
-T   implement missing features (invalid credentials check etc.) 75%
-T   replace deprecated outputs (generic login failed etc.)  50%
-T   refactor legacy code and deprecated references  30%
-G   release interface server to avoid breaking interactive livecasting  75%
-G   migrate project and its dependencies to SDK 1   75%
-G/T support non-boolean output formats and output segmentation per task 30%
-G   optimize start-up time by reducing amount of docker container cold starts
-G   redesign built-in server for real-time communication    30%
-G/T design and implement a generic real-time protocol across targets    20%
-T   upgrade all targets to latest implementation model and remove legacy leftovers  10%
-T   split up tasks into granular steps for more real-time precision & retry options 10%
-G/T improve pattern matching toolset and extend its capabilities to verification polling etc.   30%
-G   safely re-introduce generic error handling to reduce codebase and monitoring noise
-G/T optimize runtime efficiency with pattern racing and generic observer for dynamic content
-G   improve automated logging and debugging tools for more efficient troubleshooting    70%
-G/T further automate and unify login handling with a higher-level abstraction toolset   50%
-G   optimize start-up time by reducing amount of browser instance cold starts
-G   improve types and documentation for crucial parts of the framework  5%
-
-Performance & optimizations
-Container start-up
-    G   optimize start-up time by reducing amount of docker container cold starts
-    G       > independent functional prototype with reduced efficiency
-    G       > complete integration with the automation framework
-Automation start-up
-    G   optimize framework internals for maximum efficiency (minor effect)
-    G   optimize fingerprint generation for maximum efficiency (up to seconds)
-    G   optimize start-up time by reducing amount of browser instance cold starts - requires:
-    G       > support for dynamic proxy rotation in browser contexts and instances (Apify SDK)
-Target implementations
-    Pre/Login
-        T   fine-tune and optimize traffic filter rules for each target individually
-        G       > support complex pattern matching and white-list approach in traffic filters
-        T   optimize all actions preceding login for maximum speed and efficiency (DOM events)
-        T   prefer direct interaction with website traffic above interaction with rendered UI
-        G/T     > further automate and unify login handling with a higher-level abstraction toolset   50%
-        T   individual reverse engineering of entire login process (Optional. Highly efficient but does not scale well. Time consuming on both development and maintenance. Extremely difficult for highly protected targets)
-    Universal
-        G   redesign built-in server for real-time communication    30%
-        G/T     > design and implement a generic real-time protocol    20%
-        T   replace inefficient async code and fixed waits with more efficient alternatives (fail fast)
-        G/T     > optimize runtime efficiency with pattern racing and generic observer for dynamic content
-
-T - targets
-G - generic
+clean up and refactor internals and adopt ESM
+design a task builder for target implementations
+design and implement a generic real-time protocol    20%
+redesign built-in server for real-time communication    30%
+support non-boolean output formats and output segmentation per task 30%
+safely re-introduce generic error handling to reduce codebase and monitoring noise
+improve pattern matching toolset and extend its capabilities to verification polling etc.   30%
+optimize runtime efficiency with pattern racing and generic observer for dynamic content
+improve automated logging and debugging tools for more efficient troubleshooting    70%
+further automate and unify login handling with a higher-level abstraction toolset   50%
+support complex pattern matching and white-list approach in traffic filters
+improve types and documentation for crucial parts of the framework  5%
 ```
