@@ -1,3 +1,9 @@
+0.2.2 / 2021-4-20
+==================
+Update of major dependencies. 
+API remains unchanged.
+
+
 0.2.1 / 2021-4-7
 ==================
 ## Overview
