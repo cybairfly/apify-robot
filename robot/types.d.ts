@@ -1,4 +1,4 @@
-import {SessionPool} from 'apify';
+import {Session, SessionPool, SessionPoolOptions} from 'apify';
 import {BrowserPool} from 'browser-pool';
 import {Page} from 'playwright';
 import RobotSetup from './setup';
@@ -49,6 +49,7 @@ export interface RobotContext {
         emit: Function,
         listen: Function
     },
+    session: Session,
     server: {
         hypertext: {},
         interface: {
@@ -89,6 +90,7 @@ export interface input {
 }
 
 export interface options {
+    sessionPool: SessionPoolOptions,
     debug: {
         muted: boolean,
         traffic: {

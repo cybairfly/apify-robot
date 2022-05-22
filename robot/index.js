@@ -33,7 +33,7 @@ const { getTargetUrl, parseTargetDomain } = require('./tools/target');
 const { integrateInstance, extendInstance } = require('./tools/hooks');
 const { initTrafficFilter } = require('./tools/hooks/traffic');
 const { initEventLogger } = require('./tools/hooks/events');
-const { getSessionId, persistSessionPoolMaybe } = require('./tools/session');
+const { addSession, getSessionId, persistSessionPoolMaybe } = require('./tools/session');
 const { getLocation, getProxyConfig, getProxyIp } = require('./tools/proxy');
 const { getBrowserPool, getStealthPage } = require('./tools/stealth');
 const { maybeStartServer } = require('./tools/server');
@@ -358,7 +358,7 @@ class Robot {
         return page;
     };
 
-    createContext = async ({input, output, page, relay, state, server, browserPool, sessionPool} = this) => {
+    createContext = async ({input, output, page, relay, state, server, session, browserPool, sessionPool} = this) => {
         this.context = (robot => ({
             // TODO remove legacy support
             INPUT: Object.freeze(input),
@@ -381,6 +381,7 @@ class Robot {
                 matchPattern: preloadMatchPattern(page),
                 iteratePatterns: preloadIteratePatterns(page),
             },
+            session,
             server,
             state,
             step: null,
@@ -635,7 +636,11 @@ class Robot {
             delete this.originalSessionPoolOptions.disable;
 
             this.sessionPool = await openSessionPool(this.originalSessionPoolOptions);
-            this.session = await this.sessionPool.getSession(session && this.sessionId);
+            this.session = await this.sessionPool.getSession(session && this.sessionId) || await addSession(this);
+
+            if (!this.session)
+                throw Error('Failed to obtain or create a usable session based on current session options');
+
             this.session.retireOnBlockedStatusCodes(SESSION.retireStatusCodes);
             log.console.debug('Retire session on status codes:', SESSION.retireStatusCodes);
             log.console.info('Usable proxy sessions:', this.sessionPool.usableSessionsCount);
