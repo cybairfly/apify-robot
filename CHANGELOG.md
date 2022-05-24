@@ -1,4 +1,8 @@
-0.2.2 / 2021-4-20
+0.2.3 / 2022-5-24
+==================
+Provide support for custom (sticky) proxy sessions using Apify `sessionPool`
+
+0.2.2 / 2022-4-20
 ==================
 Update of major dependencies. 
 API remains unchanged.
