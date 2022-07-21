@@ -1,3 +1,7 @@
+0.2.4 / 2022-7-21
+==================
+Fix: Provide server screenshot before closing browser.
+
 0.2.3 / 2022-5-24
 ==================
 Provide support for custom (sticky) proxy sessions using Apify `sessionPool`
