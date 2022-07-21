@@ -714,6 +714,12 @@ class Robot {
             });
         }
 
+        if (server) {
+            await sleep(options.server.interface.snapshotTimeoutSecs);
+            await server.serve(page);
+            await sleep(5 * 1000);
+        }
+
         if (browserPool) {
             log.debug('Destroying browser pool');
             await browserPool.retireAllBrowsers();
@@ -764,12 +770,6 @@ class Robot {
                 log.debug('Removing fingerprint');
                 session.userData.fingerprint = null;
             }
-        }
-
-        if (server) {
-            await sleep(options.server.interface.snapshotTimeoutSecs);
-            await server.serve(page);
-            await sleep(5 * 1000);
         }
     };
 }
