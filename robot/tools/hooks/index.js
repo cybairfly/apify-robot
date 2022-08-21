@@ -18,9 +18,10 @@ const extendInstance = ({page: instance}) => {
 
 /**
  * Decorates instance methods with automated logging and extends it with extra utility methods.
- * @param page - parent page if instance is a frame
- * @param server - server instance for visual interface bindings
- * @param instance - instance to be decorated (page, frame, etc...) - defaults to page
+ * @param {Object} options
+ * @param {types.page} options.page - parent page if instance is a frame
+ * @param {types.server} options.server - server instance for visual interface bindings
+ * @param {types.page | types.frame} options.instance - instance to be decorated (page, frame, etc...) - defaults to page
  * @returns Decorated instance.
  */
 const integrateInstance = ({page = null, server = null, instance = page}) => {
@@ -29,8 +30,8 @@ const integrateInstance = ({page = null, server = null, instance = page}) => {
     if (instance.keyboard)
         LOGGER.triggerMethods.keyboard.map(methodName => decorateMethod({methodName, instance: instance.keyboard}));
 
-    if (server)
-        SERVER.interface.triggerMethods.map(methodName => decorateMethod({methodName, page, server, instance}));
+    if (server && server.options?.interface?.events?.serveOnEvents)
+        server.options.interface.events.eventHooks.map(methodName => decorateMethod({ methodName, page, server, instance }));
 
     return instance;
 };

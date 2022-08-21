@@ -57,7 +57,7 @@ class RobotSetup {
             },
             channels: {
                 slack: {
-                // channel: String,
+                    // channel: String,
                 },
             },
         },
@@ -68,6 +68,12 @@ class RobotSetup {
                 client: {
                     /* custom client views */
                     // route: 'robot/client',
+                },
+                events: {
+                    serveOnEvents: true,
+                    eventHooks: [
+                        'waitForSelector',
+                    ],
                 },
                 prompt: {
                     modal: false,

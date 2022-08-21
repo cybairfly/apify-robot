@@ -1,11 +1,13 @@
 import {Session, SessionPool, SessionPoolOptions} from 'apify';
 import {BrowserPool} from 'browser-pool';
-import {Page} from 'playwright';
+import {Page, Frame} from 'playwright';
 import RobotSetup from './setup';
 import Human from './human';
+import { Server } from './server';
 import {debug, iteratePatterns, matchPattern} from './public/tools/types.d';
 
 const robotSetup = new RobotSetup();
+const robotServer = new Server();
 export {iteratePatterns, matchPattern};
 
 export interface Robot {
@@ -68,9 +70,10 @@ export interface RobotContext {
     }
 }
 
-export type Server = (page: Page, setup: setup, options: Object | undefined) => Object;
-
+export type page = Page;
+export type frame = Frame;
 export type setup = typeof robotSetup;
+export type server = typeof robotServer;
 
 export interface input {
     target: string,
@@ -128,6 +131,10 @@ export interface options {
             maxSnapshotFrequencySecs: number,
             client: {
                 route: string,
+            },
+            events: {
+                serveOnEvents: boolean,
+                eventHooks: Array<string>,
             },
             prompt: {
                 modal: boolean,

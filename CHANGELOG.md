@@ -1,10 +1,21 @@
+0.3.0 / 2022-8-21
+==================
+## Breaking
+### `Robot.Setup`
+Interface server is no longer bound to page events out of the box and will not update the interface automatically, unless the new options are enabled:
+`options.interface.events.serveOnEvents` - enable automated updates of the remote interface based on specific page events
+`options.interface.events.eventHooks` - events to trigger automated updates of the remote interface (e.g. `waitForSelector`)
+
+
 0.2.4 / 2022-7-21
 ==================
 Fix: Provide server screenshot before closing browser.
 
+
 0.2.3 / 2022-5-24
 ==================
 Provide support for custom (sticky) proxy sessions using Apify `sessionPool`
+
 
 0.2.2 / 2022-4-20
 ==================
