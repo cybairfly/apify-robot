@@ -5,7 +5,7 @@ const log = require('../logger');
 const { DEFAULT_OPTIONS } = require('../consts');
 
 const decrypt = async (input, logSecret = false) => {
-    const keyStore = await Apify.openKeyValueStore('keyStore');
+    const keyStore = await Apify.Actor.openKeyValueStore('keyStore');
     const decrypt = await prepareDecrypt(keyStore);
     log.info(`Encrypted input: [${input}]`);
 
@@ -31,7 +31,7 @@ const decrypt = async (input, logSecret = false) => {
 };
 
 const decryptObject = async object => {
-    const keyStore = await Apify.openKeyValueStore('keyStore');
+    const keyStore = await Apify.Actor.openKeyValueStore('keyStore');
     const decrypt = await prepareDecrypt(keyStore);
     log.info('Encrypted input:');
     console.log(object);

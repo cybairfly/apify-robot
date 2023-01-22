@@ -6,10 +6,11 @@
 
 const puppeteer = require('puppeteer');
 const playwright = require('playwright');
-const { utils: { log } } = require('apify');
-const { BrowserPool, PuppeteerPlugin, PlaywrightPlugin } = require('browser-pool');
+const log = require('../../logger/index.js');
 
-const FingerprintGenerator = require('fingerprint-generator');
+const { BrowserPool, PuppeteerPlugin, PlaywrightPlugin } = require('@crawlee/browser-pool');
+
+const FingerprintGenerator = require('fingerprint-generator').FingerprintGenerator;
 const {FingerprintInjector} = require('fingerprint-injector');
 
 /**
@@ -58,11 +59,12 @@ const getBrowserPool = async ({input: {stealth}, options, proxyConfig: proxyConf
         // TODO dynamically override fpgen options with actual selected browser type
         const fingerprintGenerator = new FingerprintGenerator(options.browserPool.fpgen);
 
-        const fingerprint = session.userData.fingerprint || await fingerprintGenerator.getFingerprint().fingerprint;
-        log.debug(session.userData.fingerprint ? 'Restoring fingerprint' : 'Fingerprint generated', { fingerprint });
-        session.userData.fingerprint = session.userData.fingerprint || fingerprint;
+        const extendedFingerprint = session.userData.fingerprint || await fingerprintGenerator.getFingerprint();
+        // const fingerprint2 = session.userData.fingerprint || await fingerprintGenerator.getFingerprint().fingerprint;
+        log.debug(session.userData.fingerprint ? 'Restoring fingerprint' : 'Fingerprint generated', extendedFingerprint);
+        session.userData.fingerprint = session.userData.fingerprint || extendedFingerprint;
 
-        const fingerprintInjector = new FingerprintInjector({ fingerprint });
+        const fingerprintInjector = new FingerprintInjector({ fingerprint: extendedFingerprint });
 
         browserPoolOptions.preLaunchHooks.push((pageId, launchContext) => {
             const { useIncognitoPages, launchOptions } = launchContext;
@@ -72,10 +74,10 @@ const getBrowserPool = async ({input: {stealth}, options, proxyConfig: proxyConf
 
             launchContext.launchOptions = {
                 ...launchOptions,
-                userAgent: fingerprint.userAgent,
+                userAgent: extendedFingerprint.fingerprint.userAgent,
                 viewport: {
-                    width: fingerprint.screen.width,
-                    height: fingerprint.screen.height,
+                    width: extendedFingerprint.fingerprint.screen.width,
+                    height: extendedFingerprint.fingerprint.screen.height,
                 },
 
             };
@@ -85,10 +87,10 @@ const getBrowserPool = async ({input: {stealth}, options, proxyConfig: proxyConf
             const { launchContext } = browserController;
 
             if (launchContext.useIncognitoPages && pageOptions) {
-                pageOptions.userAgent = fingerprint.userAgent;
+                pageOptions.userAgent = extendedFingerprint.fingerprint.userAgent;
                 pageOptions.viewport = {
-                    width: fingerprint.screen.width,
-                    height: fingerprint.screen.height,
+                    width: extendedFingerprint.fingerprint.screen.width,
+                    height: extendedFingerprint.fingerprint.screen.height,
                 };
             }
         });
@@ -104,7 +106,7 @@ const getBrowserPool = async ({input: {stealth}, options, proxyConfig: proxyConf
                     return;
 
                 const context = page.context();
-                await fingerprintInjector.attachFingerprintToPlaywright(context, fingerprint);
+                await fingerprintInjector.attachFingerprintToPlaywright(context, extendedFingerprint);
 
                 // Prevent memory leaks caused by repeated script injection
                 if (!useIncognitoPages)
@@ -112,13 +114,13 @@ const getBrowserPool = async ({input: {stealth}, options, proxyConfig: proxyConf
             }
 
             if (browserPlugin instanceof PuppeteerPlugin) {
-                await page.setUserAgent(fingerprint.userAgent);
+                await page.setUserAgent(extendedFingerprint.fingerprint.userAgent);
                 await page.setViewport({
-                    width: fingerprint.screen.width,
-                    height: fingerprint.screen.height,
+                    width: extendedFingerprint.fingerprint.screen.width,
+                    height: extendedFingerprint.fingerprint.screen.height,
                 });
 
-                await fingerprintInjector.attachFingerprintToPuppeteer(page, fingerprint);
+                await fingerprintInjector.attachFingerprintToPuppeteer(page, extendedFingerprint);
             }
         });
     }

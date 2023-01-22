@@ -117,7 +117,7 @@ const saveScreenshot = async ({id, name, page, retryCount, store}) => {
             await store.setValue(fileName, screenshotBuffer, {contentType: 'image/png'});
 
         else
-            await Apify.setValue(fileName, screenshotBuffer, {contentType: 'image/png'});
+            await Apify.Actor.setValue(fileName, screenshotBuffer, {contentType: 'image/png'});
 
         const storeId = process.env.APIFY_DEFAULT_KEY_VALUE_STORE_ID;
         return `https://api.apify.com/v2/key-value-stores/${storeId}/records/${fileName}`;
@@ -135,7 +135,7 @@ const savePageContent = async ({id, name, page, retryCount, store}) => {
             await store.setValue(fileName, await page.content(), {contentType: 'text/html'});
 
         else
-            await Apify.setValue(fileName, await page.content(), {contentType: 'text/html'});
+            await Apify.Actor.setValue(fileName, await page.content(), {contentType: 'text/html'});
 
         const storeId = process.env.APIFY_DEFAULT_KEY_VALUE_STORE_ID;
         return `https://api.apify.com/v2/key-value-stores/${storeId}/records/${fileName}`;
@@ -157,7 +157,7 @@ const saveOutput = async ({page, name, input, output: currentOutput, retryCount,
         await store.setValue('OUTPUT', JSON.stringify(output), {contentType: 'application/json'});
 
     else
-        await Apify.setValue('OUTPUT', JSON.stringify(output), {contentType: 'application/json'});
+        await Apify.Actor.setValue('OUTPUT', JSON.stringify(output), {contentType: 'application/json'});
 
     return output;
 };

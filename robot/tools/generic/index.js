@@ -1,3 +1,5 @@
+const sleep = ms => new Promise(ok => setTimeout(ok, ms));
+
 const decorators = {
     log: id => contextArgs => async originalArgs => {
         const [message] = originalArgs;
@@ -68,6 +70,7 @@ const createHeader = (header = 'header', {padder = '-', length = 100, center = f
     `${upper ? header.toUpperCase() : header} `.padEnd(length, padder);
 
 module.exports = {
+    sleep,
     decorators,
     decorate,
     createHeader,

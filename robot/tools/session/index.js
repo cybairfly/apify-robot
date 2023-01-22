@@ -26,11 +26,11 @@ const getSessionId = ({input, setup, sessionId, rotateSession}) => {
         return sessionId;
 
     if (input.session && !rotateSession) {
-        sessionId = Apify.isAtHome() ?
+        sessionId = Apify.Actor.isAtHome() ?
             setup.getProxySessionId.apify({input}) :
             setup.getProxySessionId.local({input});
     } else {
-        sessionId = Apify.isAtHome() ?
+        sessionId = Apify.Actor.isAtHome() ?
             `${setup.getProxySessionId.apify({input})}_${Date.now()}` :
             `${setup.getProxySessionId.local({input})}_${Date.now()}`;
     }

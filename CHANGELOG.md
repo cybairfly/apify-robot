@@ -1,3 +1,9 @@
+0.4.0 / 2023-11-13
+==================
+## Breaking
+ESM hotfix + upgrade of major dependencies
+
+
 0.3.0 / 2022-8-21
 ==================
 ## Breaking

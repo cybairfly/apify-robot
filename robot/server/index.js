@@ -5,7 +5,7 @@ const fs = require('fs');
 const {promisify} = require('util');
 const {InterfaceServer} = require('interface-server');
 
-const log = require('../logger');
+const log = require('../logger/index.js');
 
 const {EVENTS, SERVER} = require('../consts');
 const {CustomError} = require('../errors/legacy');

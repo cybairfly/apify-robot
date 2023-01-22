@@ -51,8 +51,8 @@ const getDefaultOptions = ({ input: { target }, input, setup}) => {
                 width: 1024 + Math.floor(Math.random() * 900),
                 height: 768 + Math.floor(Math.random() * 300),
             },
-            headless: Apify.isAtHome() ? setup.options.launchPuppeteer.headless : false,
-            devtools: !Apify.isAtHome(),
+            headless: Apify.Actor.isAtHome() ? setup.options.launchPuppeteer.headless : false,
+            devtools: !Apify.Actor.isAtHome(),
             // ignoreHTTPSErrors: true
             // args: [
             //     '--remote-debugging-port=9222'

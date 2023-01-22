@@ -1,6 +1,4 @@
-const Apify = require('apify');
-
-const {log} = Apify.utils;
+const {log} = require ('apify');
 
 const {redactObject} = require('../tools/generic');
 

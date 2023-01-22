@@ -10,6 +10,9 @@
  * @typedef {import('./setup/index')} setup
  */
 
+// temporary fix
+require('fix-esm').register();
+
 const Apify = require('apify');
 const Human = require('apify-human');
 const R = require('ramda');
@@ -23,7 +26,8 @@ const Target = require('./target');
 const ScopeConfig = Scope.Config;
 const TargetConfig = Target.Config;
 
-const { sleep } = Apify.utils;
+const { sleep } = require('./tools/generic')
+
 const { SESSION } = require('./consts');
 const { extendInput } = require('./tools/input');
 const { RobotOptions } = require('./tools/options');

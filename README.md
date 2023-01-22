@@ -133,8 +133,8 @@ const setup = require('./robot');
 
 const route = __dirname;
 
-Apify.main(async () => {
-    const input = (await Apify.getValue('INPUT')) || require('./INPUT_LOCAL');
+Apify.Actor.main(async () => {
+    const input = (await Apify.Actor.getValue('INPUT')) || require('./INPUT_LOCAL');
     const OUTPUT = await Robot.route(route).check(input).build(setup).start();
 });
 ```

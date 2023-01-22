@@ -1,6 +1,6 @@
 const Apify = require('apify');
 
-const {log} = Apify.utils;
+const log = require('../../logger');
 const {EVENTS} = require('../../consts');
 const {CustomError} = require('../../errors');
 

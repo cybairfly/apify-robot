@@ -20,7 +20,7 @@ const shouldNotify = ({input, error, setup, options}) =>
     && !input.silent
     && !error.silent
     && !shouldExclude(error, setup.options.notify.filters)
-    && Apify.isAtHome();
+    && Apify.Actor.isAtHome();
 
 const shouldExclude = (error, filters = {}) => Object
     .values(filters)

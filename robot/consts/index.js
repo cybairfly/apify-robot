@@ -75,7 +75,7 @@ const DEFAULT_OPTIONS = {
         disable: false,
         plugins: {
             launchOptions: {
-                headless: Apify.isAtHome(),
+                headless: Apify.Actor.isAtHome(),
             },
         },
         hooks: {

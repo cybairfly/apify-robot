@@ -2,9 +2,11 @@ const Apify = require('apify');
 const got = require('got');
 const tunnel = require('tunnel');
 
-const {sleep} = Apify.utils;
-const {openKeyValueStore} = Apify;
-const {SessionPool: OriginalSessionPool} = require('apify/build/session_pool/session_pool');
+const { sleep } = require('../generic')
+
+const { openKeyValueStore } = Apify.Actor;
+// const {SessionPool: OriginalSessionPool} = require('apify/build/session_pool/session_pool');
+const { SessionPool: OriginalSessionPool } = require('crawlee');
 
 const log = require('../../logger');
 
@@ -66,7 +68,7 @@ const pingSessionPool = async ({proxyConfig, sessionPool, input: {debug}}) => {
         }));
 
         log.console.debug(sessionPoolState);
-        await Apify.setValue('sessionPoolState', sessionPoolState);
+        await Apify.Actor.setValue('sessionPoolState', sessionPoolState);
         // workaround for log cut-off ^
         await sleep(3 * 1000);
     }

@@ -48,7 +48,7 @@ const getProxyConfig = async robot => {
         proxyOptions.countryCode = proxyConfig.countryCode || proxyConfig.country;
     }
 
-    const proxyConfiguration = await Apify.createProxyConfiguration(proxyOptions)
+    const proxyConfiguration = await Apify.Actor.createProxyConfiguration(proxyOptions)
         .catch(error => {
             log.warning(`Proxy config failed! Running without proxy!`);
             log.error(error.message);

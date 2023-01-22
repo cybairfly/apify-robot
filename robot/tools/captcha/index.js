@@ -1,6 +1,8 @@
 const Apify = require('apify');
 
-const { log, sleep } = Apify.utils;
+const log = require('../../logger/index.js');
+
+const { sleep } = require('../generic')
 
 const {
     ANTI_CAPTCHA_TOKEN,

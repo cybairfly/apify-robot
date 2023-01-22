@@ -5,16 +5,16 @@ const {
     testEncryption,
 } = require('./index');
 
-Apify.main(async () => {
-    // const {generateKeys, X509Filename} = await Apify.getInput();
+Apify.Actor.main(async () => {
+    // const {generateKeys, X509Filename} = await Apify.Actor.getInput();
 
-    if (Apify.isAtHome()) {
+    if (Apify.Actor.isAtHome()) {
         console.log('Generating keys on platform disabled for security reasons');
         return;
     }
 
     console.log('Generating keys from certificate...');
-    const keyStore = await Apify.openKeyValueStore('keyStore');
+    const keyStore = await Apify.Actor.openKeyValueStore('keyStore');
     await generateKeys(keyStore);
     // await _keyPairFromX509(X509Filename, keyStore);
     console.log('Keys have been generated and stored in key store');

@@ -16,7 +16,7 @@ class Human {
         this.point = this.#sleepify(this.point);
         this.press = this.#sleepify(this.press);
 
-        if (!Apify.isAtHome() && options.debug)
+        if (!Apify.Actor.isAtHome() && options.debug)
             trackPointer(page);
 
         // TODO wrapper to pause motion before actions
