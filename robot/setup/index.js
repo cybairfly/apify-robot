@@ -13,7 +13,7 @@ class RobotSetup {
         //     stop: context => Boolean,
         //     done: context => Boolean,
 
-        //     /* task dependencies used to build dependency tree before launch */
+        //     /* automated injection of dependent tasks (e.g. login) */
         //     merge: [
         //         string,
         //     ],

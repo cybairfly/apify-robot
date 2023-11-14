@@ -1,10 +1,20 @@
 # Apify Robot (WIP)
-*RPA framework for automation of arbitrary tasks with focus on the web*
+### Web RPA. *EXTREME SCALING*.
+---
+> Looking for a full-featured web automation suite
+- designed for **ROBUSTNESS** and high reliability?
+- optimized for ***RIDICULOUS*** horizontal scalability?
+- running on tens of targets? Hundreds? Thousands?
+> Look no further.
+---
+> WIP! = Fully capable but not a polished product by any means! Feel free to get in touch should you need any help.
+---
 
-Project aims to provide a generic solution and simple API to automating any abstract process at large scale with extra focus on repetitive tasks performed at specific web hosts (websites, APIs...). The framework aims for maximum versatility and flexibility while making the automation process well structured, clear and organized thanks to describing the entire automation abstraction in project setup and providing convenient tools and templates for quick and efficient scaling of specific implementations sharing the same or similar abstraction.
+Project aims to provide a generic solution and simple API to automating any abstract process at large scale with extra focus on repetitive tasks performed at specific web hosts (websites, APIs...). The framework aims for maximum versatility and flexibility while making the automation process well structured, clear and organized thanks to describing the entire automation abstraction in project setup and providing convenient tools and templates for quick and efficient scaling of specific implementations sharing the same or similar abstraction. Plus everything you need to run at scale with minute control when required. Automated reporting, error handling, session management... it's all there.
 
-## Introduction
+## Overview
   - [Robot](#robot)
+    - [Model](#model) - example of default project structure (completely customizable recommendation)
     - [Setup](#setup) - global or target specific startup and runtime behavior settings of the framework
     - [Scope](#scope) - generic container for the implementation of target independent automation tasks
     - [Target](#target) - container for implementation of automation steps performed against specific target
@@ -15,12 +25,12 @@ Project aims to provide a generic solution and simple API to automating any abst
     - [Errors](#errors) - custom error wrapper for advanced error handling and a dictionary of common errors
     - [Tools](#tools) - convenience tools for quick and efficient development and maintenance of automations
 
-## Application
+## Examples
 - login check - checking validity of credentials at target host websites
 - e-commerce - automated product customization before order completion
 - service payments - automated payment processing for various services
 - service subscription management - check and change state of subscriptions
-- ... etc - pretty much anything you can do manually, using any web browser
+- ... and more - anything you can do in any web browser.
 
 ## Objectives
 - flexibility - highly customizable to fit every project
@@ -69,39 +79,41 @@ One of the most important features is the ability to share and reuse any generic
 High reusability and low maintenance ratio is achieved by arbitrarily mixing generic and target-specific implementations.
 
 Implementation example:
-- Login
-  - G obtain data from a remote resource (e.g. list of targets with credentials)
-  - G decrypt secrets using local private key
-  - T prepare target website for a login attempt
-  - T trigger login action using decrypted credentials
-  - G approximate user location using a remote API
-  - G query national holiday information from a remote API
-  - G request more details for multi-factor authentication
-  - T utilize additional details (OTP) and handle the MFA
-  - G detect and handle login errors or expected patterns
-  - G report validity of credentials to a remote endpoint
-  - G store encrypted input and entry ID to local dataset
-- Payment
-  - T prepare user account to desired starting point (e.g. profile selection)
-  - G reuse MFA channel with remote consumer to optimize profile selection (maybe)
-  - T prepare user account for desired automation objective (e.g. insurance payment)
-  - T obtain vital payment information from target (e.g. name, due date, payment amount)
-  - G report payment details to remote endpoint for internal pairing and real-time verification
-  - G obtain payment confirmation code from remote automation consumer (e.g. payment issuer)
-  - T apply payment confirmation details obtained in real time to the automation process
-  - G prompt payment details with live agent for visual inspection and interaction
-  - G abort automation prematurely based on input or real-time interaction (optional)
-  - T finish automation objective (e.g. by confirming payment details and action)
-  - T verify success of automation objective or assume error otherwise
-  - G store a backup of output and payment confirmation to long-term storage
-  - G report automation result to remote infrastructure in real time (mobile app)
-  - T detect and handle or classify target-specific errors (maybe)
-  - G detect and handle or classify (un)expected errors or patterns
-  - G evaluate current proxy provider and/or IP through a remote API
-  - G report errors and error details to a monitoring channel (maybe)
 
-G - generic steps\
-T - target-specific steps
+> T - target-specific steps
+
+> G - reusable generic steps
+
+- Login
+  - G | obtain data from a remote resource (e.g. list of targets with credentials)
+  - G | decrypt secrets using local private key
+  - T | prepare target website for a login attempt
+  - T | trigger login action using decrypted credentials
+  - G | approximate user location using a remote API
+  - G | query national holiday information from a remote API
+  - G | request more details for multi-factor authentication
+  - T | utilize additional details (OTP) and handle the MFA
+  - G | detect and handle login errors or expected patterns
+  - G | report validity of credentials to a remote endpoint
+  - G | store encrypted input and entry ID to local dataset
+- Payment
+  - T | prepare user account to desired starting point (e.g. profile selection)
+  - G | reuse MFA channel with remote consumer to optimize profile selection (maybe)
+  - T | prepare user account for desired automation objective (e.g. insurance payment)
+  - T | obtain vital payment information from target (e.g. name, due date, payment amount)
+  - G | report payment details to remote endpoint for internal pairing and real-time verification
+  - G | obtain payment confirmation code from remote automation consumer (e.g. payment issuer)
+  - T | apply payment confirmation details obtained in real time to the automation process
+  - G | prompt payment details with live agent for visual inspection and interaction
+  - G | abort automation prematurely based on input or real-time interaction (optional)
+  - T | finish automation objective (e.g. by confirming payment details and action)
+  - T | verify success of automation objective or assume error otherwise
+  - G | store a backup of output and payment confirmation to long-term storage
+  - G | report automation result to remote infrastructure in real time (mobile app)
+  - T | detect and handle or classify target-specific errors (maybe)
+  - G | detect and handle or classify (un)expected errors or patterns
+  - G | evaluate current proxy provider and/or IP through a remote API
+  - G | report errors and error details to a monitoring channel (maybe)
 
 ### Documentation
 Important features like various automation utilities available in the context or directly on implementation instances (should) have properly documented interface and vital information readily available through IDE to make writing implementations of the automation as efficient and easy as possible.
@@ -114,14 +126,13 @@ Control entire automation process dynamically at each step based on current cont
 ### Robot 
 ### [Setup](#setup) > [Scope](#scope)/[Target](#target) > [Context](#context) > [Tasks](#task) > [Steps](#steps)
 
-> Robot takes single `steps` optionally grouped in `scope` and uses shared `tools` 
-to accomplish preset `tasks` defined in global `setup` within its runtime `context`
+> Robot finds target `scope` and takes single `steps` of `tasks` defined in local or global `setup` using its runtime `context` to achieve the goals of desired automation(s)
 
 Execution of tasks is handled by an instance of the Robot. The framework loads the project setup containing a high-level structure and description of the automation process and resolves the order of the tasks with a dependency tree to ensure mutually dependent tasks are executed in the correct order, while handling possible errors at individual steps. Control flow predicates determine actual execution sequence depending on intermediate states during the automation. Each task can contain a sequence of many steps which can be either generic or specific for a particular remote target. Implementation of a step for a particular target will be automatically loaded during execution of the whole process.
 
-### Entry
+### Startup
 Example of the minimal startup below including:
-- navigate the npm package to project root
+- **navigate the npm package to project root**
 - check basic input shape requirements
 - build an instance based on project setup
 - start the automation using that instance
@@ -139,11 +150,14 @@ Apify.Actor.main(async () => {
 });
 ```
 
-### Input
-[Input schema](INPUT_SCHEMA.json) (plus custom properties specific to the automation project)
+### [Model](robot/model)
+Refer to the link above for a basic model of default project structure.
 
-### Output
-[Output schema](OUTPUT_SCHEMA.js) should be defined according to specific needs of the project and provided to the robot through the setup.
+### [Input](INPUT_SCHEMA.json) 
+Default input schema (without custom properties specific to the project)
+
+### [Output](OUTPUT_SCHEMA.js) 
+Output schema should be defined according to specific needs of the project.
 
 ### Context
 Context is a container for the main state and properties of the robot and its tasks. Context is passed down to the lowest unit of execution and other places throughout run time to provide maximum flexibility for both inside and outside of the execution scope. Unified context ensures complete automation awareness at any point and makes it easy to extract and use any preloaded automation tools or access different properties and current state of the automation from anywhere.
@@ -164,7 +178,7 @@ server|instance|Universal server for real-time inspection and interaction
 
 ### [Setup](robot/setup/index.js)
 - global `setup` - defines default behavior of the robot
-- target `setup` - defines behavior of the robot for a specific target host or website
+- target `setup` - defines behavior overrides for a specific target host or website
 
 Robot has full control over execution of the automation based on the logic defined in project setup but it also recognizes and adapts to target specific overrides where necessary, meaning behavior of the framework can also change based on the host (automation target).
 
@@ -292,7 +306,6 @@ Automated error classification and reporting to external monitoring channel(s).
 #### Etc.
 More information in type definitions and inline documentation (WIP)
 
-
 ### Demo
 ```
 class Target extends Robot.Target {
@@ -325,6 +338,10 @@ class Target extends Robot.Target {
 }
 ```
 
+### FAQ
+Why not have all individual automation steps in separate files?
+- Efficiency. The aim is to minimize needless overhead in terms of imports and boilerplate for each task. One more useful side effect is the implementation more closely resembling actual flow of the automation process. This helps grasp the idea of what's happening with minimal attention fragmentation.
+
 ## Deployment
 Personal introduction to the automation framework used is currently recommended due to largely missing documentation.
 
@@ -334,21 +351,17 @@ Additional information:
 - [Changelog](https://gitlab.com/cybaerfly/apify-robot/-/blob/master/CHANGELOG.md) - diff from past versions
 
 ## Dependency
-
 * [Apify](https://sdk.apify.com) - a lower level web automation framework
 
 More details in [package.json](package.json)
 
 ## Contributing
-
 Please read [CONTRIBUTING.md]() for details on our code of conduct, and the process for contributions.
 
 ## Versioning
-
 We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://gitlab.com/cybaerfly/apify-robot/-/tags). 
 
 ## Authors
-
 - Vasek Tobey Vlcek - maintainer
 - Peter Patek - design consultant
 - Matej Vavrinec - design consultant
@@ -357,16 +370,16 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 List of [contributors](https://gitlab.com/cybaerfly/apify-robot/-/graphs/master) participating in this project.
 
 ## License
-
 This project is licensed under the Apache License 2.0 - see the [LICENSE.md](LICENSE.md) file for details
 
 ## Roadmap
 ```
-clean up and refactor internals and adopt ESM
+clean up and refactor internals and adopt ESM     20%
 design a task builder for target implementations
 design and implement a generic real-time protocol    20%
-redesign built-in server for real-time communication    30%
-support non-boolean output formats and output segmentation per task 30%
+redesign built-in server for real-time communication    50%
+extract and publish auxiliary tools as separate packages    50%
+support non-boolean output formats and output segmentation per task   30%
 safely re-introduce generic error handling to reduce codebase and monitoring noise
 improve pattern matching toolset and extend its capabilities to verification polling etc.   30%
 optimize runtime efficiency with pattern racing and generic observer for dynamic content
