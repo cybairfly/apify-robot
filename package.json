@@ -1,6 +1,6 @@
 {
 	"name": "apify-robot",
-	"version": "0.4.0",
+	"version": "0.4.1",
 	"description": "Automation framework built on Apify",
 	"main": "robot/index.js",
 	"files": [
@@ -47,7 +47,6 @@
 		"keygen": "node robot/crypto/keygen.js",
 		"test": "jest"
 	},
-	
 	"repository": {
 		"type": "git",
 		"url": "https://gitlab.com/cybaerfly/apify-robot"
