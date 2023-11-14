@@ -5,9 +5,7 @@
 	"main": "robot/index.js",
 	"files": [
 		"/robot",
-		"/tasks",
 		"/tools",
-		"/Dockerfile",
 		"/INPUT_SCHEMA.json",
 		"/OUTPUT_SCHEMA.js",
 		"/README.md"
