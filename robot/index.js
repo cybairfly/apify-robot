@@ -46,7 +46,9 @@ const { errors, RobotError } = require('./errors');
 const { CaptchaSolver } = require('./tools/captcha');
 const { createHeader } = require('./tools/generic');
 const { openSessionPool, pingSessionPool } = require('./tools/session/sessionPool');
-const { getBrowser, saveOutput, curryDebug, filterOutput, flushAsyncQueueCurry } = require('./tools');
+const { logInputs, logOutput, logError } = require('./tools/logging');
+const { saveOutput, filterOutput } = require('./tools/output');
+const { getBrowser, curryDebug, flushAsyncQueueCurry } = require('./tools');
 
 const {preloadMatchPattern, preloadIteratePatterns} = require('./public/tools/patterns');
 
@@ -223,10 +225,7 @@ class Robot {
                 this.retryCount--;
                 this.retryIndex++;
 
-                log.exception(error);
-                log.default(' '.repeat(100));
-                log.default(`RETRY [R-${this.retryCount}]`);
-                log.default('◄'.repeat(100));
+                logError(error, this);
 
                 this.error = null;
                 if (!this.session)
@@ -238,6 +237,8 @@ class Robot {
             await this.handleError(this);
         }
     };
+
+    reset = async ({input, page}) => {}
 
     retry = async ({input: {target}, setup}) => {
         const url = getTargetUrl(setup, target);
@@ -269,13 +270,7 @@ class Robot {
         await this.assignSession();
 
         if (!this.isRetry) {
-            log.default(createHeader('INPUT', {padder: '▼'}));
-            log.redact.object(input);
-            log.default(createHeader('INPUT', {padder: '▲'}));
-
-            log.default(createHeader('OPTIONS', {padder: '▼'}));
-            log.redact.object(this.options);
-            log.default(createHeader('OPTIONS', {padder: '▲'}));
+            logInputs(this);
         }
 
         this.tasks = await this.initTasks(this);
@@ -285,11 +280,7 @@ class Robot {
         await saveOutput(this);
 
         const OUTPUT = filterOutput(this.output);
-        log.default(' '.repeat(100));
-        log.default('OUTPUT');
-        log.default('='.repeat(100));
-        log.default(OUTPUT);
-        log.default(' ');
+        logOutput(OUTPUT);
 
         await this.stop();
     }

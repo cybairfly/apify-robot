@@ -8,9 +8,6 @@ const pptrTools = require('./pptr');
 const {
     tryRequire,
     curryDebug,
-    saveOutput,
-    savePageContent,
-    saveScreenshot,
     // sendNotification,
 } = require('../../tools');
 
@@ -26,6 +23,13 @@ const {
 const {
     redactObject,
 } = require('../../tools/generic');
+
+const {
+    saveOutput,
+    savePageContent,
+    saveScreenshot,
+    // sendNotification,
+} = require('../../tools/output');
 
 const log = require('../../logger');
 const {TIMEOUTS} = require('../../consts');
