@@ -45,8 +45,7 @@ class Example extends Robot.Target {
     //     this.context = context;
     // }
 
-    /** @param {import('apify-robot').RobotContext} context */
-    [tasks.login] = ({ page, human, server, ...context }) => ({
+    [tasks.login] = ({ page, human, server, ...context } = this.context) => ({
         [steps.checkSession]: async ({ input, state, session, pools: { browserPool } } = context) => {
             // ...
             return outputs.invalidSession;
@@ -92,6 +91,7 @@ class Example extends Robot.Target {
             // ...
             return outputs.actionVerified;
         },
+        
         // optional custom error handling
         [steps.handleErrors]: async () => {
             this.will('handle errors, patterns and edge cases');
