@@ -93,7 +93,7 @@ const handleDialog = async ({type, message}, dialog) => {
         await dialog.dismiss();
 };
 
-const searchResult = async ({page, selectors, policyNumber: input}) => {
+const searchResult = async ({page, selectors, input}) => {
     await page.waitForSelector(selectors.input);
     await page.type(selectors.input, input);
 
