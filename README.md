@@ -145,7 +145,7 @@ const setup = require('./robot');
 const route = __dirname;
 
 Apify.Actor.main(async () => {
-    const input = (await Apify.Actor.getValue('INPUT')) || require('./INPUT_LOCAL');
+    const input = (await Apify.Actor.getValue('INPUT')) || require('./INPUT');
     const OUTPUT = await Robot.route(route).check(input).build(setup).start();
 });
 ```
@@ -190,14 +190,14 @@ Defines a container for arbitrary parts of the automation. Collections of indivi
 ```
 class Scope extends Robot.Scope {
     // optional constructor & super
-    // (automatic context bindings)
+    // (bindings already automatic)
     constructor(context, robot) {
         super(context, robot);
     }
 
     [task] = (context) => ({
         [step]: (context) => {
-           <!-- implementation -->
+            // implementation
         }
     });
 }
@@ -215,7 +215,7 @@ Defines a scope specific to one particular target of automation and provides sup
 class Target extends Robot.Target {
     [task] = (context) => ({
         [step]: (context) => {
-           <!-- implementation -->
+            // implementation
         }
     });
 }
@@ -257,10 +257,10 @@ Step specificity:
 ```
 [task] = (context) => ({
     [step]: (context) => {
-    <!-- implementation -->
+        // implementation
     },
     [step]: (context) => {
-    <!-- implementation -->
+        // implementation
     },
     ...
 });
@@ -308,43 +308,83 @@ More information in type definitions and inline documentation (WIP)
 
 ### Demo
 ```
-class Target extends Robot.Target {
-    [tasks.login] = ({page, human}) => ({
-        [steps.prepareTarget]: async (context) => {
-            await Promise.all([
-                page.gotoDom(URLS.login),
-                page.waitForResponse(PREDICATES.start)
-            ])
-            ...
-            return OUTPUTS.targetPrepared;
+class Example extends Robot.Target {
+    // optional constructor & super
+    // (automatic context bindings)
+    // constructor(context, robot) {
+    //     super(context, robot);
+    //     this.context = context;
+    // }
+
+    [tasks.login] = ({ page, human, server, ...context } = this.context) => ({
+        [steps.checkSession]: async ({ input, state, session, pools: { browserPool } } = context) => {
+            // ...
+            return outputs.invalidSession;
         },
-        [steps.prepareLogin]: async ({state: {username, password}}) => {
-            await human.type(SELECTORS.input.username, username);
-            await human.type(SELECTORS.input.password, password);
-            ...
-            return OUTPUTS.loginPrepared;
+        [steps.decryptSecrets]: async ({state}) => {
+            // ...
+            state = { username, password };
+            return outputs.secretsObtained;
         },
-        [steps.attemptLogin]: async (context) => {
-            await human.press('Enter');
-            ...
-            return OUTPUTS.loginSuccess;
+        [steps.prepareLogin]: async ({state: { username, password }}) => {
+            // ...
+            return outputs.loginPrepared;
         },
-        [steps.reportStatus]: async ({server, output}) => {
-            await server.send(EVENTS.loginStatus(output));
-            ...
-        }
+        [steps.attemptLogin]: async () => {
+            // ...
+            return outputs.loginSuccess;
+        },
     });
-    ...
+
+    /** @param {import('apify-robot').RobotContext} context */
+    [tasks.action] = ({page, human, ...context}) => ({
+        [steps.prepareAccount]: async () => {
+            // ...
+            return outputs.accountReady;
+        },
+
+        [steps.prepareAction]: async ({state} = context) => {
+            // ...
+            return outputs.actionPrepared;
+        },
+
+        [steps.promptAction]: async ({input: {prompt}, server} = context) => {
+            // ...
+            return outputs.actionApproved;
+        },
+
+        [steps.finishAction]: async ({input: {abort}} = context) => {
+            // ...
+            return outputs.actionComplete;
+        },
+
+        [steps.verifyAction]: async () => {
+            // ...
+            return outputs.actionVerified;
+        },
+        
+        // optional custom error handling
+        [steps.handleErrors]: async () => {
+            this.will('handle errors, patterns and edge cases');
+            const pattern = await iteratePatterns(page, PATTERNS);
+
+            if (pattern)
+                return outputs[pattern];
+
+            throw new Robot.Error({retry: true, rotateSession: true, message: 'Unknown new error detected'});
+        },
+    });
 }
 ```
 
 ### FAQ
+Why abstract flow control out of actual target implementation?
+- Scalability. This approach enables the abstract process to be scaled across many targets in a uniform manner rapidly without coupling the execution to specific target implementation
+
 Why not have all individual automation steps in separate files?
 - Efficiency. The aim is to minimize needless overhead in terms of imports and boilerplate for each task. One more useful side effect is the implementation more closely resembling actual flow of the automation process. This helps grasp the idea of what's happening with minimal attention fragmentation.
 
 ## Deployment
-Personal introduction to the automation framework used is currently recommended due to largely missing documentation.
-
 Presence of the library installed as an `npm` module is represented by the directory with the main setup of the project and framework, typically `./robot` in the project root. Directory structure, paths and other aspects are completely configurable and supplied to the framework at run time through the main setup.
 
 Additional information:
@@ -355,13 +395,13 @@ Additional information:
 
 More details in [package.json](package.json)
 
-## Contributing
-Please read [CONTRIBUTING.md]() for details on our code of conduct, and the process for contributions.
-
 ## Versioning
 We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://gitlab.com/cybaerfly/apify-robot/-/tags). 
 
-## Authors
+## Contribute
+Please read [CONTRIBUTING.md]() for details on our code of conduct, and the process for contributions.
+
+## Attributions
 - Vasek Tobey Vlcek - maintainer
 - Peter Patek - design consultant
 - Matej Vavrinec - design consultant
