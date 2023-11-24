@@ -2,6 +2,7 @@
 ### Web RPA. *EXTREME SCALING*.
 ---
 > Looking for a full-featured web automation suite
+- that is simple and flexible but very **POWERFUL**?
 - designed for **ROBUSTNESS** and high reliability?
 - optimized for ***RIDICULOUS*** horizontal scalability?
 - running on tens of targets? Hundreds? Thousands?
