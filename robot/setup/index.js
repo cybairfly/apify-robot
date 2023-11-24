@@ -4,7 +4,7 @@
  * runtime with current context
  */
 class RobotSetup {
-    /* definition of automation tasks */
+    /* definition of automation tasks and their steps - abstraction for scalability */
     tasks = {
         // taskName: {
         //     /* control flow predicates */
