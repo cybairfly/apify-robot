@@ -40,6 +40,8 @@ const getPageUrl = async page => page.evaluate(() => window.location.href).catch
 /** @type {debug} */
 const debug = async (page, name) => curryDebug(null)(page)(name);
 
+const sleep = ms => new Promise(ok => setTimeout(ok, ms));
+
 /**
  * Attempts login with provided details and inputs.
  * Either `predicate` or `selectors.verify` is mandatory for checking login result.
@@ -128,6 +130,7 @@ module.exports = {
     tryRequire,
     debug,
     login,
+    sleep,
     decrypt,
     decryptObject,
     redactObject,
