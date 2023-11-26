@@ -65,7 +65,6 @@ class Example extends Robot.Target {
         },
     });
 
-    /** @param {import('apify-robot').RobotContext} context */
     [tasks.action] = ({page, human, ...context}) => ({
         [steps.prepareAccount]: async () => {
             // ...

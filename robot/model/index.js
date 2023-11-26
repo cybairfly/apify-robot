@@ -6,6 +6,6 @@ const setup = require('./robot');
 const route = __dirname;
 
 Apify.Actor.main(async () => {
-    const input = (await Apify.Actor.getValue('INPUT')) || require('./INPUT_LOCAL');
+    const input = (await Apify.Actor.getValue('INPUT')) || require('./INPUT');
     const OUTPUT = await Robot.route(route).check(input).build(setup).start();
 });

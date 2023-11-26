@@ -205,7 +205,7 @@
             "sectionCaption": "Server",
             "title": "Server?",
             "type": "boolean",
-            "description": "Enable hypertext server",
+            "description": "Enable built-in server",
             "editor": "checkbox",
             "default": false
         },
@@ -213,7 +213,7 @@
             "groupCaption": "Options:",
             "title": "Interface",
             "type": "boolean",
-            "description": "Interactive visual livecast",
+            "description": "Enable visual interface",
             "editor": "checkbox",
             "default": false
         },

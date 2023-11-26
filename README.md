@@ -337,7 +337,6 @@ class Example extends Robot.Target {
         },
     });
 
-    /** @param {import('apify-robot').RobotContext} context */
     [tasks.action] = ({page, human, ...context}) => ({
         [steps.prepareAccount]: async () => {
             // ...
@@ -399,15 +398,13 @@ More details in [package.json](package.json)
 ## Versioning
 We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://gitlab.com/cybaerfly/apify-robot/-/tags). 
 
-## Contribute
-Please read [CONTRIBUTING.md]() for details on our code of conduct, and the process for contributions.
-
-## Attributions
+## Contributors
 - Vasek Tobey Vlcek - maintainer
 - Peter Patek - design consultant
 - Matej Vavrinec - design consultant
 - Milán Vasárhelyi - docs & development
 
+Please read [CONTRIBUTING.md]() for details on our code of conduct, and the process for contributions.
 List of [contributors](https://gitlab.com/cybaerfly/apify-robot/-/graphs/master) participating in this project.
 
 ## License
