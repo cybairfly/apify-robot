@@ -355,11 +355,6 @@ class Robot {
 
     createContext = async ({input, output, page, relay, state, server, session, browserPool, sessionPool} = this) => {
         this.context = (robot => ({
-            // TODO remove legacy support
-            INPUT: Object.freeze(input),
-            OUTPUT: output,
-            relay,
-
             input: {...input},
             output,
             page,
