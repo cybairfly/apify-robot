@@ -22,35 +22,34 @@ const log = require('./logger');
 const Setup = require('./setup');
 const Scope = require('./scope');
 const Target = require('./target');
+const Context = require('./create');
 
 const ScopeConfig = Scope.Config;
 const TargetConfig = Target.Config;
 
-const { sleep } = require('./tools/generic')
+const {sleep} = require('./tools/generic')
 
-const { SESSION } = require('./consts');
-const { extendInput } = require('./tools/input');
-const { RobotOptions } = require('./tools/options');
-const { notifyChannel, shouldNotify } = require('./tools/notify');
-const { transformTasks, resolveTaskTree } = require('./tools/tasks');
-const { getTargetUrl, parseTargetDomain } = require('./tools/target');
-const { integrateInstance, extendInstance } = require('./tools/hooks');
-const { initTrafficFilter } = require('./tools/hooks/traffic');
-const { initEventLogger } = require('./tools/hooks/events');
-const { addSession, getSessionId, persistSessionPoolMaybe } = require('./tools/session');
-const { getLocation, getProxyConfig, getProxyIp } = require('./tools/proxy');
-const { getBrowserPool, getStealthPage } = require('./tools/stealth');
-const { maybeStartServer } = require('./tools/server');
-const { syncContext } = require('./tools/context');
-const { errors, RobotError } = require('./errors');
-const { CaptchaSolver } = require('./tools/captcha');
-const { createHeader } = require('./tools/generic');
-const { openSessionPool, pingSessionPool } = require('./tools/session/sessionPool');
-const { logInputs, logOutput, logError } = require('./tools/logging');
-const { saveOutput, filterOutput } = require('./tools/output');
-const { getBrowser, curryDebug, flushAsyncQueueCurry } = require('./tools');
-
-const {preloadMatchPattern, preloadIteratePatterns} = require('./public/tools/patterns');
+const {SESSION} = require('./consts');
+const {extendInput} = require('./tools/input');
+const {RobotOptions} = require('./tools/options');
+const {notifyChannel, shouldNotify} = require('./tools/notify');
+const {transformTasks, resolveTaskTree} = require('./tools/tasks');
+const {getTargetUrl, parseTargetDomain} = require('./tools/target');
+const {integrateInstance, extendInstance} = require('./tools/hooks');
+const {initTrafficFilter} = require('./tools/hooks/traffic');
+const {initEventLogger} = require('./tools/hooks/events');
+const {addSession, getSessionId, persistSessionPoolMaybe} = require('./tools/session');
+const {getLocation, getProxyConfig, getProxyIp} = require('./tools/proxy');
+const {getBrowserPool, getStealthPage} = require('./tools/stealth');
+const {maybeStartServer} = require('./tools/server');
+const {syncContext} = require('./tools/context');
+const {errors, RobotError} = require('./errors');
+const {CaptchaSolver} = require('./tools/captcha');
+const {createHeader} = require('./tools/generic');
+const {openSessionPool, pingSessionPool} = require('./tools/session/sessionPool');
+const {logInputs, logOutput, logError} = require('./tools/logging');
+const {saveOutput, maybeFilterOutput} = require('./tools/output');
+const {getBrowser, flushAsyncQueueCurry} = require('./tools');
 
 const consts = require('./public/consts');
 const tools = require('./public/tools');
@@ -62,8 +61,11 @@ class Robot {
      */
     constructor(input, setup) {
         this.log = log;
+
+        /** @type {types.input} */
         this.input = input;
         this.target = input.target;
+
         /** @type setup */
         this.setup = setup;
         this.isRetry = false;
@@ -74,6 +76,8 @@ class Robot {
 
         this.relay = {};
         this.state = {};
+
+        /** @type {RobotContext} */
         this.context = {};
         this._output = {};
         this._error = null;
@@ -88,7 +92,7 @@ class Robot {
         /** @type {ProxyConfiguration} */
         this.proxyConfig = null;
 
-        /** @type {options} */
+        /** @type {types.options} */
         this.options = null;
 
         /** @type {Session} */
@@ -238,7 +242,7 @@ class Robot {
         }
     };
 
-    reset = async ({input, page}) => {}
+    reset = async ({input, page}) => { }
 
     retry = async ({input: {target}, setup}) => {
         const url = getTargetUrl(setup, target);
@@ -250,7 +254,7 @@ class Robot {
         integrateInstance(this);
         extendInstance(this);
         initEventLogger(this);
-        this.context = await this.createContext(this);
+        this.context = await this.initContext(this);
         this.output = await this.handleTasks(this);
 
         return this.output;
@@ -284,6 +288,14 @@ class Robot {
 
         await this.stop();
     }
+
+    initContext = async () => {
+        const context = new Context(this);
+        context.robot = this;
+
+        return context;
+    }
+
     initOutput = ({input, setup, options} = this) => {
         const {OutputSchema} = setup;
         if (OutputSchema)
@@ -346,9 +358,11 @@ class Robot {
             // TODO full support for traffic filters in Puppeteer (interception mode)
             if (options.library.puppeteer) {
                 log.warning('Traffic filters supported in limited mode for Puppeteer');
-                await Apify.utils.puppeteer.blockRequests(page, {urlPatterns: [
-                    ...options.trafficFilter.urlPatterns,
-                ]});
+                await Apify.utils.puppeteer.blockRequests(page, {
+                    urlPatterns: [
+                        ...options.trafficFilter.urlPatterns,
+                    ]
+                });
             } else
                 initTrafficFilter(page, domain, options);
         }
@@ -360,44 +374,6 @@ class Robot {
 
         return page;
     };
-
-    createContext = async ({input, output, page, relay, state, server, session, browserPool, sessionPool} = this) => {
-        this.context = (robot => ({
-            input: {...input},
-            output,
-            page,
-            pools: {
-                browserPool,
-                sessionPool,
-            },
-            events: {
-                emit: 'placeholder',
-                listen: 'placeholder',
-            },
-            tools: {
-                debug: curryDebug(input)(page),
-                matchPattern: preloadMatchPattern(page),
-                iteratePatterns: preloadIteratePatterns(page),
-            },
-            session,
-            server,
-            state,
-            step: null,
-            task: null,
-
-            get human() {
-                if (Human) {
-                    robot.human = robot.human || new Human(this.page, {...this.input, human: {motion: {enable: false}}});
-
-                    return robot.human;
-                }
-
-                throw Error('Human cannot be used as it is not installed! Please install this optional dependency first.');
-            },
-        }))(this);
-
-        return this.context;
-    }
 
     handleTasks = async ({input: {target}, output, context, page, setup, tasks} = this) => {
         log.default(createHeader(target, {center: true, upper: true, padder: '◙'}));
