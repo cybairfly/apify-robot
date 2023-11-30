@@ -1,0 +1,59 @@
+{
+    "retry": 0,
+    "tasks": null,
+    "target": "",
+    "browser": "",
+    "custom": {},
+    "username": null,
+    "password": null,
+    "runType": null,
+    "abort": false,
+    "block": true,
+    "prompt": false,
+    "stealth": false,
+    "session": false,
+    "debug": false,
+    "coder": false,
+    "human": false,
+    "server": false,
+    "notify": false,
+    "proxy": true,
+    "proxyConfig": {
+        "useApifyProxy": true
+    },
+    "options": {
+        "debug": {
+            "traffic": {
+                "enable": false,
+                "fullUrls": false,
+                "hostOnly": false,
+                "hideFilter": false
+            },
+            "muted": false,
+            "pwApi": false,
+            "pwAll": false
+        },
+        "server": {
+            "interface": {
+                "enable": false
+            },
+            "websocket": {
+                "enable": false
+            }
+        },
+        "notify": {
+            "details": false,
+            "visuals": true,
+            "verbose": false,
+            "slack": true
+        },
+        "proxy": {
+            "session": false,
+            "proximity": {
+                "enable": false,
+                "locationProviderId": null,
+                "locationProviderApi": ""
+            }
+        }
+    }
+}

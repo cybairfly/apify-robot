@@ -117,6 +117,7 @@ const RobotOptions = ({ input: {browser, block, session, proxyConfig }, input, s
 };
 
 module.exports = {
+    parseInputOptions,
     redactOptions,
     InputOptions,
     RobotOptions,

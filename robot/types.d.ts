@@ -5,11 +5,13 @@ import RobotSetup from './setup';
 import Human from './human';
 import { Server } from './server';
 import {debug, iteratePatterns, matchPattern} from './public/tools/types.d';
+import inputModel from './models/input.json';
 
 const robotSetup = new RobotSetup();
 const robotServer = new Server();
 export {iteratePatterns, matchPattern};
 
+export type input = typeof inputModel;
 export interface Robot {
     input: input,
     options: options,
