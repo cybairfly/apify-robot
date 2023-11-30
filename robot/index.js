@@ -275,14 +275,22 @@ class Robot {
 
         this.tasks = await this.initTasks(this);
         this.proxyConfig = await getProxyConfig(this);
-        this.output = (setup.OutputSchema && setup.OutputSchema({input})) || {};
+        this.output = this.initOutput() || {};
         this.output = await this.retry(this);
         await saveOutput(this);
 
-        const OUTPUT = filterOutput(this.output);
-        logOutput(OUTPUT);
+        const publicOutput = maybeFilterOutput(this);
+        logOutput(publicOutput);
 
         await this.stop();
+    }
+    initOutput = ({input, setup, options} = this) => {
+        const {OutputSchema} = setup;
+        if (OutputSchema)
+            return OutputSchema({input});
+
+        const {schema} = options.output;
+        return schema;
     }
 
     initScope = ({input: {target}, setup} = this) => target ?

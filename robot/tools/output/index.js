@@ -59,9 +59,12 @@ const saveOutput = async ({page, name, input, output: currentOutput, retryCount,
 
 const filterOutput = output => Object.fromEntries(Object.entries(output).filter(([key, value]) => value));
 
+const maybeFilterOutput = ({options, output}) => options.output.filter ? filterOutput(output) : output;
+
+
 module.exports = {
     saveOutput,
     savePageContent,
     saveScreenshot,
-    filterOutput,
+    maybeFilterOutput,
 };

@@ -4,6 +4,17 @@
  * runtime with current context
  */
 class RobotSetup {
+    constructor({tasks, options, callbacks, ...extras} = this) {
+        this.tasks = tasks;
+        this.options = options;
+        this.callbacks = callbacks;
+
+        // if (extras.rootPath)
+        //     this._rootPath = rootPath;
+
+        Object.entries(extras).forEach(([key, value]) => this[key] = value);
+    }
+
     /* definition of automation tasks and their steps - abstraction for scalability */
     tasks = {
         // taskName: {
@@ -45,6 +56,12 @@ class RobotSetup {
             // firefox: true,
             // chrome: true,
             // webkit: true,
+        },
+
+        output: {
+            /* output truthy values only?  */
+            filter: true,
+            schema: {}
         },
 
         /* notify these channels of errors */
@@ -89,6 +106,13 @@ class RobotSetup {
             websocket: {
                 // events: Object,
             },
+        },
+
+        proxy: {
+            proximity: {
+                enable: false,
+                // locationProviderId: String
+            }
         },
 
         /* https://github.com/apify/browser-pool#new_BrowserPool_new */
@@ -206,12 +230,6 @@ class RobotSetup {
 
     /* default output generator */
     // OutputSchema = ({input}) => Object
-
-    /* support instance import */
-    constructor(rootPath) {
-        if (rootPath)
-            this._rootPath = rootPath;
-    }
 
     /* support class import */
     set rootPath(rootPath) {
