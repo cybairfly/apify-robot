@@ -17,8 +17,7 @@
             "title": "Tasks",
             "type": "string",
             "editor": "select",
-            "default": "task1",
-            "prefill": "task1",
+            "default": "",
             "enum": [
                 "task1",
                 "task2",
@@ -39,7 +38,7 @@
             ]
         },
         "browser": {
-            "description": "Choose browser for the selected tasks",
+            "description": "Choose browser to use for task execution",
             "title": "Browser",
             "type": "string",
             "editor": "select",
@@ -51,29 +50,27 @@
                 "webkit"
             ]
         },
-        "username": {
-            "description": "Encrypted username",
+        "custom": {
             "sectionCaption": "Inputs",
+            "title": "Custom Inputs",
+            "type": "object",
+            "editor": "json",
+            "default": {},
+            "prefill": {
+                "anything": "inputs to be used within the automation implementation",
+                "alternative": "update actor input schema to reflect desired inputs"
+            },
+            "description": "Inputs specific to this automation if actor input schema has not been customized"
+        },
+        "username": {
+            "description": "Encrypted username (if applicable)",
             "title": "Username",
             "type": "string",
             "editor": "textfield"
         },
         "password": {
-            "description": "Encrypted password",
+            "description": "Encrypted password (if applicable)",
             "title": "Password", 
-            "type": "string",
-            "editor": "textfield"
-        },
-        "ipAddress": {
-            "description": "Last login IP address",
-            "title": "IP Address",
-            "type": "string",
-            "editor": "textfield",
-            "nullable": true
-        },
-        "ticketId": {
-            "description": "Paired ticket ID",
-            "title": "TicketID",
             "type": "string",
             "editor": "textfield"
         },
@@ -82,8 +79,7 @@
             "title": "Run type",
             "type": "string",
             "editor": "select",
-            "default": "sync",
-            "prefill": "sync",
+            "nullable": true,
             "enum": [
                 "async",
                 "sync"
