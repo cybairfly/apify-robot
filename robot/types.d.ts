@@ -5,13 +5,21 @@ import RobotSetup from './setup';
 import Human from './human';
 import { Server } from './server';
 import {debug, iteratePatterns, matchPattern} from './public/tools/types.d';
+import RobotModel from '.';
+import Context from './create';
 import inputModel from './models/input.json';
 
+const robotModel = new RobotModel();
 const robotSetup = new RobotSetup();
 const robotServer = new Server();
 export {iteratePatterns, matchPattern};
 
+// const context = new Context();
+// type context = typeof context;
+
 export type input = typeof inputModel;
+
+export type Robot = typeof robotModel;
 export interface Robot {
     input: input,
     options: options,
@@ -23,18 +31,7 @@ export interface Robot {
 }
 
 export interface RobotContext {
-    input: {
-        target: String,
-        tasks: Array<string>,
-        retry: Number,
-        abort: Boolean,
-        block: Boolean,
-        debug: Boolean,
-        human: Boolean,
-        stream: Boolean,
-        session: Boolean,
-        stealth: Boolean
-    },
+    input: input,
     output: Object,
     task: Object,
     step: {
@@ -76,6 +73,7 @@ export type page = Page;
 export type frame = Frame;
 export type setup = typeof robotSetup;
 export type server = typeof robotServer;
+export type options = typeof robotSetup.options;
 
 export interface input {
     target: string,
