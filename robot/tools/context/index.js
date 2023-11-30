@@ -86,8 +86,6 @@ const syncContext = robot => ({
                 robot._output[key] = value;
             });
 
-            // TODO remove legacy support
-            robot.context.OUTPUT = robot.output;
             robot.context.output = robot.output;
 
             if (robot.scope) {
