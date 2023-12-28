@@ -1,11 +1,10 @@
 /**
  * @typedef {import('./types').RobotErrorOptions} RobotErrorOptions
- * @typedef {import('./types').StatusErrorOptions} StatusErrorOptions
  */
 
 /* eslint-disable max-classes-per-file */
 /* eslint-disable lines-between-class-members */
-const RobotError = require('./robot.error');
+const {RobotError} = require('./robot.error');
 
 /**
  * Dictionary of custom errors for the robot
@@ -148,5 +147,5 @@ class Errors {
 
 module.exports = {
     RobotError,
-    errors: new Errors(),
+    // errors: new Errors(),
 };

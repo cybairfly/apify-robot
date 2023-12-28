@@ -1,14 +1,6 @@
-interface RobotErrorOptions {
-    name?: string,
-    type?: string,
-    data: Object,
-    error?: Error,
-    retry?: boolean,
-    message?: string,
+import {CyberErrorOptions} from 'cyber-codex/error/lib/types';
+
+export interface RobotErrorOptions extends CyberErrorOptions {
     rotateSession?: boolean,
     retireSession?: boolean
 }
-
-export {
-    RobotErrorOptions,
-};
