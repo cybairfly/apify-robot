@@ -14,6 +14,7 @@
 		"@types/puppeteer": "^5.4.5",
 		"apify": "^3.1.8",
 		"crawlee": "^3.5.3",
+		"cyber-codex": "^0.0.8",
 		"dot-object": "^2.1.4",
 		"fingerprint-generator": "^2.1.38",
 		"fingerprint-injector": "^2.1.38",
@@ -28,7 +29,6 @@
 		"tunnel": "^0.0.6"
 	},
 	"optionalDependencies": {
-		"apify-human": "gitlab:cybaerfly/apify-human",
 		"interface-server": "github:cybairfly/InterfaceServer"
 	},
 	"devDependencies": {

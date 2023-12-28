@@ -14,11 +14,19 @@
 require('fix-esm').register();
 
 const Apify = require('apify');
-const Human = require('apify-human');
+const {
+    Human,
+    Logue,
+    errors,
+    tools: {
+        sleep,
+    },
+} = require('cyber-codex');
+
+const log = new Logue().child({prefix: 'Robot'});
 const R = require('ramda');
 const path = require('path');
 
-const log = require('./logger');
 const Setup = require('./setup');
 const Scope = require('./scope');
 const Target = require('./target');
@@ -26,8 +34,6 @@ const Context = require('./create');
 
 const ScopeConfig = Scope.Config;
 const TargetConfig = Target.Config;
-
-const {sleep} = require('./tools/generic')
 
 const {SESSION} = require('./consts');
 const {extendInput} = require('./tools/input');
@@ -43,7 +49,7 @@ const {getLocation, getProxyConfig, getProxyIp} = require('./tools/proxy');
 const {getBrowserPool, getStealthPage} = require('./tools/stealth');
 const {maybeStartServer} = require('./tools/server');
 const {syncContext} = require('./tools/context');
-const {errors, RobotError} = require('./errors');
+const {RobotError} = require('./errors');
 const {CaptchaSolver} = require('./tools/captcha');
 const {createHeader} = require('./tools/generic');
 const {openSessionPool, pingSessionPool} = require('./tools/session/sessionPool');
@@ -247,7 +253,7 @@ class Robot {
     retry = async ({input: {target}, setup}) => {
         const url = getTargetUrl(setup, target);
         this.domain = parseTargetDomain(url, target);
-        if (!this.isRetry && url) log.default({url});
+        if (!this.isRetry && url) console.log({url});
 
         this.page = await this.initPage(this);
         this.server = maybeStartServer(this);
@@ -324,12 +330,12 @@ class Robot {
 
         if (!this.isRetry) {
             log.info('Task list from task tree:');
-            log.default(createHeader('TASKS', {padder: '▼'}));
-            taskList.flatMap(task => log.default(task));
-            log.default(createHeader('TASKS', {padder: '▲'}));
+            console.log(createHeader('TASKS', {padder: '▼'}));
+            taskList.flatMap(task => console.log(task));
+            console.log(createHeader('TASKS', {padder: '▲'}));
         }
 
-        log.default(taskTree);
+        console.log(taskTree);
         this.tasks = taskList;
 
         return this.tasks;
@@ -369,34 +375,34 @@ class Robot {
 
         if (debug) {
             this.proxyIp = await getProxyIp(page);
-            log.console.debug({proxyIp: this.proxyIp});
+            log.bypass.debug({proxyIp: this.proxyIp});
         }
 
         return page;
     };
 
     handleTasks = async ({input: {target}, output, context, page, setup, tasks} = this) => {
-        log.default(createHeader(target, {center: true, upper: true, padder: '◙'}));
+        console.log(createHeader(target, {center: true, upper: true, padder: '◙'}));
 
         for (const task of tasks) {
             this.task = {...task};
             this.task.model = Object.freeze(task);
             this.syncContext.task(this.task);
 
-            log.default(' '.repeat(100));
-            log.default(`TASK [${task.name}]`);
-            log.default('■'.repeat(100));
+            console.log(' '.repeat(100));
+            console.log(`TASK [${task.name}]`);
+            console.log('■'.repeat(100));
 
             this.task.init = !task.init || task.init(context);
             this.task.skip = task.skip && task.skip(context);
 
             if (!this.task.init) {
-                log.join.info(`TASK [${task.name}] skipped on test ${task.init}`);
+                log.info(`TASK [${task.name}] skipped on test ${task.init}`);
                 continue;
             }
 
             if (this.task.skip) {
-                log.join.info(`TASK [${task.name}] skipped on test ${task.skip}`);
+                log.info(`TASK [${task.name}] skipped on test ${task.skip}`);
                 continue;
             }
 
@@ -407,39 +413,39 @@ class Robot {
                 this.step.model = Object.freeze(step);
                 this.syncContext.step(this.step);
 
-                log.default(' '.repeat(100));
-                log.default(`TASK [${task.name}] ► STEP [${step.name}]`);
-                log.default('▬'.repeat(100));
+                console.log(' '.repeat(100));
+                console.log(`TASK [${task.name}] ► STEP [${step.name}]`);
+                console.log('▬'.repeat(100));
 
                 this.step.init = !step.init || step.init(context);
                 this.step.skip = step.skip && step.skip(context);
 
                 if (this.step.abort && this.step.abort(context)) {
-                    log.join.warning(`Aborting on step [${step.name}] on test ${step.abort}`);
+                    log.warning(`Aborting on step [${step.name}] on test ${step.abort}`);
                     break;
                 }
 
                 if (!this.step.init) {
-                    log.join.info(`STEP [${step.name}] of task [${task.name}] skipped on test ${step.init}`);
+                    log.info(`STEP [${step.name}] of task [${task.name}] skipped on test ${step.init}`);
                     continue;
                 }
 
                 if (this.step.skip) {
-                    log.join.info(`STEP [${step.name}] of task [${task.name}] skipped on test ${step.skip}`);
+                    log.info(`STEP [${step.name}] of task [${task.name}] skipped on test ${step.skip}`);
                     continue;
                 }
 
                 this.step.code = tryRequire.global(path.join(setup.getPath.generic.steps(), step.name));
                 if (this.step.code)
-                    log.join.info(`STEP Generic handler found for step [${step.name}] of task [${task.name}]`);
+                    log.info(`STEP Generic handler found for step [${step.name}] of task [${task.name}]`);
                 else {
-                    log.join.debug(`STEP Generic handler not found for step [${step.name}] of task [${task.name}]`);
+                    log.debug(`STEP Generic handler not found for step [${step.name}] of task [${task.name}]`);
 
                     this.step.code = tryRequire.global(path.join(setup.getPath.targets.steps(target), step.name));
                     if (this.step.code)
-                        log.join.info(`STEP Target handler found for step [${step.name}] of task [${task.name}] in ${target ? 'target' : 'scope'} [${target}]`);
+                        log.info(`STEP Target handler found for step [${step.name}] of task [${task.name}] in ${target ? 'target' : 'scope'} [${target}]`);
                     else
-                        log.join.debug(`STEP Target handler not found for step [${step.name}] of task [${task.name}] in ${target ? 'target' : 'scope'} [${target}]`);
+                        log.debug(`STEP Target handler not found for step [${step.name}] of task [${task.name}] in ${target ? 'target' : 'scope'} [${target}]`);
                 }
 
                 if (this.step.code) {
@@ -474,7 +480,7 @@ class Robot {
                                 `TARGET: Scope handler not found for step [${step.name}] of task [${task.name}] as scope [${target}]` :
                                 `SCOPE: Scope handler not found for step [${step.name}] of task [${task.name}]`;
 
-                            log.join.debug(message);
+                            log.debug(message);
                             await this.stop();
                             throw Error(message);
                         }
@@ -484,13 +490,13 @@ class Robot {
                     // const line = target ?
                     //     `${target ? 'TARGET' : 'SCOPE'} Target scope found for step [${step.name}] of task [${task.name}] as scope [${task.name}] for target [${target}]` :
                     //     `${target ? 'TARGET' : 'SCOPE'} Generic scope found for step [${step.name}] of task [${task.name}] as scope [${task.name}]`;
-                    // log.join.debug(line);
+                    // log.debug(line);
 
                     const message = target ?
                         `STEP Target handler found for step [${step.name}] of task [${task.name}] in scope [${target}]` :
                         `STEP Generic handler found for step [${step.name}] of task [${task.name}]`;
 
-                    log.join.info(message);
+                    log.info(message);
                     this.step.output = await this.step.code(context, this)
                         .catch(async error => {
                             this.error = error;
@@ -504,12 +510,12 @@ class Robot {
                                 this.scope[task.catch.name];
 
                             if (this.task.catch)
-                                log.join.info(`SCOPE Scope error handler found for task [${task.name}]`);
+                                log.info(`SCOPE Scope error handler found for task [${task.name}]`);
                             else {
                                 this.task.catch = global.tryRequire.global(path.join(setup.getPath.generic.steps(), task.catch.name));
 
                                 if (this.task.catch)
-                                    log.join.info(`STEP Generic error handler found for task [${task.name}]`);
+                                    log.info(`STEP Generic error handler found for task [${task.name}]`);
                             }
 
                             if (!this.task.catch)
@@ -527,19 +533,19 @@ class Robot {
                         });
                 }
 
-                log.default(' '.repeat(100));
-                log.default(`TASK [${task.name}] ► STEP [${step.name}] ➜ OUTPUT`);
-                log.default('='.repeat(100));
-                log.default(this.step.output);
-                log.default(' ');
+                console.log(' '.repeat(100));
+                console.log(`TASK [${task.name}] ► STEP [${step.name}] ➜ OUTPUT`);
+                console.log('='.repeat(100));
+                console.log(this.step.output);
+                console.log(' ');
 
                 if (this.step.output && typeof this.step.output !== 'object') {
-                    log.join.warning('STEP ignoring step output (not an object)', output);
+                    log.warning('STEP ignoring step output (not an object)', output);
                     this.step.output = {};
                 }
 
                 if (this.scope.step.output && typeof this.scope.step.output !== 'object') {
-                    log.join.warning('STEP ignoring step output (not an object)', output);
+                    log.warning('STEP ignoring step output (not an object)', output);
                     this.scope.step.output = {};
                 }
 
@@ -566,12 +572,12 @@ class Robot {
                 this.step.stop = step.stop && step.stop(context);
 
                 if (this.step.stop) {
-                    log.join.warning(`Breaking on step [${step.name}] of task [${task.name}] on test ${step.stop}`);
+                    log.warning(`Breaking on step [${step.name}] of task [${task.name}] on test ${step.stop}`);
                     break;
                 }
 
                 if (!this.step.done) {
-                    log.join.error(`Failure on step [${step.name}] of task [${task.name}] on test ${step.done}`);
+                    log.error(`Failure on step [${step.name}] of task [${task.name}] on test ${step.done}`);
                     this.task.done = false;
                     break;
                 }
@@ -581,18 +587,18 @@ class Robot {
             this.task.stop = task.stop && task.stop(context);
 
             if (this.step.abort && this.step.abort(context)) {
-                log.join.warning(`Aborting on task [${task.name}] on test ${this.step.abort}`);
+                log.warning(`Aborting on task [${task.name}] on test ${this.step.abort}`);
                 break;
             }
 
             if (this.task.stop) {
-                log.join.warning(`Breaking on task [${task.name}] on test ${task.stop}`);
+                log.warning(`Breaking on task [${task.name}] on test ${task.stop}`);
                 break;
             }
 
             // continue to other tasks unless stopped explicitly
             // if (!this.task.done) {
-            //     log.join.error(`Failure on task [${task.name}] on test [${task.done}]`);
+            //     log.error(`Failure on task [${task.name}] on test [${task.done}]`);
             //     this.task.done = false;
             //     break;
             // }
@@ -616,9 +622,9 @@ class Robot {
                 throw Error('Failed to obtain or create a usable session based on current session options');
 
             this.session.retireOnBlockedStatusCodes(SESSION.retireStatusCodes);
-            log.console.debug('Retire session on status codes:', SESSION.retireStatusCodes);
-            log.console.info('Usable proxy sessions:', this.sessionPool.usableSessionsCount);
-            log.console.info('Retired proxy sessions:', this.sessionPool.retiredSessionsCount);
+            log.bypass.debug('Retire session on status codes:', SESSION.retireStatusCodes);
+            log.bypass.info('Usable proxy sessions:', this.sessionPool.usableSessionsCount);
+            log.bypass.info('Retired proxy sessions:', this.sessionPool.retiredSessionsCount);
         } else {
             this.session = {
                 id: this.sessionId,
@@ -626,7 +632,7 @@ class Robot {
             };
         }
 
-        log.console.info({
+        log.bypass.info({
             sessionId: this.sessionId,
             'session.id': this.session.id,
         });
@@ -650,7 +656,7 @@ class Robot {
             await saveOutput({input, output, page});
 
         if (log.getLevel() === log.LEVELS.DEBUG)
-            log.object.debug(error);
+            log.debug(error);
 
         await this.reportError(this);
 

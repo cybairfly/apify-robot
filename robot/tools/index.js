@@ -28,9 +28,9 @@ const tryRequire = {
     global: (log, rootPath) => (globalPath, options = {scope: false}) => {
         try {
             const requirePath = path.join(rootPath, globalPath);
-            log.join.debug('Require attempt:');
-            log.join.debug('ROOT:', rootPath);
-            log.join.debug('PATH:', requirePath);
+            log.debug('Require attempt:');
+            log.debug('ROOT:', rootPath);
+            log.debug('PATH:', requirePath);
             return require(requirePath);
         } catch (error) {
             const [message] = error.message.split('\n', 1);
@@ -46,9 +46,9 @@ const tryRequire = {
 
 const curryDebug = (input = {}) => page => async name => {
     if (!input.debug) return;
-    log.default(' '.repeat(100));
-    log.default(`DEBUG [${name || '<anonymous>'}]`);
-    log.default('-'.repeat(100));
+    console.log(' '.repeat(100));
+    console.log(`DEBUG [${name || '<anonymous>'}]`);
+    console.log('-'.repeat(100));
     await saveScreenshot({name: `DEBUG${name ? `-${name}` : ''}`, page});
     await savePageContent({name: `DEBUG${name ? `-${name}` : ''}`, page});
 };

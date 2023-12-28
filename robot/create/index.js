@@ -1,4 +1,4 @@
-const Human = require('apify-human');
+const {Human} = require('cyber-codex');
 
 const log = require('../logger');
 const {curryDebug} = require('../tools');
@@ -40,7 +40,7 @@ class Context {
 
     get robot() {
         log.warning('Robot internals backdoor is being accessed. Use with caution and only when necessary.')
-        
+
         return this.#robot;
     }
 
