@@ -1,2 +1,0 @@
-- improve docs for server prompt
-- require abort as a separate step in case abort option is enabled on input

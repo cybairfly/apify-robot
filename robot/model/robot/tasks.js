@@ -1,6 +1,6 @@
 const consts = require('./consts');
 const { tasks, steps } = consts;
-``
+
 module.exports = {
     [ tasks.login ]: {
         steps: [

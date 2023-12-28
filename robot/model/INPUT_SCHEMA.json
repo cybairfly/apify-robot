@@ -1,4 +1,4 @@
 {
-    "title": "Input schema for actor-robot",
-    "description": "Input schema extensions belong here"
+    "title": "Input schema for custom robot",
+    "description": "Input schema extended with custom properties belongs here"
 }
