@@ -13,7 +13,7 @@ const Setup = require('./setup');
 const route = __dirname;
 
 Apify.Actor.main(async () => {
-    const input = {};
+    const input = (await Apify.Actor.getValue('INPUT')) || require('./INPUT');
 
     if (input['options.debug.pwApi'])
         debug.enable('pw:api*');
