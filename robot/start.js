@@ -13,7 +13,7 @@ const Setup = require('./setup');
 const route = __dirname;
 
 Apify.Actor.main(async () => {
-    const input = (await Apify.Actor.getValue('INPUT')) || require('./INPUT');
+    const input = {};
 
     if (input['options.debug.pwApi'])
         debug.enable('pw:api*');
@@ -21,7 +21,7 @@ Apify.Actor.main(async () => {
     if (input['options.debug.pwAll'])
         debug.enable('pw:protocol*');
 
-    const Robot = require('apify-robot');
+    const Robot = require('./index.js');
     const setup = new Setup();
 
     const OUTPUT = await Robot.route(route).check(input).build(setup).start();
