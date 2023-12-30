@@ -23,7 +23,7 @@
         "tasks": {
             "description": "Choose tasks for the robot to perform",
             "title": "Tasks",
-            "type": "string",
+            "type": "array",
             "editor": "stringList"
         },
         "target": {

@@ -1,3 +1,18 @@
+0.4.2 / 2023-12-28
+==================
+## Overview
+Refactoring & cleanup.
+
+## Updates
+### `Robot.Setup`
+- Enable unlimited custom properties through overloaded constructor.
+- `options.output.filter` - add option to filter out nullish values from the output
+
+
+0.4.1 / 2023-11-14
+==================
+Refactoring & cleanup. Update example implementation.
+
 0.4.0 / 2023-11-13
 ==================
 ## Breaking
