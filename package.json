@@ -26,10 +26,8 @@
 		"puppeteer": "^19.5.2",
 		"ramda": "^0.28.0",
 		"slack-node": "^0.1.8",
-		"tunnel": "^0.0.6"
-	},
-	"optionalDependencies": {
-		"interface-server": "github:cybairfly/InterfaceServer"
+		"tunnel": "^0.0.6",
+        "interface-server": "github:cybairfly/InterfaceServer"
 	},
 	"devDependencies": {
 		"@apify/eslint-config": "^0.1.4",
