@@ -5,6 +5,7 @@
 .DS_Store
 INPUT.js
 node_modules
+storage
 apify_storage
 test_input.json
 pnpm-lock.yaml

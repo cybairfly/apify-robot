@@ -40,7 +40,7 @@
 		"node": ">=14.0.0"
 	},
 	"scripts": {
-		"start": "node robot/index.js",
+		"start": "node robot/start.js",
 		"keygen": "node robot/crypto/keygen.js",
 		"test": "jest"
 	},

@@ -1,9 +1,3 @@
-/**
- * Copyright © Vasek Tobey Vlcek <cyberfly@email.cz> - All Rights Reserved.
- * Unauthorized copying of this software repository is strictly prohibited.
- * Proprietary and confidential software.
- */
-
 /* eslint-disable global-require */
 
 const debug = require('debug');
@@ -13,7 +7,7 @@ const Setup = require('./setup');
 const route = __dirname;
 
 Apify.Actor.main(async () => {
-    const input = (await Apify.Actor.getValue('INPUT')) || require('./INPUT');
+    const input = (await Apify.Actor.getValue('INPUT')) || require('../INPUT');
 
     if (input['options.debug.pwApi'])
         debug.enable('pw:api*');

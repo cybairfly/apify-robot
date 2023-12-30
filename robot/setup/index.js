@@ -192,17 +192,27 @@ class RobotSetup {
     /* base path = this.rootPath */
     getPath = {
         generic: {
-            // scope: task => 'tasks/generic/index',
-            // flows: task => 'tasks/generic/flows',
-            // steps: task => 'tasks/generic/steps',
+            scope: task => '../../tasks/generic',
+            steps: task => '../../tasks/generic',
         },
         targets: {
-            // target: target => `tasks/targets/${target}`,
-            // config: target => `tasks/targets/${target}/config`,
-            // flows: target => `tasks/targets/${target}/flows`,
-            // steps: target => `tasks/targets/${target}/steps`,
-            // setup: target => `tasks/targets/${target}/setup`,
+            target: target => `../../tasks/targets/${target}`,
+            config: target => `../../tasks/targets/${target}/config`,
+            steps: target => `../../tasks/targets/${target}/steps`,
+            setup: target => `../../tasks/targets/${target}/.robot`,
         },
+    };
+
+    /* TODO construct tasks */
+    // getTasks = target => ({});
+
+    /* generate unique input ID */
+    getInputId = input => `auto-${Date.now().toString()}`;
+
+    /* generate unique proxy session string for local and remote runs (@Apify) */
+    getProxySessionId = {
+        apify: ({input}) => input.id,
+        local: ({input}) => input.id,
     };
 
     /* custom location lookup and parsing */
@@ -216,19 +226,7 @@ class RobotSetup {
     */
     // getProxyLocation = async ({input, options}) => {}
 
-    /* generate unique proxy session string for local and remote runs (@Apify) */
-    getProxySessionId = {
-        // apify: ({input}) => String,
-        // local: ({input}) => String,
-    };
-
-    /* TODO construct tasks */
-    // getTasks = target => ({});
-
-    /* generate unique input ID */
-    // getInputId = input => String;
-
-    /* default output generator */
+    /* default output template */
     // OutputSchema = ({input}) => Object
 
     /* support class import */

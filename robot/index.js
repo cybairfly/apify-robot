@@ -323,7 +323,7 @@ class Robot {
                 steps: steps => ({
                     default: {
                         steps: steps.map(step => ({
-                            name: step.name || `NameLess-${Date.now()}`,
+                            name: step.name || `auto-${Date.now()}`,
                             code: typeof step.code === 'function' ?
                                 step.code :
                                 (context) => {
@@ -336,7 +336,7 @@ class Robot {
                     default: {
                         steps: [
                             {
-                                name: `NameLess-${Date.now()}`,
+                                name: `auto-${Date.now()}`,
                                 code: step,
                             }
                         ]
@@ -357,13 +357,11 @@ class Robot {
 
         const parseScript = async scriptString => {
             const script = new vm.Script(scriptString);
-            const result = await script.runInNewContext();
-
-            return result;
+            return script.runInNewContext();
         }
 
         if (scriptString) {
-            const script = parseScript(scriptString);
+            const script = await parseScript(scriptString);
             const [tasks] = parseTasks(script);
 
             setup.tasks = tasks;

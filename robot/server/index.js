@@ -3,7 +3,7 @@ const http = require('http');
 const path = require('path');
 const fs = require('fs');
 const {promisify} = require('util');
-const {InterfaceServer} = require('interface-server');
+// const {InterfaceServer} = require('interface-server');
 
 const log = require('../logger/index.js');
 
@@ -28,22 +28,22 @@ class Server {
         this.websocket = null;
         this.options = options.server;
 
-        if (InterfaceServer) {
-            const clientOptions = options.server.interface.client;
-            if (clientOptions.route)
-                clientOptions.route = path.join(setup._rootPath, clientOptions.route);
+        // if (InterfaceServer) {
+        //     const clientOptions = options.server.interface.client;
+        //     if (clientOptions.route)
+        //         clientOptions.route = path.join(setup._rootPath, clientOptions.route);
 
-            this.interface = new InterfaceServer({
-                ...options.server.interface,
-                httpServer: this.hypertext,
-            });
+        //     this.interface = new InterfaceServer({
+        //         ...options.server.interface,
+        //         httpServer: this.hypertext,
+        //     });
 
-            // temporary remapping
-            this.start = this.interface.start.bind(this.interface);
-            this.serve = this.interface.serve.bind(this.interface);
-            this.prompt = this.interface.prompt.bind(this.interface);
-            page.on(EVENTS.load, async () => this.interface.serve(page));
-        }
+        //     // temporary remapping
+        //     this.start = this.interface.start.bind(this.interface);
+        //     this.serve = this.interface.serve.bind(this.interface);
+        //     this.prompt = this.interface.prompt.bind(this.interface);
+        //     page.on(EVENTS.load, async () => this.interface.serve(page));
+        // }
     }
 }
 
