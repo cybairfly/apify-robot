@@ -2,7 +2,7 @@
 	"name": "apify-robot",
 	"version": "0.4.1",
 	"description": "Automation framework built on Apify",
-	"main": "robot/index.js",
+	"main": "robot/start.js",
 	"files": [
 		"/robot",
 		"/INPUT_SCHEMA.json",
