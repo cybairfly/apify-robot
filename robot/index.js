@@ -25,6 +25,7 @@ const {
 
 const log = new Logue().child({prefix: 'Robot'});
 const R = require('ramda');
+const vm = require('vm');
 const path = require('path');
 
 const Setup = require('./setup');
@@ -315,7 +316,59 @@ class Robot {
         tryRequire.global(`./${setup.getPath.targets.target(target)}`, {scope: true}) :
         tryRequire.global(`./${setup.getPath.generic.scope()}`, {scope: true});
 
-    initTasks = async ({input: {target, tasks: taskNames}, setup} = this) => {
+    initTasks = async ({input: {target, script: scriptString, tasks: taskNames}, setup} = this) => {
+        const parseTasks = (output) => {
+            const normalizers = {
+                tasks: tasks => tasks,
+                steps: steps => ({
+                    default: {
+                        steps: steps.map(step => ({
+                            name: step.name || `NameLess-${Date.now()}`,
+                            code: typeof step.code === 'function' ?
+                                step.code :
+                                (context) => {
+                                    throw Error('Failed to parse step code to execute. Please check definition of the automation.');
+                                }
+                        }))
+                    }
+                }),
+                step: step => ({
+                    default: {
+                        steps: [
+                            {
+                                name: `NameLess-${Date.now()}`,
+                                code: step,
+                            }
+                        ]
+                    }
+                }),
+            }
+
+            const conditions = [
+                [normalizers.step, input => typeof input === 'function'],
+                [normalizers.steps, input => Array.isArray(input)],
+                [normalizers.tasks, input => typeof input === 'object'],
+            ];
+
+            return conditions
+                .map(([normalizer, condition]) => condition(output) && normalizer(output))
+                .filter(x => x);
+        }
+
+        const parseScript = async scriptString => {
+            const script = new vm.Script(scriptString);
+            const result = await script.runInNewContext();
+
+            return result;
+        }
+
+        if (scriptString) {
+            const script = parseScript(scriptString);
+            const [tasks] = parseTasks(script);
+
+            setup.tasks = tasks;
+        }
+
         const setupTasks = setup.tasks ? setup.tasks : setup.getTasks(target);
         this.Scope = this.initScope();
 
@@ -381,7 +434,7 @@ class Robot {
         return page;
     };
 
-    handleTasks = async ({input: {target}, output, context, page, setup, tasks} = this) => {
+    handleTasks = async ({input: {script, target}, output, context, page, setup, tasks} = this) => {
         console.log(createHeader(target, {center: true, upper: true, padder: '◙'}));
 
         for (const task of tasks) {
@@ -409,7 +462,7 @@ class Robot {
             await page.waitForFunction(() => document.readyState === 'complete').catch(error => null);
 
             for (const step of task.steps) {
-                this.step = {...step};
+                this.step = {...step, code: step.code};
                 this.step.model = Object.freeze(step);
                 this.syncContext.step(this.step);
 
@@ -435,17 +488,19 @@ class Robot {
                     continue;
                 }
 
-                this.step.code = tryRequire.global(path.join(setup.getPath.generic.steps(), step.name));
-                if (this.step.code)
-                    log.info(`STEP Generic handler found for step [${step.name}] of task [${task.name}]`);
-                else {
-                    log.debug(`STEP Generic handler not found for step [${step.name}] of task [${task.name}]`);
-
-                    this.step.code = tryRequire.global(path.join(setup.getPath.targets.steps(target), step.name));
+                if (!script) {
+                    this.step.code = tryRequire.global(path.join(setup.getPath.generic.steps(), step.name));
                     if (this.step.code)
-                        log.info(`STEP Target handler found for step [${step.name}] of task [${task.name}] in ${target ? 'target' : 'scope'} [${target}]`);
-                    else
-                        log.debug(`STEP Target handler not found for step [${step.name}] of task [${task.name}] in ${target ? 'target' : 'scope'} [${target}]`);
+                        log.info(`STEP Generic handler found for step [${step.name}] of task [${task.name}]`);
+                    else {
+                        log.debug(`STEP Generic handler not found for step [${step.name}] of task [${task.name}]`);
+
+                        this.step.code = tryRequire.global(path.join(setup.getPath.targets.steps(target), step.name));
+                        if (this.step.code)
+                            log.info(`STEP Target handler found for step [${step.name}] of task [${task.name}] in ${target ? 'target' : 'scope'} [${target}]`);
+                        else
+                            log.debug(`STEP Target handler not found for step [${step.name}] of task [${task.name}] in ${target ? 'target' : 'scope'} [${target}]`);
+                    }
                 }
 
                 if (this.step.code) {

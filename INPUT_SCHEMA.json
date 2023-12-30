@@ -12,20 +12,22 @@
             "maximum": 9,
             "unit": "retries"
         },
+        "script": {
+            "description": "Define script for the robot to execute",
+            "title": "Script",
+            "type": "string",
+            "editor": "javascript",
+            "prefill": "async (context) => { }\n// Array of steps also works for better control flow:\n// [\n//     {\n//         name: 'one',\n//         code: async (context) => { },\n//     },\n//     {\n//         name: 'two',\n//         code: async (context) => { },\n//     },\n// ]",
+            "default": "async (context) => { }\\n// Array of steps also works for better control flow:\\n// [\\n//     {\\n//         name: 'one',\\n//         code: async (context) => { },\\n//     },\\n//     {\\n//         name: 'two',\\n//         code: async (context) => { },\\n//     },\\n// ]"
+        },
         "tasks": {
             "description": "Choose tasks for the robot to perform",
             "title": "Tasks",
             "type": "string",
-            "editor": "select",
-            "default": "",
-            "enum": [
-                "task1",
-                "task2",
-                "task3"
-            ]
+            "editor": "stringList"
         },
         "target": {
-            "description": "Choose target to perform selected tasks",
+            "description": "Choose target to execute task against",
             "title": "Target",
             "type": "string",
             "editor": "select",
