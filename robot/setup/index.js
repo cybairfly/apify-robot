@@ -207,7 +207,7 @@ class RobotSetup {
     // getTasks = target => ({});
 
     /* generate unique input ID */
-    getInputId = input => `auto-${Date.now().toString()}`;
+    getInputId = input => `auto_${Date.now().toString()}`;
 
     /* generate unique proxy session string for local and remote runs (@Apify) */
     getProxySessionId = {
