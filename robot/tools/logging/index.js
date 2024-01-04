@@ -11,6 +11,14 @@ const logInputs = ({ input, options }) => {
     log.default(createHeader('OPTIONS', { padder: '▲' }));
 };
 
+const logOutputUpdate = robot => ({task, step}) => {
+    log.default(' '.repeat(100));
+    log.default(`TASK [${task.name}] ► STEP [${step.name}] ➜ OUTPUT`);
+    log.default('='.repeat(100));
+    log.default(robot.step.output);
+    log.default(' ');
+}
+
 const logOutput = OUTPUT => {
     log.default(' '.repeat(100));
     log.default('OUTPUT');
@@ -29,5 +37,6 @@ const logError = (error, { retryCount }) => {
 module.exports = {
     logInputs,
     logOutput,
+    logOutputUpdate,
     logError,
 };

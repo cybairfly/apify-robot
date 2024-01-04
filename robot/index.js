@@ -53,7 +53,7 @@ const {RobotError} = require('./errors');
 const {CaptchaSolver} = require('./tools/captcha');
 const {createHeader} = require('./tools/generic');
 const {openSessionPool, pingSessionPool} = require('./tools/session/sessionPool');
-const {logInputs, logOutput, logError} = require('./tools/logging');
+const {logInputs, logOutput, logError, logOutputUpdate} = require('./tools/logging');
 const {saveOutput, maybeFilterOutput} = require('./tools/output');
 const {getBrowser, flushAsyncQueueCurry} = require('./tools');
 
@@ -497,47 +497,10 @@ class Robot {
                         `STEP Generic handler found for step [${step.name}] of task [${task.name}]`;
 
                     log.info(message);
-                    this.step.output = await this.step.code(context, this)
-                        .catch(async error => {
-                            this.error = error;
-                            const scopeError = this.probeError(error);
-
-                            if (!task.catch || error instanceof Robot.Error)
-                                throw scopeError;
-
-                            this.task.catch = this.scope[task.catch.name] && this.scope[task.catch.name].constructor.name !== 'AsyncFunction' ?
-                                this.scope[task.name] && this.scope[task.name](this.context, this)[task.catch.name] :
-                                this.scope[task.catch.name];
-
-                            if (this.task.catch)
-                                log.info(`SCOPE Scope error handler found for task [${task.name}]`);
-                            else {
-                                this.task.catch = global.tryRequire.global(path.join(setup.getPath.generic.steps(), task.catch.name));
-
-                                if (this.task.catch)
-                                    log.info(`STEP Generic error handler found for task [${task.name}]`);
-                            }
-
-                            if (!this.task.catch)
-                                throw scopeError;
-
-                            const result = await this.task.catch(context, this).catch(error => {
-                                log.exception(scopeError);
-                                throw error;
-                            });
-
-                            if (result)
-                                return result;
-
-                            throw scopeError;
-                        });
+                    this.step.output = await this.step.code(context, this).catch(catchError(this));
                 }
 
-                console.log(' '.repeat(100));
-                console.log(`TASK [${task.name}] ► STEP [${step.name}] ➜ OUTPUT`);
-                console.log('='.repeat(100));
-                console.log(this.step.output);
-                console.log(' ');
+                logOutputUpdate(this)({task, step});
 
                 if (this.step.output && typeof this.step.output !== 'object') {
                     log.warning('STEP ignoring step output (not an object)', output);
@@ -636,6 +599,40 @@ class Robot {
             sessionId: this.sessionId,
             'session.id': this.session.id,
         });
+    }
+
+    catchError = robot => async error => {
+        robot.error = error;
+        const scopeError = robot.probeError(error);
+
+        if (!task.catch || error instanceof Robot.Error)
+            throw scopeError;
+
+        robot.task.catch = robot.scope[task.catch.name] && robot.scope[task.catch.name].constructor.name !== 'AsyncFunction' ?
+            robot.scope[task.name] && robot.scope[task.name](robot.context, robot)[task.catch.name] :
+            robot.scope[task.catch.name];
+
+        if (robot.task.catch)
+            log.info(`SCOPE Scope error handler found for task [${task.name}]`);
+        else {
+            robot.task.catch = global.tryRequire.global(path.join(setup.getPath.generic.steps(), task.catch.name));
+
+            if (robot.task.catch)
+                log.info(`STEP Generic error handler found for task [${task.name}]`);
+        }
+
+        if (!robot.task.catch)
+            throw scopeError;
+
+        const result = await robot.task.catch(context, robot).catch(error => {
+            log.exception(scopeError);
+            throw error;
+        });
+
+        if (result)
+            return result;
+
+        throw scopeError;
     }
 
     probeError = error => {
