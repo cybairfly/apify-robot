@@ -72,7 +72,8 @@
             "description": "Encrypted password (if applicable)",
             "title": "Password", 
             "type": "string",
-            "editor": "textfield"
+            "editor": "textfield",
+            "isSecret": true
         },
         "runType": {
             "description": "Async or sync run",
