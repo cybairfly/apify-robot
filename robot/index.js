@@ -381,8 +381,9 @@ class Robot {
         return page;
     };
 
-    handleTasks = async ({input: {target}, output, context, page, setup, tasks} = this) => {
-        console.log(createHeader(target, {center: true, upper: true, padder: '◙'}));
+	handleTasks = async ({input: {target}, output, context, page, setup, tasks} = this) => {
+        if (target)
+            console.log(createHeader(target, {center: true, upper: true, padder: '◙'}));
 
         for (const task of tasks) {
             this.task = {...task};
