@@ -3,6 +3,7 @@
 .npmrc
 .vscode
 .DS_Store
+codebox*
 storage
 INPUT.js
 node_modules
