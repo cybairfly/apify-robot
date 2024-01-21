@@ -3,7 +3,6 @@ const log = require('../../logger');
 
 const syncContext = robot => ({
     page: (page = null) => {
-        robot.page = page;
         robot.scope.page = page;
         robot.context.page = page;
     },

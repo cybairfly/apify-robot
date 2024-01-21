@@ -1,11 +1,16 @@
-const {Human} = require('cyber-codex');
+const {
+	Human,
+	login
+} = require('cyber-codex');
 
 const log = require('../logger');
 const {curryDebug} = require('../tools');
 const {preloadMatchPattern, preloadIteratePatterns} = require('../public/tools/patterns');
+const {integrateInstance} = require('../tools/hooks');
 
 class Context {
     #robot;
+	#page;
 
     constructor({input, output, page, task, step, state, server, session, browserPool, sessionPool}) {
         this.input = {...input};
@@ -32,10 +37,26 @@ class Context {
             matchPattern: preloadMatchPattern(page),
             iteratePatterns: preloadIteratePatterns(page),
         };
+		
+		this.login = login;
+		this.adopt = integrateInstance;
+		this.integrateInstance = integrateInstance;
+
+        Object.entries(input.custom.context).forEach(([key, value]) => this[key] = value);
+    }
+
+	/** @returns {types.page} */
+    get page() {
+        return this.#page;
+    }
+
+    set page(page) {
+        this.#page = page;
     }
 
     set robot(robot) {
         this.#robot = robot;
+		this.Robot = robot.constructor;
     }
 
     get robot() {

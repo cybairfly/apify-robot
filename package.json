@@ -2,7 +2,7 @@
 	"name": "apify-robot",
 	"version": "0.4.1",
 	"description": "Automation framework built on Apify",
-	"main": "robot/start.js",
+	"main": "robot/index.js",
 	"files": [
 		"/robot",
 		"/INPUT_SCHEMA.json",
@@ -40,7 +40,7 @@
 		"node": ">=14.0.0"
 	},
 	"scripts": {
-		"start": "node robot/start.js",
+		"start": "node --trace-warnings --trace-deprecation robot/start.js",
 		"keygen": "node robot/crypto/keygen.js",
 		"test": "jest"
 	},

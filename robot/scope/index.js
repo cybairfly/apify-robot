@@ -2,41 +2,91 @@
  * @typedef {import('../types').Robot} Robot
  * @typedef {import('../types').RobotContext} RobotContext
  */
-const Config = require('./config');
+
+const {
+	Human,
+	login
+} = require('cyber-codex');
+
+const Robot = require('../index');
+// const Config = require('./config');
+
 const log = require('../logger');
+const {curryDebug} = require('../tools');
+const {preloadMatchPattern, preloadIteratePatterns} = require('../public/tools/patterns');
+const {integrateInstance} = require('../tools/hooks');
 
 class Scope {
+	#robot;
+	#page;
+	#task;
+	#step;
+	#output;
+	
     /**
-     * Generic scope for either generic or target dependent steps to be executed by the robot
+     * Generic scope to serve as either generic or target dependent container for runtime context to execute
      * @param {RobotContext} context
      * @param {Robot} robot
      */
     constructor(context, robot) {
-        this.name = robot.target;
+		const {
+			input, 
+			output, 
+			page, 
+			task, 
+			step, 
+			state, 
+			server, 
+			session, 
+			browserPool, 
+			sessionPool
+		} = context;
+
+		this.Robot = robot.constructor;
         this.setup = robot.setup;
-        this.tasks = this.constructor.tasks;
-        this._robot = robot;
+        this.input = {...input};
+        this.output = output;
+        this.page = page;
+        this.task = task;
+        this.step = step;
+        this.state = state;
+        this.server = server;
+        this.session = session;
 
-        this.context = context;
-        this.input = context.input;
-        this.output = context.output;
-        this.page = context.page;
-        this.pools = context.pools;
-        this.events = context.events;
-        this.server = context.server;
-        this.state = context.state;
-        this.tools = context.tools;
+        this.pools = {
+            browserPool,
+            sessionPool,
+        };
 
-        this.debug = context.tools.debug;
-        this.matchPattern = context.tools.matchPattern;
-        this.iteratePatterns = context.tools.iteratePatterns;
+        this.events = {
+            emit: 'placeholder',
+            listen: 'placeholder',
+        };
 
-        this._task = {};
-        this._step = {};
-        this._output = {};
+        this.tools = {
+            debug: curryDebug(input)(page),
+            matchPattern: preloadMatchPattern(page),
+            iteratePatterns: preloadIteratePatterns(page),
+        };
+		
+		this.login = login;
+		this.adopt = integrateInstance;
+		this.integrateInstance = integrateInstance;
+
+        Object.entries(input.custom.context || {}).forEach(([key, value]) => this[key] = this[key] || value);
+		
+        // this.name = robot.target;
+        // this.setup = robot.setup;
+        // this.tasks = this.constructor.tasks;
+        // this._robot = robot;
+
+        // this._task = {};
+        // this._step = {};
+        // this._output = {};
     }
-
-    static Config = Config;
+	
+    static Robot = Robot;
+    // static Config = Config;
 
     static get tasks() {
         if (!this.adaptTasks)
@@ -93,12 +143,21 @@ class Scope {
         // Object.entries(tasks).find(([taskName, task]) => taskName === 'query')
     }
 
+	/** @returns {types.page} */
+    get page() {
+        return this.#page;
+    }
+
+    set page(page) {
+        this.#page = page;
+    }
+
     /**
      * @returns {{output: Object}}
      */
     get task() {
         // log.warning('Accessing robot internals at runtime (task)');
-        return this._task;
+        return this.#task;
     }
 
     set task(task) {
@@ -107,7 +166,7 @@ class Scope {
             return;
         }
 
-        this._task = task;
+        this.#task = task;
     }
 
     /**
@@ -119,7 +178,7 @@ class Scope {
      * }}
      */
     get step() {
-        return this._step;
+        return this.#step;
     }
 
     set step(step) {
@@ -128,12 +187,12 @@ class Scope {
             return;
         }
 
-        this._step = step;
-        // this._steps[step.name] = step;
+        this.#step = step;
+        // this.#steps[step.name] = step;
     }
 
     get output() {
-        return this._output;
+        return this.#output;
     }
 
     set output(output) {
@@ -142,12 +201,12 @@ class Scope {
             return;
         }
 
-        this._output = output;
+        this.#output = output;
     }
 
     get robot() {
         log.warning('Accessing robot internals at runtime. Prefer using scope context if possible!');
-        return this._robot;
+        return this.#robot;
     }
 
     set robot(robot) {
@@ -156,12 +215,14 @@ class Scope {
             return;
         }
 
-        this._robot = robot;
+        this.#robot = robot;
     }
 
     get human() {
-        return this.context.human;
-    }
+		this.#robot.human = this.#robot.human || new Human(this.page, {...this.input, motion: {enable: false}});
+
+		return this.#robot.human;
+}
 
     will(text) {
         if (typeof text !== 'string') {

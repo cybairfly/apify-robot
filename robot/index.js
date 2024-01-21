@@ -25,12 +25,12 @@ const {
 
 const log = new Logue().child({prefix: 'Robot'});
 const R = require('ramda');
-const vm = require('vm');
 const path = require('path');
 
 const Setup = require('./setup');
 const Scope = require('./scope');
 const Target = require('./target');
+const Script = require('./script');
 const Context = require('./create');
 
 const ScopeConfig = Scope.Config;
@@ -62,6 +62,8 @@ const consts = require('./public/consts');
 const tools = require('./public/tools');
 
 class Robot {
+    #page;
+
     /**
      * @param {input} input
      * @param {setup} setup
@@ -89,7 +91,9 @@ class Robot {
         this._output = {};
         this._error = null;
 
-        this.page = null;
+        // this.page = null;
+        this.step = null;
+        this.task = null;
         this.human = null;
         this.browser = null;
         this.browserPool = null;
@@ -115,8 +119,6 @@ class Robot {
 
         this.Scope = null;
         this.scope = {};
-        this._step = null;
-        this._task = null;
         this.tasks = {};
         this.steps = {};
         this.errors = [];
@@ -125,6 +127,13 @@ class Robot {
         this.flushAsyncQueue = flushAsyncQueueCurry(this.asyncQueue);
         this.retry = this.catch(this.retry);
         this.syncContext = syncContext(this);
+    }
+
+    set page(page) {
+        this.#page = page;
+        this.syncContext.page(page);
+    } get page() {
+        return this.#page;
     }
 
     set task(task) {
@@ -156,6 +165,7 @@ class Robot {
     static Human = Human;
     static Setup = Setup;
     static Scope = Scope;
+    static Script = Script;
     static Target = Target;
     static RobotError = RobotError;
     static ScopeConfig = ScopeConfig;
@@ -268,8 +278,19 @@ class Robot {
     };
 
     start = async ({input, setup} = this) => {
+        if (input.target) {
+            const url = getTargetUrl(setup, target);
+            this.domain = parseTargetDomain(url, target);
+            if (url)
+                console.log({url});
+        }
+
+        // this.script = new Robot.Script(input.script);
         this.input = await extendInput(this);
         this.options = RobotOptions(this);
+
+        if (!this.isRetry)
+            logInputs(this);
 
         if (this.options.proxy.proximity.enable) {
             log.info('Acquiring proximity data...');
@@ -279,15 +300,20 @@ class Robot {
         }
 
         await this.assignSession();
+        this.Scope = this.loadScope();
 
-        if (!this.isRetry) {
-            logInputs(this);
-        }
-
-        this.tasks = await this.initTasks(this);
         this.proxyConfig = await getProxyConfig(this);
+        this.context = await this.initContext(this);
+        this.tasks = await this.initTasks(this);
+        this.page = await this.initPage(this);
+        this.server = maybeStartServer(this);
+        integrateInstance(this);
+        extendInstance(this);
+        initEventLogger(this);
+
         this.output = this.initOutput() || {};
-        this.output = await this.retry(this);
+        // this.output = await this.retry(this);
+        this.output = await this.handleTasks(this);
         await saveOutput(this);
 
         const publicOutput = maybeFilterOutput(this);
@@ -296,8 +322,13 @@ class Robot {
         await this.stop();
     }
 
+    loadScope = ({input: {target}, setup} = this) => target ?
+        tryRequire.global(`./${setup.getPath.targets.target(target)}`, {scope: true}) :
+        tryRequire.global(`./${setup.getPath.generic.scope()}`, {scope: true});
+
     initContext = async () => {
-        const context = new Context(this);
+        const Context = class extends Robot.Scope { };
+        const context = new Context(this, this);
         context.robot = this;
 
         return context;
@@ -312,12 +343,12 @@ class Robot {
         return schema;
     }
 
-    initScope = ({input: {target}, setup} = this) => target ?
-        tryRequire.global(`./${setup.getPath.targets.target(target)}`, {scope: true}) :
-        tryRequire.global(`./${setup.getPath.generic.scope()}`, {scope: true});
-
     initTasks = async ({input: {target, script: scriptString, tasks: taskNames}, setup} = this) => {
-        const parseTasks = (output) => {
+        const getTasks = ({input, setup}) => {
+
+        }
+
+        const parseTasks = script => {
             const normalizers = {
                 tasks: tasks => tasks,
                 steps: steps => ({
@@ -351,13 +382,27 @@ class Robot {
             ];
 
             return conditions
-                .map(([normalizer, condition]) => condition(output) && normalizer(output))
+                .map(([normalizer, condition]) => condition(script) && normalizer(script))
                 .filter(x => x);
         }
 
         const parseScript = async scriptString => {
-            const script = new vm.Script(scriptString);
-            return script.runInNewContext();
+            const script = new Robot.Script(scriptString);
+            const scope = new Robot.Scope(this.context, this);
+
+            // const bot = require('./index')
+            // const config = require('./apple/config')
+            // const tools = require('./apple/tools')
+            // const robotTools = require('./public/tools')
+            // const outputs = require('./apple/outputs')
+
+
+            // scope.Robot = bot;
+            // scope.OUTPUTS = outputs;
+            // Object.entries({...config, ...tools, ...robotTools}).map(([key, value]) => scope[key] = value);
+
+            this.scope = scope;
+            return script.code.runInNewContext(this.context);
         }
 
         if (scriptString) {
@@ -368,7 +413,6 @@ class Robot {
         }
 
         const setupTasks = setup.tasks ? setup.tasks : setup.getTasks(target);
-        this.Scope = this.initScope();
 
         if (this.Scope.adaptTasks)
             this.Scope.tasks = setupTasks;
@@ -433,7 +477,8 @@ class Robot {
     };
 
     handleTasks = async ({input: {script, target}, output, context, page, setup, tasks} = this) => {
-        console.log(createHeader(target, {center: true, upper: true, padder: '◙'}));
+        if (target)
+            console.log(createHeader(target, {center: true, upper: true, padder: '◙'}));
 
         for (const task of tasks) {
             this.task = {...task};
@@ -735,7 +780,7 @@ class Robot {
     };
 
     stop = async ({browserPool, sessionPool, browser, options, session, human, server, page, error, input} = this) => {
-        this.syncContext.page(null);
+        this.page = null;
 
         if (human)
             this.human = null;
