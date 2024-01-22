@@ -9,7 +9,7 @@ const {
 } = require('cyber-codex');
 
 const Robot = require('../index');
-// const Config = require('./config');
+const Config = require('./config');
 
 const log = require('../logger');
 const {curryDebug} = require('../tools');
