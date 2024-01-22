@@ -498,7 +498,7 @@ class Robot {
                         `STEP Generic handler found for step [${step.name}] of task [${task.name}]`;
 
                     log.info(message);
-                    this.step.output = await this.step.code(context, this).catch(catchError(this));
+                    this.step.output = await this.step.code(context, this).catch(this.catchError(this));
                 }
 
                 logOutputUpdate(this)({task, step});
