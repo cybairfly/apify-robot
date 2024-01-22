@@ -85,8 +85,7 @@ class Scope {
         // this._output = {};
     }
 	
-    static Robot = Robot;
-    // static Config = Config;
+    static Config = Config;
 
     static get tasks() {
         if (!this.adaptTasks)

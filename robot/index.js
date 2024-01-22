@@ -390,17 +390,6 @@ class Robot {
             const script = new Robot.Script(scriptString);
             const scope = new Robot.Scope(this.context, this);
 
-            // const bot = require('./index')
-            // const config = require('./apple/config')
-            // const tools = require('./apple/tools')
-            // const robotTools = require('./public/tools')
-            // const outputs = require('./apple/outputs')
-
-
-            // scope.Robot = bot;
-            // scope.OUTPUTS = outputs;
-            // Object.entries({...config, ...tools, ...robotTools}).map(([key, value]) => scope[key] = value);
-
             this.scope = scope;
             return script.code.runInNewContext(this.context);
         }
@@ -437,22 +426,22 @@ class Robot {
     }
 
     initPage = async ({input: {block, debug}, page = null, domain, options} = this) => {
-        if (!page) {
-            if (!this.options.browserPool.disable) {
-                this.browserPool = await getBrowserPool(this);
-                this.page = page = await this.browserPool.newPage();
-            } else {
-                this.browser = await getBrowser(this);
+        if (page) return;
 
-                if (options.library.puppeteer)
-                    [page] = await this.browser.pages();
-                else {
-                    const [context] = this.browser.contexts();
-                    [page] = context.pages();
-                }
+        if (!this.options.browserPool.disable) {
+            this.browserPool = await getBrowserPool(this);
+            this.page = page = await this.browserPool.newPage();
+        } else {
+            this.browser = await getBrowser(this);
 
-                this.page = page;
+            if (options.library.puppeteer)
+                [page] = await this.browser.pages();
+            else {
+                const [context] = this.browser.contexts();
+                [page] = context.pages();
             }
+
+            // this.page = page;
         }
 
         if (block) {
