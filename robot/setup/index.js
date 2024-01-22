@@ -160,6 +160,7 @@ class RobotSetup {
         /* https://sdk.apify.com/docs/typedefs/session-pool-options */
         sessionPool: {
             // disable: Boolean | Function,
+            disable: true,
         },
 
         /* https://playwright.dev/docs/network/#abort-requests */
