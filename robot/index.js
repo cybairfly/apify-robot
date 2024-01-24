@@ -17,6 +17,7 @@ const Apify = require('apify');
 const {
     Human,
     Logue,
+    Error: CyberError,
     errors,
     tools: {
         sleep,
@@ -378,7 +379,7 @@ class Robot {
         return page;
     };
 
-	handleTasks = async ({input: {target}, output, context, page, setup, tasks} = this) => {
+    handleTasks = async ({input: {target}, output, context, page, setup, tasks} = this) => {
         if (target)
             console.log(createHeader(target, {center: true, upper: true, padder: '◙'}));
 
@@ -495,7 +496,7 @@ class Robot {
                         `STEP Generic handler found for step [${step.name}] of task [${task.name}]`;
 
                     log.info(message);
-                    this.step.output = await this.step.code(context, this).catch(this.catchError(this));
+                    this.step.output = await this.step.code(context, this).catch(this.catchError(this)(this, task));
                 }
 
                 logOutputUpdate(this)({task, step});
@@ -599,11 +600,11 @@ class Robot {
         });
     }
 
-    catchError = robot => async error => {
+    catchError = ({setup, context} = this) => (robot, task) => async error => {
         robot.error = error;
         const scopeError = robot.probeError(error);
 
-        if (!task.catch || error instanceof Robot.Error)
+        if (!task.catch || error instanceof CyberError)
             throw scopeError;
 
         robot.task.catch = robot.scope[task.catch.name] && robot.scope[task.catch.name].constructor.name !== 'AsyncFunction' ?
@@ -638,7 +639,7 @@ class Robot {
         if (isNetworkError)
             error = new errors.Network({error});
 
-        if (error instanceof Robot.Error === false)
+        if (error instanceof CyberError === false)
             error = new Robot.Error({error, stack: error.stack});
 
         return error;
