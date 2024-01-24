@@ -1,5 +1,6 @@
 const Apify = require('apify');
-const { errors, RobotError } = require('../../errors');
+const { errors } = require('cyber-codex');
+// const { errors, RobotError } = require('../../errors');
 
 // TODO generalize for other channels
 const { postMessage } = require('./slack');
