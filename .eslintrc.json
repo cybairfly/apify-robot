@@ -1,53 +1,60 @@
 {
-    "env": {
-        "browser": true,
-        "commonjs": true,
-        "es2021": true,
-        "node": true,
-        "jest": true
-    },
-    "parser": "@typescript-eslint/parser",
-    "plugins": ["@typescript-eslint"],
-    "extends": [
-        "@apify"
-    ],
-    "rules": {
-        "max-len": "off",
-        "camelcase": "off",
-        "no-shadow": "off",
-        "no-console": "off",
-        "no-unused-vars": "off",
-        "no-return-assign": "off",
-        "no-confusing-arrow": "off",
-        "object-curly-spacing": "off",
-        "implicit-arrow-linebreak": "off",
-        "nonblock-statement-body-position": "off",
-        "arrow-parens": [
-            "warn",
-            "as-needed"
-        ],
-        "curly": [
-            "warn",
-            "multi-or-nest"
-        ],
-        "operator-linebreak": [
-            "warn",
-            "before",
-            {
-                "overrides": {
-                    "?": "ignore",
-                    ":": "ignore"
-                }
-            }
-        ]
-    },
-    // negated first!
-    "ignorePatterns": [
-        "!*/",
-        "!*.js",
-        "!*.ts",
-        "!*.json",
-        "~*",
-        "apify_storage"
-    ]
+	"env": {
+		"browser": true,
+		"commonjs": true,
+		"es2021": true,
+		"node": true,
+		"jest": true
+	},
+	"parser": "@typescript-eslint/parser",
+	"plugins": [
+		"@typescript-eslint"
+	],
+	"extends": [
+		"@apify"
+	],
+	"rules": {
+		"max-len": "off",
+		"camelcase": "off",
+		"no-tabs": "off",
+		"no-shadow": "off",
+		"no-console": "off",
+		"no-unused-vars": "off",
+		"no-return-assign": "off",
+		"no-confusing-arrow": "off",
+		"object-curly-spacing": "off",
+		"implicit-arrow-linebreak": "off",
+		"nonblock-statement-body-position": "off",
+		"arrow-parens": [
+			"warn",
+			"as-needed"
+		],
+		"indent": [
+			"warn",
+			"tab"
+		],
+		"curly": [
+			"warn",
+			"multi-or-nest"
+		],
+		"operator-linebreak": [
+			"warn",
+			"before",
+			{
+				"overrides": {
+					"?": "ignore",
+					":": "ignore"
+				}
+			}
+		]
+	},
+	// negated first!
+	"ignorePatterns": [
+		"!*/",
+		"!*.js",
+		"!*.ts",
+		"!*.json",
+		"~*",
+		"apify_storage"
+	]
 }
