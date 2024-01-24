@@ -227,6 +227,7 @@ class RobotSetup {
 
     /* generate unique input ID */
     // getInputId = input => String;
+    getInputId = input => `auto_${Date.now()}`;
 
     /* default output generator */
     // OutputSchema = ({input}) => Object
