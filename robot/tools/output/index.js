@@ -1,12 +1,12 @@
 const Apify = require('apify');
 const log = require('../../logger');
 
-const saveScreenshot = async ({id, name, page, retryIndex, retryCount, store}) => {
+const saveScreenshot = async ({id, name, page, retryIndex, store}) => {
     // Cannot take screenshot with 0 width.
     try {
         await page.waitForFunction(() => document.readyState !== 'loading').catch(() => null);
         const screenshotBuffer = await page.screenshot({type: 'jpeg', quality: 70, fullPage: true});
-        const fileName = `PAGE-SNAP-${name || (retryIndex ? `RETRY_R-${retryCount}` : 'FINAL')}-${id || Date.now()}`;
+        const fileName = `PAGE-SNAP-${name || (retryIndex ? `RETRY_${retryIndex}` : 'FINAL')}-${id || Date.now()}`;
 
         if (store)
             await store.setValue(fileName, screenshotBuffer, {contentType: 'image/png'});
@@ -22,9 +22,9 @@ const saveScreenshot = async ({id, name, page, retryIndex, retryCount, store}) =
     }
 };
 
-const savePageContent = async ({id, name, page, retryIndex, retryCount, store}) => {
+const savePageContent = async ({id, name, page, retryIndex, store}) => {
     try {
-        const fileName = `PAGE-HTML-${name || (retryIndex ? `RETRY_R-${retryCount}` : 'FINAL')}-${id || Date.now()}`;
+        const fileName = `PAGE-HTML-${name || (retryIndex ? `RETRY_${retryIndex}` : 'FINAL')}-${id || Date.now()}`;
 
         if (store)
             await store.setValue(fileName, await page.content(), {contentType: 'text/html'});
@@ -40,10 +40,10 @@ const savePageContent = async ({id, name, page, retryIndex, retryCount, store}) 
     }
 };
 
-const saveOutput = async ({page, name, input, output: currentOutput, retryCount, store}) => {
+const saveOutput = async ({page, name, input, output: currentOutput, retryIndex, store}) => {
     const {id} = input;
-    const pageContentUrl = await savePageContent({id, name, page, retryCount, store}) || null;
-    const screenshotUrl = await saveScreenshot({id, name, page, retryCount, store}) || null;
+    const pageContentUrl = await savePageContent({id, name, page, retryIndex, store}) || null;
+    const screenshotUrl = await saveScreenshot({id, name, page, retryIndex, store}) || null;
     const actorRunUrl = `https://my.apify.com/view/runs/${process.env.APIFY_ACTOR_RUN_ID}`;
 
     const output = {...currentOutput, actorRunUrl, screenshotUrl, pageContentUrl};
@@ -59,7 +59,7 @@ const saveOutput = async ({page, name, input, output: currentOutput, retryCount,
 
 const filterOutput = output => Object.fromEntries(Object.entries(output).filter(([key, value]) => value));
 
-const maybeFilterOutput = ({options, output}) => options.output.filter ? filterOutput(output) : output;
+const maybeFilterOutput = ({options, output}) => options.output?.filter ? filterOutput(output) : output;
 
 
 module.exports = {

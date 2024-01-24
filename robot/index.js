@@ -75,12 +75,11 @@ class Robot {
         /** @type setup */
         this.setup = setup;
         this.isRetry = false;
-        this.retryIndex = 0;
+        this.retryIndex = 1;
         this.retryCount = input.retry;
         // expose in target class somehow
         this.OUTPUTS = this.setup.OUTPUTS;
 
-        this.relay = {};
         this.state = {};
 
         /** @type {RobotContext} */
@@ -222,13 +221,11 @@ class Robot {
             return await retry(this);
         } catch (error) {
             this.error = error;
-            const doRetry = error.retry && input.retry > this.retryIndex;
+            const doRetry = error.retry && input.retry >= this.retryIndex;
 
             if (doRetry) {
-                if (input.debug) {
-                    const {output, input, page, retryCount} = this;
-                    await saveOutput({input, output, page, retryCount});
-                }
+                if (input.debug)
+                    await saveOutput(this);
 
                 this.isRetry = true;
                 await this.stop();
