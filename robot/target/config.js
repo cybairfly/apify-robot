@@ -1,18 +1,18 @@
 class TargetConfig {
-    TARGET = {
-        name: '',
-        url: '',
-    };
+	TARGET = {
+		name: '',
+		url: '',
+	};
 
-    URLS = {};
+	URLS = {};
 
-    STRINGS = {};
+	STRINGS = {};
 
-    SELECTORS = {};
+	SELECTORS = {};
 
-    PATTERNS = {};
+	PATTERNS = {};
 
-    PREDICATES = {};
+	PREDICATES = {};
 }
 
 module.exports = TargetConfig;

@@ -10,10 +10,10 @@ const {extras} = require('./methods/extras');
 const {decorateMethod} = require('./methods');
 
 const extendInstance = ({page: instance}) => {
-    extras.gotoDom(instance);
-    extras.typeHuman(instance);
+	extras.gotoDom(instance);
+	extras.typeHuman(instance);
 
-    return instance;
+	return instance;
 };
 
 /**
@@ -25,18 +25,18 @@ const extendInstance = ({page: instance}) => {
  * @returns Decorated instance.
  */
 const integrateInstance = ({page = null, server = null, instance = page}) => {
-    LOGGER.triggerMethods.page.map(methodName => decorateMethod({methodName, instance}));
+	LOGGER.triggerMethods.page.map(methodName => decorateMethod({methodName, instance}));
 
-    if (instance.keyboard)
-        LOGGER.triggerMethods.keyboard.map(methodName => decorateMethod({methodName, instance: instance.keyboard}));
+	if (instance.keyboard)
+		LOGGER.triggerMethods.keyboard.map(methodName => decorateMethod({methodName, instance: instance.keyboard}));
 
-    if (server && server.options?.interface?.events?.serveOnEvents)
-        server.options.interface.events.eventHooks.map(methodName => decorateMethod({ methodName, page, server, instance }));
+	if (server && server.options?.interface?.events?.serveOnEvents)
+		server.options.interface.events.eventHooks.map(methodName => decorateMethod({ methodName, page, server, instance }));
 
-    return instance;
+	return instance;
 };
 
 module.exports = {
-    extendInstance,
-    integrateInstance,
+	extendInstance,
+	integrateInstance,
 };

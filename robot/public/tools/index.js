@@ -6,29 +6,29 @@ const Apify = require('apify');
 const pptrTools = require('./pptr');
 
 const {
-    tryRequire,
-    curryDebug,
-    // sendNotification,
+	tryRequire,
+	curryDebug,
+	// sendNotification,
 } = require('../../tools');
 
 const {
-    decrypt,
-    decryptObject,
+	decrypt,
+	decryptObject,
 } = require('../../crypto');
 
 const {
-    integrateInstance,
+	integrateInstance,
 } = require('../../tools/hooks');
 
 const {
-    redactObject,
+	redactObject,
 } = require('../../tools/generic');
 
 const {
-    saveOutput,
-    savePageContent,
-    saveScreenshot,
-    // sendNotification,
+	saveOutput,
+	savePageContent,
+	saveScreenshot,
+	// sendNotification,
 } = require('../../tools/output');
 
 const log = require('../../logger');
@@ -60,89 +60,89 @@ const sleep = ms => new Promise(ok => setTimeout(ok, ms));
  * @returns {Promise<any[]>} Returns an array with all promises of performed actions and the login response at first index
  */
 const login = async ({page, timeout, predicate, selectors, credentials: {username, password}}) => {
-    if (!predicate || !selectors.verify)
-        throw Error('Login input missing predicate or selector for login status verification');
+	if (!predicate || !selectors.verify)
+		throw Error('Login input missing predicate or selector for login status verification');
 
-    await page.waitForSelector(selectors.password);
-    await page.type(selectors.username, username);
-    await page.type(selectors.password, password);
-    const promises = [];
+	await page.waitForSelector(selectors.password);
+	await page.type(selectors.username, username);
+	await page.type(selectors.password, password);
+	const promises = [];
 
-    if (predicate) {
-        promises.push(page.waitForResponse(predicate, {
-            timeout: timeout || TIMEOUTS.ten,
-        }));
-    }
+	if (predicate) {
+		promises.push(page.waitForResponse(predicate, {
+			timeout: timeout || TIMEOUTS.ten,
+		}));
+	}
 
-    if (selectors.verify) {
-        promises.push(page.waitForSelector(selectors.verify, {
-            timeout: timeout || TIMEOUTS.ten,
-        }));
-    }
+	if (selectors.verify) {
+		promises.push(page.waitForSelector(selectors.verify, {
+			timeout: timeout || TIMEOUTS.ten,
+		}));
+	}
 
-    if (selectors.submit)
-        promises.push(page.click(selectors.submit));
-    else
-        promises.push(page.keyboard.press('Enter'));
+	if (selectors.submit)
+		promises.push(page.click(selectors.submit));
+	else
+		promises.push(page.keyboard.press('Enter'));
 
-    return Promise.all(promises);
+	return Promise.all(promises);
 };
 
 const handleDialog = async ({type, message}, dialog) => {
-    if (dialog.type() === type && dialog.message().includes(message))
-        await dialog.dismiss();
+	if (dialog.type() === type && dialog.message().includes(message))
+		await dialog.dismiss();
 };
 
 const searchResult = async ({page, selectors, input}) => {
-    await page.waitForSelector(selectors.input);
-    await page.type(selectors.input, input);
+	await page.waitForSelector(selectors.input);
+	await page.type(selectors.input, input);
 
-    if (selectors.button)
-        await page.click(selectors.button);
-    else
-        await page.keyboard.press('Enter');
+	if (selectors.button)
+		await page.click(selectors.button);
+	else
+		await page.keyboard.press('Enter');
 
-    return page.waitForSelector(selectors.found).catch(error => null);
+	return page.waitForSelector(selectors.found).catch(error => null);
 };
 
 const foundSearchPattern = (text, searchPatterns) =>
-    searchPatterns.some(searchPattern =>
-        text
-            .toLowerCase()
-            .includes(searchPattern.toLowerCase()));
+	searchPatterns.some(searchPattern =>
+		text
+			.toLowerCase()
+			.includes(searchPattern.toLowerCase()));
 
 const verifyResult = ({selector, contents}) => {
-    const $element = document.querySelector(selector);
+	const $element = document.querySelector(selector);
 
-    if (!$element)
-        return false;
+	if (!$element)
+		return false;
 
-    const elementText = $element.innerText;
+	const elementText = $element.innerText;
 
-    return (Array.isArray(contents) ? contents : [contents])
-        .some(content =>
-            elementText.toLowerCase().includes(content.toLowerCase()));
+	return (Array.isArray(contents) ? contents : [contents])
+		.some(content =>
+			elementText.toLowerCase().includes(content.toLowerCase()));
 };
 
 module.exports = {
-    ...pptrTools,
-    log,
-    tryRequire,
-    debug,
-    login,
-    sleep,
-    decrypt,
-    decryptObject,
-    redactObject,
-    getPageUrl,
-    handleDialog,
-    searchResult,
-    matchPattern,
-    iteratePatterns,
-    verifyResult,
-    saveOutput,
-    saveScreenshot,
-    savePageContent,
-    integrateInstance,
-    foundSearchPattern,
+	...pptrTools,
+	log,
+	tryRequire,
+	debug,
+	login,
+	sleep,
+	decrypt,
+	decryptObject,
+	redactObject,
+	getPageUrl,
+	handleDialog,
+	searchResult,
+	matchPattern,
+	iteratePatterns,
+	verifyResult,
+	saveOutput,
+	saveScreenshot,
+	savePageContent,
+	integrateInstance,
+	foundSearchPattern,
 };

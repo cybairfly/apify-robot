@@ -1,3 +1,3 @@
 module.exports = {
-    // custom output schema belongs here
+	// custom output schema belongs here
 };

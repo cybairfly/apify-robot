@@ -1,13 +1,13 @@
 class ScopeConfig {
-    URLS = {};
+	URLS = {};
 
-    STRINGS = {};
+	STRINGS = {};
 
-    SELECTORS = {};
+	SELECTORS = {};
 
-    PATTERNS = {};
+	PATTERNS = {};
 
-    PREDICATES = {};
+	PREDICATES = {};
 }
 
 module.exports = ScopeConfig;

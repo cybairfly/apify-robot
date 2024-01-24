@@ -5,24 +5,24 @@ const {EVENTS} = require('../../consts');
 const {CustomError} = require('../../errors');
 
 const goto = async (page, url, options = {}) => {
-    const response = await page.goto(url, {
-        waitUntil: EVENTS.domcontentloaded,
-        ...options,
-    });
+	const response = await page.goto(url, {
+		waitUntil: EVENTS.domcontentloaded,
+		...options,
+	});
 
-    const status = response.status();
+	const status = response.status();
 
-    if (status >= 400) {
-        throw CustomError({
-            name: 'Status',
-            data: {
-                status,
-            },
-            message: `Page failed to load with status ${status}`,
-        });
-    }
+	if (status >= 400) {
+		throw CustomError({
+			name: 'Status',
+			data: {
+				status,
+			},
+			message: `Page failed to load with status ${status}`,
+		});
+	}
 
-    return response;
+	return response;
 };
 
 const waitFor = async (page, arg, options = {}) => page.waitFor(arg, options);
@@ -31,9 +31,9 @@ const waitForNavigation = async (page, options = {}) => page.waitForNavigation(o
 const waitForPageLoad = async page => await page.waitForFunction(() => document.readyState !== 'loading');
 
 module.exports = {
-    goto,
-    waitFor,
-    waitForSelector,
-    waitForPageLoad,
-    waitForNavigation,
+	goto,
+	waitFor,
+	waitForSelector,
+	waitForPageLoad,
+	waitForNavigation,
 };

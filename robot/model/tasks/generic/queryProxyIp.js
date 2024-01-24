@@ -11,5 +11,5 @@ const {outputs} = require('../../robot');
  * @param {import('apify-robot').Robot} robot
  */
 module.exports = async (context, {proxyIp, proxyConfig}) => {
-    // ...
+	// ...
 };
