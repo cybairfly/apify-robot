@@ -1,15 +1,54 @@
 const log = require('../../../logger');
 const {SESSION} = require('../../../consts');
-const { errors, RobotError } = require('../../../errors');
+const {errors, RobotError} = require('../../../errors');
 
 /**
  * Decorates instance methods with extended behavior.
  * @param {Object} options
  */
-const decorateMethod = ({methodName, page, instance, server = null}) => {
-	const originalMethod = instance[methodName];
+const decorateFunction = {
+	navigation: ({methodName, instance}) => {
+		const originalMethod = instance[methodName];
 
-	if (server) {
+		instance[methodName] = async (...args) => {
+			decorators.logger({methodName, args});
+
+			const response = await originalMethod.apply(instance, args);
+			decorators.goto(response);
+			return response;
+		};
+	},
+	default: ({methodName, instance}) => {
+		const originalMethod = instance[methodName];
+
+		instance[methodName] = async (...args) => {
+			decorators.logger({methodName, args});
+			return originalMethod.apply(instance, args);
+		};
+	},
+	backup: ({methodName, instance}) => {
+		const originalMethod = instance[methodName];
+
+		instance[methodName] = async (...args) => {
+			decorators.logger({methodName, args});
+			return originalMethod.apply(instance, args);
+		};
+
+		instance[methodName]._original = originalMethod.bind(instance);
+	},
+	secret: ({methodName, instance}) => {
+		const originalMethod = instance[methodName];
+
+		instance[methodName] = async (...args) => {
+			decorators.secretLogger({methodName, args});
+			return originalMethod.apply(instance, args);
+		};
+
+		instance[methodName]._original = originalMethod.bind(instance);
+	},
+	server: ({methodName, instance, server, page}) => {
+		const originalMethod = instance[methodName];
+
 		instance[methodName] = async (...args) => {
 			try {
 				const result = await originalMethod.apply(instance, args);
@@ -21,20 +60,8 @@ const decorateMethod = ({methodName, page, instance, server = null}) => {
 				throw error;
 			}
 		};
-	} else {
-		instance[methodName] = async (...args) => {
-			if (methodName === 'goto') {
-				const response = await originalMethod.apply(instance, args);
-				decorators.logger({methodName, args});
-				decorators.goto(response);
-				return response;
-			}
-
-			decorators.logger({methodName, args});
-			return originalMethod.apply(instance, args);
-		};
-	}
-};
+	},
+}
 
 const decorators = {
 	goto: async response => {
@@ -51,7 +78,10 @@ const decorators = {
 		}
 	},
 	logger: async ({methodName, args}) => {
-		console.log({[methodName]: formatArguments(sanitizeArguments({methodName, args}))});
+		console.log({[methodName]: formatArguments(args)});
+	},
+	secretLogger: async ({methodName, args}) => {
+		console.log({[methodName]: formatArguments(sanitizeArguments(args))});
 	},
 };
 
@@ -61,12 +91,10 @@ const formatArguments = args =>
 			arg :
 			arg.toString().replace(/\s+/g, ' '));
 
-const sanitizeArguments = ({methodName, args}) => {
-	if (methodName !== 'type') return args;
-
+const sanitizeArguments = args => {
 	const [
 		selector,
-		text,
+		text = '',
 		...restArgs
 	] = args;
 
@@ -78,5 +106,5 @@ const sanitizeArguments = ({methodName, args}) => {
 };
 
 module.exports = {
-	decorateMethod,
+	decorateFunction,
 };

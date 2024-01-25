@@ -7,7 +7,7 @@
 const {LOGGER, SERVER} = require('../../consts');
 
 const {extras} = require('./methods/extras');
-const {decorateMethod} = require('./methods');
+const {decorateFunction} = require('./methods');
 
 const extendInstance = ({page: instance}) => {
 	extras.gotoDom(instance);
@@ -25,13 +25,44 @@ const extendInstance = ({page: instance}) => {
  * @returns Decorated instance.
  */
 const integrateInstance = ({page = null, server = null, instance = page}) => {
-	LOGGER.triggerMethods.page.map(methodName => decorateMethod({methodName, instance}));
+	const filter = exclude => method => !exclude.includes(method) && !method.startsWith('_');
+	const special = {
+		exclude: [
+			'constructor',
+		],
+		backup: [
+			'addInitScript',
+			'evaluate'
+		],
+		secret: [
+			'fill',
+			'type',
+		],
+		navigation: [
+			'goto',
+		],
+	};
 
-	if (instance.keyboard)
-		LOGGER.triggerMethods.keyboard.map(methodName => decorateMethod({methodName, instance: instance.keyboard}));
+	const exclude = [...special.exclude, ...special.backup, ...special.navigation, ...special.secret];
+	const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(instance)).filter(filter(exclude));
+
+	decorateFunction.navigation({methodName: 'goto', instance});
+	methods.map(methodName => decorateFunction.default({methodName, instance}));
+	special.backup.map(methodName => decorateFunction.backup({methodName, instance}));
+	special.secret.map(methodName => decorateFunction.secret({methodName, instance}));
+
+	if (instance.keyboard) {
+		const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(instance.keyboard)).filter(filter(special.exclude));
+		methods.map(methodName => decorateFunction.secret({methodName, instance: instance.keyboard}));
+	}
+
+	if (instance.mouse) {
+		const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(instance.mouse)).filter(filter(special.exclude));
+		methods.map(methodName => decorateFunction.default({methodName, instance: instance.keyboard}));
+	}
 
 	if (server && server.options?.interface?.events?.serveOnEvents)
-		server.options.interface.events.eventHooks.map(methodName => decorateMethod({ methodName, page, server, instance }));
+		server.options.interface.events.eventHooks.map(methodName => decorateFunction.server({methodName, page, server, instance}));
 
 	return instance;
 };
