@@ -1,6 +1,10 @@
+const {errors} = require('cyber-codex');
+
 const log = require('../../../logger');
 const {SESSION} = require('../../../consts');
-const {errors, RobotError} = require('../../../errors');
+const {RobotError} = require('../../../errors');
+
+const isAsync = method => method && Object.getPrototypeOf(method).constructor.name === 'AsyncFunction';
 
 /**
  * Decorates instance methods with extended behavior.
@@ -21,28 +25,40 @@ const decorateFunction = {
 	default: ({methodName, instance}) => {
 		const originalMethod = instance[methodName];
 
-		instance[methodName] = async (...args) => {
-			decorators.logger({methodName, args});
-			return originalMethod.apply(instance, args);
-		};
+		instance[methodName] = isAsync(originalMethod) ?
+			async (...args) => {
+				decorators.logger({methodName, args});
+				return originalMethod.apply(instance, args);
+			} : (...args) => {
+				decorators.logger({methodName, args});
+				return originalMethod.apply(instance, args);
+			};
 	},
 	backup: ({methodName, instance}) => {
 		const originalMethod = instance[methodName];
 
-		instance[methodName] = async (...args) => {
-			decorators.logger({methodName, args});
-			return originalMethod.apply(instance, args);
-		};
+		instance[methodName] = isAsync(originalMethod) ?
+			async (...args) => {
+				decorators.logger({methodName, args});
+				return originalMethod.apply(instance, args);
+			} : (...args) => {
+				decorators.logger({methodName, args});
+				return originalMethod.apply(instance, args);
+			};
 
 		instance[methodName]._original = originalMethod.bind(instance);
 	},
 	secret: ({methodName, instance}) => {
 		const originalMethod = instance[methodName];
 
-		instance[methodName] = async (...args) => {
-			decorators.secretLogger({methodName, args});
-			return originalMethod.apply(instance, args);
-		};
+		instance[methodName] = isAsync(originalMethod) ?
+			async (...args) => {
+				decorators.secretLogger({methodName, args});
+				return originalMethod.apply(instance, args);
+			} : (...args) => {
+				decorators.secretLogger({methodName, args});
+				return originalMethod.apply(instance, args);
+			};
 
 		instance[methodName]._original = originalMethod.bind(instance);
 	},
@@ -61,7 +77,7 @@ const decorateFunction = {
 			}
 		};
 	},
-}
+};
 
 const decorators = {
 	goto: async response => {

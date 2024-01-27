@@ -249,10 +249,6 @@ class Robot {
 	reset = async ({input, page}) => { };
 
 	retry = async ({input: {target}, setup}) => {
-		const url = getTargetUrl(setup, target);
-		this.domain = parseTargetDomain(url, target);
-		if (!this.isRetry && url) console.log({url});
-
 		this.page = await this.initPage(this);
 		this.server = maybeStartServer(this);
 		integrateInstance(this);

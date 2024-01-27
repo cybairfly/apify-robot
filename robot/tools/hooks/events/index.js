@@ -1,58 +1,62 @@
 const log = require('../../../logger');
-const { EVENTS } = require('../../../consts');
+const {EVENTS} = require('../../../consts');
 
 const {handlers} = require('../traffic/handlers');
 const {createHeader} = require('../../generic');
+const {parseTargetDomain} = require('../../target');
 
-const urlLogger = (page, {debug}) => async () => {
-	const url = await page.evaluate._original(() => window.location.href).catch(() => null);
-
-	if (debug)
-		log.default(createHeader(EVENTS.framenavigated, {center: true, padder: '›'}));
-
-	if (url) log.default({url});
-};
-
-const preloadUrlLogger = (page, options) => urlLogger(page, options);
-
-// TODO merge with handlers
-const responseErrorLogger = async (domain, response) => {
-	const url = response.url();
-	const status = response.status();
-	if (!url.startsWith('data:') && url.includes(domain)) {
-		if (status >= 400 && status !== 404) {
-			const headers = response.headers();
-			const text = await response.text().catch(() => null);
-			const requestUrl = await response.request().url();
-			const requestHeaders = await response.request().headers();
-			// const requestPostData = await response.request().postData();
-			console.log(status, url, {
-				headers,
-				text,
-				requestUrl,
-				requestHeaders,
-				// requestPostData
-			});
-		}
+const urlLogger = (page, {debug}) => oldUrl => event => {
+	const url = new URL(page.url());
+	if (url?.href !== oldUrl?.href) {
+		console.log({host: url.host});
+		console.log({url: url.href});
 	}
 };
 
-const initEventLogger = ({page, domain, input, options}) => {
-	const urlLoggerPreloaded = preloadUrlLogger(page, {debug: input.debug});
-	page.on(EVENTS.framenavigated, urlLoggerPreloaded);
+const navigationLogger = ({debug}) => event => debug && console.log(createHeader(EVENTS.framenavigated, {center: true, padder: '›'}));
+
+const resetHandler = {
+	navigation: (eventName = EVENTS.framenavigated) => (page, handler) => (oldUrl, oldHandler) => event => {
+		const url = new URL(page.url());
+
+		if (oldHandler)
+			page.once(eventName, handler(url));
+		else
+			handler({})(event);
+
+		page.once(EVENTS.framenavigated, resetHandler.navigation(eventName)(page, handler)(url, true));
+	},
+	traffic: eventName => (page, handler) => (oldUrl = {}, oldHandler) => event => {
+		const url = new URL(page.url());
+
+		if (url?.href === oldUrl?.href || url?.host === oldUrl?.host) {
+			page.once(EVENTS.framenavigated, resetHandler.traffic(eventName)(page, handler)(url, oldHandler));
+
+			return;
+		}
+
+		const currentHandler = handler(url);
+		page.on(eventName, currentHandler);
+
+		if (oldHandler)
+			page.off(eventName, oldHandler);
+		else
+			page.once(EVENTS.framenavigated, resetHandler.traffic(eventName)(page, handler)(url, currentHandler));
+	},
+};
+
+const initEventLogger = ({page, input, options}) => {
+	page.once(EVENTS.framenavigated, resetHandler.navigation(EVENTS.framenavigated)(page, urlLogger(page, {debug: input.debug}))());
 
 	if (input.debug) {
-		const responseErrorLoggerBound = responseErrorLogger.bind(null, domain);
-		page.on(EVENTS.response, responseErrorLoggerBound);
+		page.on(EVENTS.framenavigated, navigationLogger(input));
+		page.on(EVENTS.domcontentloaded, () => console.log(createHeader(EVENTS.domcontentloaded, {center: true, padder: '○'})));
+		page.on(EVENTS.load, () => console.log(createHeader(EVENTS.load, {center: true, padder: '●'})));
 
-		page.on(EVENTS.load, () => log.default(createHeader(EVENTS.load, {center: true, padder: '●'})));
-		page.on(EVENTS.domcontentloaded, () => log.default(createHeader(EVENTS.domcontentloaded, {center: true, padder: '○'})));
-	}
-
-	if (input.debug && options.debug.traffic.enable) {
-		const domainRegex = new RegExp(`//[^/]*${domain}[.].*/`, 'i');
-		page.on(EVENTS.request, handlers.request(domain, domainRegex, options));
-		page.on(EVENTS.response, handlers.response(domain, domainRegex, options));
+		if (options.debug.traffic.enable) {
+			page.once(EVENTS.framenavigated, resetHandler.traffic(EVENTS.request)(page, handlers.request(options))());
+			page.once(EVENTS.framenavigated, resetHandler.traffic(EVENTS.response)(page, handlers.response(options))());
+		}
 	}
 };
 
