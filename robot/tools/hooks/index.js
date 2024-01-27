@@ -27,8 +27,10 @@ const extendInstance = ({page: instance}) => {
 const integrateInstance = ({page = null, server = null, instance = page}) => {
 	const filter = exclude => method => !exclude.includes(method) && !method.startsWith('_');
 	const special = {
-		exclude: [
+		bypass: [
 			'constructor',
+			'goto',
+			'url',
 		],
 		backup: [
 			'addInitScript',
@@ -38,12 +40,9 @@ const integrateInstance = ({page = null, server = null, instance = page}) => {
 			'fill',
 			'type',
 		],
-		navigation: [
-			'goto',
-		],
 	};
 
-	const exclude = [...special.exclude, ...special.backup, ...special.navigation, ...special.secret];
+	const exclude = [...special.bypass, ...special.backup, ...special.secret];
 	const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(instance)).filter(filter(exclude));
 
 	decorateFunction.navigation({methodName: 'goto', instance});
@@ -52,12 +51,12 @@ const integrateInstance = ({page = null, server = null, instance = page}) => {
 	special.secret.map(methodName => decorateFunction.secret({methodName, instance}));
 
 	if (instance.keyboard) {
-		const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(instance.keyboard)).filter(filter(special.exclude));
+		const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(instance.keyboard)).filter(filter(special.bypass));
 		methods.map(methodName => decorateFunction.secret({methodName, instance: instance.keyboard}));
 	}
 
 	if (instance.mouse) {
-		const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(instance.mouse)).filter(filter(special.exclude));
+		const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(instance.mouse)).filter(filter(special.bypass));
 		methods.map(methodName => decorateFunction.default({methodName, instance: instance.keyboard}));
 	}
 
