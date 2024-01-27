@@ -61,9 +61,9 @@ const syncContext = robot => ({
 
 				// TODO fire custom event
 				// TODO fire websocket event
-				log.default(' '.repeat(100));
-				log.default(`NEXT [${text}]`);
-				log.default('-'.repeat(100));
+				console.log(' '.repeat(100));
+				console.log(`NEXT [${text}]`);
+				console.log('-'.repeat(100));
 			},
 		};
 

@@ -16,7 +16,6 @@ require('fix-esm').register();
 const Apify = require('apify');
 const {
 	Human,
-	Logue,
 	Error: CyberError,
 	errors,
 	tools: {
@@ -24,9 +23,9 @@ const {
 	},
 } = require('cyber-codex');
 
-const log = new Logue().child({prefix: 'Robot'});
 const R = require('ramda');
 const path = require('path');
+const log = require('./logger');
 
 const Setup = require('./setup');
 const Scope = require('./scope');

@@ -67,7 +67,7 @@ const pingSessionPool = async ({proxyConfig, sessionPool, input: {debug}}) => {
 			...response,
 		}));
 
-		log.console.debug(sessionPoolState);
+		log.debug(sessionPoolState);
 		await Apify.Actor.setValue('sessionPoolState', sessionPoolState);
 		// workaround for log cut-off ^
 		await sleep(3 * 1000);

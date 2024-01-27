@@ -85,7 +85,7 @@ const preloadIteratePatterns = page => async (patterns = {}, patternOrder = []) 
 			return patternType;
 	}
 
-	log.console.debug('No pattern match found:', patternTypes);
+	log.debug('No pattern match found:', patternTypes);
 };
 
 module.exports = {

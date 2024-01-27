@@ -2,36 +2,36 @@ const log = require('../../logger');
 const { createHeader } = require('../generic');
 
 const logInputs = ({ input, options }) => {
-	log.default(createHeader('INPUT', { padder: '▼' }));
-	log.redact.object(input);
-	log.default(createHeader('INPUT', { padder: '▲' }));
+	console.log(createHeader('INPUT', { padder: '▼' }));
+	log.redact.format.info(input);
+	console.log(createHeader('INPUT', { padder: '▲' }));
 
-	log.default(createHeader('OPTIONS', { padder: '▼' }));
-	log.redact.object(options);
-	log.default(createHeader('OPTIONS', { padder: '▲' }));
+	console.log(createHeader('OPTIONS', { padder: '▼' }));
+	log.redact.format.info(options);
+	console.log(createHeader('OPTIONS', { padder: '▲' }));
 };
 
 const logOutputUpdate = robot => ({task, step}) => {
-	log.default(' '.repeat(100));
-	log.default(`TASK [${task.name}] ► STEP [${step.name}] ➜ OUTPUT`);
-	log.default('='.repeat(100));
-	log.default(robot.step.output);
-	log.default(' ');
+	console.log(' '.repeat(100));
+	console.log(`TASK [${task.name}] ► STEP [${step.name}] ➜ OUTPUT`);
+	console.log('='.repeat(100));
+	console.log(robot.step.output);
+	console.log(' ');
 };
 
 const logOutput = OUTPUT => {
-	log.default(' '.repeat(100));
-	log.default('OUTPUT');
-	log.default('='.repeat(100));
-	log.default(OUTPUT);
-	log.default(' ');
+	console.log(' '.repeat(100));
+	console.log('OUTPUT');
+	console.log('='.repeat(100));
+	console.log(OUTPUT);
+	console.log(' ');
 };
 
 const logError = (error, { retryCount }) => {
 	log.exception(error);
-	log.default(' '.repeat(100));
-	log.default(`RETRY [R-${retryCount}]`);
-	log.default('◄'.repeat(100));
+	console.log(' '.repeat(100));
+	console.log(`RETRY [R-${retryCount}]`);
+	console.log('◄'.repeat(100));
 };
 
 module.exports = {
