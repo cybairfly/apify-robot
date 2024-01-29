@@ -362,7 +362,7 @@ class Robot {
 					],
 				});
 			} else
-				initTrafficFilter(page, domain, options);
+				initTrafficFilter(page, options);
 		}
 
 		if (debug) {
