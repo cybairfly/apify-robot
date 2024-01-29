@@ -9,13 +9,6 @@ const {LOGGER, SERVER} = require('../../consts');
 const {extras} = require('./methods/extras');
 const {decorateFunction} = require('./methods');
 
-const extendInstance = ({page: instance}) => {
-	extras.gotoDom(instance);
-	extras.typeHuman(instance);
-
-	return instance;
-};
-
 /**
  * Decorates instance methods with automated logging and extends it with extra utility methods.
  * @param {Object} options
@@ -25,16 +18,29 @@ const extendInstance = ({page: instance}) => {
  * @returns Decorated instance.
  */
 const integrateInstance = ({page = null, server = null, instance = page}) => {
+	decorateInstance({instance, server, page});
+	extendInstance({instance});
+};
+
+const extendInstance = ({instance}) => {
+	extras.gotoDom(instance);
+	extras.typeHuman(instance);
+
+	return instance;
+};
+
+const decorateInstance = ({instance, server, page = instance}) => {
 	const filter = exclude => method => !exclude.includes(method) && !method.startsWith('_');
 	const special = {
 		bypass: [
 			'constructor',
+			'context',
 			'goto',
 			'url',
 		],
 		backup: [
 			'addInitScript',
-			'evaluate'
+			'evaluate',
 		],
 		secret: [
 			'fill',
