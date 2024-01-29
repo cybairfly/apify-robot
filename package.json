@@ -12,6 +12,8 @@
 	"dependencies": {
 		"@crawlee/browser-pool": "^3.5.8",
 		"@types/puppeteer": "^5.4.5",
+		"@typescript-eslint/eslint-plugin": "^6.19.1",
+		"@typescript-eslint/parser": "^6.19.1",
 		"apify": "^3.1.8",
 		"crawlee": "^3.5.3",
 		"cyber-codex": "^0.0.8",

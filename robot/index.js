@@ -62,9 +62,9 @@ const tools = require('./public/tools');
 
 class Robot {
 	/**
-     * @param {input} input
-     * @param {setup} setup
-     */
+	 * @param {input} input
+	 * @param {setup} setup
+	 */
 	constructor(input, setup) {
 		this.log = log;
 
@@ -87,6 +87,9 @@ class Robot {
 		this._output = {};
 		this._error = null;
 
+		/**
+		 * @type {types.page}
+		 */
 		this.page = null;
 		this.human = null;
 		this.browser = null;
@@ -251,7 +254,6 @@ class Robot {
 		this.page = await this.initPage(this);
 		this.server = maybeStartServer(this);
 		integrateInstance(this);
-		extendInstance(this);
 		initEventLogger(this);
 		this.context = await this.initContext(this);
 		this.output = await this.handleTasks(this);
